@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "outDir": "build",
+        "module": "CommonJS",
+        "moduleResolution": "Node"
+    },
+    "files": [
+        "src/main.ts"
+    ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "bar-ball",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "mkdir build && tsc && browserify build/main.js -o pages/js/dist.js && rm build -rf"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "browserify": "^17.0.0",
+    "typescript": "^4.1.3"
+  },
+  "dependencies": {
+    "pixi.js": "^5.3.7"
+  }
+}
