@@ -1,11 +1,12 @@
 import Vec2 from "../../math/vec2";
-import { Shape, ShapeSpace } from './shape';
+import { IShape, IShapeSpace, OnCollideEvent } from './shape';
 
-class Circle implements Shape{
+class Circle implements IShape{
     pos: Vec2;
     r: number;
     readonly name: string = 'circle';
-    shapeSpace: ShapeSpace = null;
+    group?: string;
+    shapeSpace: IShapeSpace = null;
 
     constructor(x: number, y: number, r: number) {
         this.move(x, y);
@@ -14,6 +15,10 @@ class Circle implements Shape{
 
     move(x: number, y: number) {
         this.pos = new Vec2(x, y);
+    }
+
+    onCollide(e: OnCollideEvent): void {
+
     }
 }
 

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "mkdir build && tsc && browserify build/main.js -o pages/js/dist.js && rm build -rf"
+    "build": "mkdir build && tsc && browserify build/main.js -o pages/js/dist.js &&  rm build -rf || rm build -rf"
   },
   "author": "",
   "license": "ISC",

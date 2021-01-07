@@ -1,13 +1,14 @@
 import { between } from "../../math/util";
 import Vec2 from "../../math/vec2";
-import { Shape, ShapeSpace } from "./shape";
+import { IShape, IShapeSpace, OnCollideEvent } from "./shape";
 
 
-class Rectangle implements Shape {
+class Rectangle implements IShape {
     readonly pos: Vec2;
     readonly size: Vec2;
     readonly name: string = 'rectangle';
-    shapeSpace: ShapeSpace = null;
+    group?: string;
+    shapeSpace: IShapeSpace = null;
 
     constructor(x: number, y: number, w: number, h: number) {
         this.pos = new Vec2(x, y);
@@ -30,6 +31,10 @@ class Rectangle implements Shape {
     contains(p: Vec2): boolean {
         return between(p.x, this.pos.x, this.pos.x + this.size.x) && 
                between(p.y, this.pos.y, this.pos.y + this.size.y);
+    }
+
+    onCollide(e: OnCollideEvent): void {
+
     }
 }
 

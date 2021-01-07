@@ -14,7 +14,8 @@ const screenResolution: ScreenResolution = {
 const app = new Application({
     width: screenResolution.width,
     height: screenResolution.height,
-    backgroundColor: colors.secondary
+    backgroundColor: colors.secondary,
+    antialias: true,
 });
 
 document.body.appendChild(app.view);

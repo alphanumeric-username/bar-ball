@@ -2,7 +2,8 @@
     "compilerOptions": {
         "outDir": "build",
         "module": "CommonJS",
-        "moduleResolution": "Node"
+        "moduleResolution": "Node",
+        "lib": ["ES2015", "DOM"]
     },
     "files": [
         "src/main.ts"
