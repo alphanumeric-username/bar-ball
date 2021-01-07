@@ -16,4 +16,4 @@ interface IShapeSpace {
     update(): void;
 }
 
-export { IShape, IShapeSpace , OnCollideEvent};
+export { IShape, IShapeSpace , OnCollideEvent as CollideEvent};

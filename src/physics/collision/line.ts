@@ -1,5 +1,5 @@
 import Vec2 from '../../math/vec2'
-import { IShape, IShapeSpace, OnCollideEvent } from './shape';
+import { IShape, IShapeSpace, CollideEvent } from './shape';
 
 class Line implements IShape {
     startPos: Vec2;
@@ -33,6 +33,13 @@ class Line implements IShape {
         return (x: number, y: number) => a*x + b*y + c;
     }
 
+    getMiddlePoint(): Vec2 {
+        return new Vec2(
+            (this.startPos.x + this.endPos.x)/2,
+            (this.startPos.y + this.endPos.y)/2
+        );
+    }
+
     move(x_start: number, y_start: number, x_end: number, y_end: number) {
         this.startPos = new Vec2(x_start, y_start);
         this.endPos = new Vec2(x_end, y_end);
@@ -41,7 +48,7 @@ class Line implements IShape {
         this._normal = Vec2.normal(tangent);
     }
 
-    onCollide(e: OnCollideEvent): void {
+    onCollide(e: CollideEvent): void {
 
     }
 }

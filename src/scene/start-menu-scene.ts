@@ -1,19 +1,20 @@
 import Button from '../ui/button';
+import { Triangle } from '../ui/geometry';
 
 import { Scene } from './scene';
 import GameScene from './game-scene';
 import { screenResolution } from '../app';
-import { Graphics, Text, TextStyle } from 'pixi.js';
+import { Text, TextStyle } from 'pixi.js';
 import { colors } from '../constants';
 
 class StartMenuScene extends Scene {
 
     initStage() {
-
-        const startButton = new Button('|>', new TextStyle({
-            fontSize: 64,
-            fill: 'white'
-        }));
+        const k = 64;
+        const triangle = new Triangle(0, 0, 0, k*1, k*Math.sqrt(3)/2, k*0.5, {
+            fill: 0xFFFFFF
+        })
+        const startButton = new Button(triangle, null, { padding: 8, backgroundColor: colors.primary });
         startButton.onClick = () => {
             this.sceneManager.changeScene(GameScene);
         };

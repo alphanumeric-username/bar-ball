@@ -1,6 +1,6 @@
 import { between } from "../../math/util";
 import Vec2 from "../../math/vec2";
-import { IShape, IShapeSpace, OnCollideEvent } from "./shape";
+import { IShape, IShapeSpace, CollideEvent } from "./shape";
 
 
 class Rectangle implements IShape {
@@ -33,7 +33,7 @@ class Rectangle implements IShape {
                between(p.y, this.pos.y, this.pos.y + this.size.y);
     }
 
-    onCollide(e: OnCollideEvent): void {
+    onCollide(e: CollideEvent): void {
 
     }
 }

@@ -1,5 +1,5 @@
 import Vec2 from "../../math/vec2";
-import { IShape, IShapeSpace, OnCollideEvent } from './shape';
+import { IShape, IShapeSpace, CollideEvent } from './shape';
 
 class Circle implements IShape{
     pos: Vec2;
@@ -17,7 +17,7 @@ class Circle implements IShape{
         this.pos = new Vec2(x, y);
     }
 
-    onCollide(e: OnCollideEvent): void {
+    onCollide(e: CollideEvent): void {
 
     }
 }

@@ -1,6 +1,6 @@
 import { Container, Graphics } from "pixi.js";
 import { colors } from '../../constants';
-import { Circle, Line } from '../../physics/collision';
+import { Circle, Line, CollideEvent } from '../../physics/collision';
 import Vec2 from "../../math/vec2";
 
 class Ball extends Container {
@@ -20,24 +20,8 @@ class Ball extends Container {
         this._createGraphics();
         this.hitbox = new Circle(this.x, this.y, radius);
         this.hitbox.group = 'ball';
-        this.hitbox.onCollide = ({ collidedShape }) => {
-            this._colliding = true;
-            if (collidedShape.group == 'lose') {
-                this.onLose();
-                return;
-            } else if (this._currentCollidingLine == collidedShape) {
-                return;
-            } else if (collidedShape instanceof Line) {
-                const normal = collidedShape.getNormal();
-                this.reflect(normal);
-
-                const group = collidedShape.group;
-                if (group == 'bar') {
-                    this.setVelocityLength(Math.max(Vec2.norm(this._velocity), 15));
-                }
-
-                this._currentCollidingLine = collidedShape;
-            }
+        this.hitbox.onCollide = (e) => {
+            this._onCollide(e);
         }
     }
 
@@ -70,14 +54,6 @@ class Ball extends Container {
             )
         );
         this._velocity = newVel;
-        // this._velocity = Vec2.scale(1.0,
-        //     Vec2.sub(
-        //         this._velocity,
-        //         Vec2.scale(2*Vec2.dot(this._velocity, normal), normal)
-        //     )
-        // );
-        // const pos = new Vec2(this.x, this.y);
-        // Vec2.add(pos, Vec2.scale(this.radius, normal));
     }
 
     setVelocityLength(length: number) {
@@ -85,6 +61,45 @@ class Ball extends Container {
             length,
             Vec2.normalize(this._velocity)
         );
+    }
+
+    private _collidedWithBar(bar: Line) {
+        const maxDeviation = 0.5;
+        const currentVelocityLength = Vec2.norm(this._velocity);
+        const currentPosition = new Vec2(this.x, this.y);
+        const barOrigin = bar.getMiddlePoint();
+        const barCurrentPosition = Vec2.sub(currentPosition, barOrigin);
+        const barTangent = Vec2.normalize(Vec2.sub(bar.endPos, barOrigin));
+        const deviation = maxDeviation * Vec2.dot(Vec2.normalize(barCurrentPosition), barTangent);
+        
+        const newVelocity = Vec2.add(
+            bar.getNormal(),
+            Vec2.scale(deviation, barTangent)
+        );
+
+        this._velocity = newVelocity;
+
+        this.setVelocityLength(Math.max(currentVelocityLength, 15));
+    }
+
+    private _onCollide({ collidedShape }: CollideEvent) {
+        this._colliding = true;
+        if (collidedShape.group == 'lose') {
+            this.onLose();
+            return;
+        } else if (this._currentCollidingLine == collidedShape) {
+            return;
+        } else if (collidedShape instanceof Line) {
+            const normal = collidedShape.getNormal();
+            this.reflect(normal);
+
+            const group = collidedShape.group;
+            if (group == 'bar') {
+                this._collidedWithBar(collidedShape);
+            }
+
+            this._currentCollidingLine = collidedShape;
+        }
     }
 
     onLose() {

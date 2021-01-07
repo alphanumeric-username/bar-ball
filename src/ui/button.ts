@@ -2,8 +2,8 @@ import { Container, Graphics, Text, TextStyle } from "pixi.js";
 import { colors } from '../constants';
 
 type ButtonStyle = {
-    backgroundColor: number,
-    padding: number,
+    backgroundColor?: number,
+    padding?: number,
 }
 
 class Button extends Container{
