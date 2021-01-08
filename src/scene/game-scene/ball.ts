@@ -2,6 +2,7 @@ import { Container, Graphics } from "pixi.js";
 import { colors } from '../../constants';
 import { Circle, Line, CollideEvent } from '../../physics/collision';
 import Vec2 from "../../math/vec2";
+import { playNote } from '../../service/audio';
 
 class Ball extends Container {
 
@@ -29,7 +30,6 @@ class Ball extends Container {
         const circle = new Graphics();
         circle.beginFill(colors.primary);
         circle.drawCircle(0, 0, this.radius);
-        // circle.drawRect(0, 0, this.radius, this.radius);
         circle.endFill();
         this.addChild(circle);
     }
@@ -45,9 +45,9 @@ class Ball extends Container {
         this.hitbox.move(this.x, this.y);
     }
 
-    reflect(normal: Vec2, bouncyness: number = 1) {
+    reflect(normal: Vec2, bounciness: number = 1) {
         const newVel = Vec2.scale(
-            bouncyness,
+            bounciness,
             Vec2.sub(
                 this._velocity,
                 Vec2.scale(2*Vec2.dot(this._velocity, normal), normal)
@@ -61,6 +61,29 @@ class Ball extends Container {
             length,
             Vec2.normalize(this._velocity)
         );
+    }
+
+    private _onCollide({ collidedShape }: CollideEvent) {
+        this._colliding = true;
+        if (collidedShape.group == 'lose') {
+            playNote('basic-wave', 440*Math.pow(2, -21/12), 0.1, { type: 'sawtooth' });
+            this.onLose();
+        } else if (this._currentCollidingLine == collidedShape) {
+            return;
+        } else if (collidedShape instanceof Line) {
+            const normal = collidedShape.getNormal();
+            this.reflect(normal);
+
+            const group = collidedShape.group;
+            if (group == 'bar') {
+                this._collidedWithBar(collidedShape);
+                playNote('basic-wave', 440*Math.pow(2, -2/12), 0.1, { type: 'sawtooth' });
+            } else {
+                playNote('basic-wave', 440*Math.pow(2, -9/12), 0.1, { type: 'sawtooth' });
+            }
+
+            this._currentCollidingLine = collidedShape;
+        }
     }
 
     private _collidedWithBar(bar: Line) {
@@ -80,26 +103,6 @@ class Ball extends Container {
         this._velocity = newVelocity;
 
         this.setVelocityLength(Math.max(currentVelocityLength, 15));
-    }
-
-    private _onCollide({ collidedShape }: CollideEvent) {
-        this._colliding = true;
-        if (collidedShape.group == 'lose') {
-            this.onLose();
-            return;
-        } else if (this._currentCollidingLine == collidedShape) {
-            return;
-        } else if (collidedShape instanceof Line) {
-            const normal = collidedShape.getNormal();
-            this.reflect(normal);
-
-            const group = collidedShape.group;
-            if (group == 'bar') {
-                this._collidedWithBar(collidedShape);
-            }
-
-            this._currentCollidingLine = collidedShape;
-        }
     }
 
     onLose() {

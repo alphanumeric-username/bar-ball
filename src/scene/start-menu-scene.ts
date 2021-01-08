@@ -7,15 +7,18 @@ import { screenResolution } from '../app';
 import { Text, TextStyle } from 'pixi.js';
 import { colors } from '../constants';
 
+import { initAudioService } from '../service/audio';
+
 class StartMenuScene extends Scene {
 
     initStage() {
-        const k = 64;
+        const k = 48;
         const triangle = new Triangle(0, 0, 0, k*1, k*Math.sqrt(3)/2, k*0.5, {
             fill: 0xFFFFFF
         })
-        const startButton = new Button(triangle, null, { padding: 8, backgroundColor: colors.primary });
+        const startButton = new Button(triangle, null, { padding: 16, backgroundColor: colors.primary });
         startButton.onClick = () => {
+            initAudioService();
             this.sceneManager.changeScene(GameScene);
         };
         startButton.position.set(
@@ -23,13 +26,13 @@ class StartMenuScene extends Scene {
             2*screenResolution.height/3
         );
         
-        const copyright = new Text('by Alphanumeric-username', new TextStyle({
+        const copyright = new Text('by alphanumeric-username', new TextStyle({
             fill: colors.primary,
             fontSize: 20
         }));
 
-        copyright.x = screenResolution.width - copyright.width - 2;
-        copyright.y = screenResolution.height - copyright.height - 2;
+        copyright.x = screenResolution.width - copyright.width - 4;
+        copyright.y = screenResolution.height - copyright.height - 4;
 
         const title = new Text('Bar/Ball', new TextStyle({
             fill: colors.primary,
