@@ -26,7 +26,7 @@ class StartMenuScene extends Scene {
             2*screenResolution.height/3
         );
         
-        const copyright = new Text('by alphanumeric-username', new TextStyle({
+        const copyright = new Text('© 2021 alphanumeric-username', new TextStyle({
             fill: colors.primary,
             fontSize: 20
         }));

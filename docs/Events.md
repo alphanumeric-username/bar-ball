@@ -20,7 +20,7 @@ A bar appears randomly in the stage.
 
 ## Rain
 
-Starts rainning bouncy dropss in a random direction.
+Starts rainning bouncy drops in a random direction.
 
 ## Random throw
 

@@ -8,7 +8,7 @@ class Ball extends Container {
 
     readonly radius: number;
     private _velocity: Vec2;
-    private _acceleration: Vec2;
+    acceleration: Vec2;
     readonly hitbox: Circle;
     private _currentCollidingLine: Line;
     private _colliding: boolean;
@@ -17,7 +17,7 @@ class Ball extends Container {
         super();
         this.radius = radius;
         this._velocity = new Vec2(-6*Math.random() + 3, 0);
-        this._acceleration = new Vec2(0, 0.25);
+        this.acceleration = new Vec2(0, 0.25);
         this._createGraphics();
         this.hitbox = new Circle(this.x, this.y, radius);
         this.hitbox.group = 'ball';
@@ -40,7 +40,7 @@ class Ball extends Container {
         } else {
             this._currentCollidingLine = null;
         }
-        this._velocity = Vec2.add(this._velocity, this._acceleration);
+        this._velocity = Vec2.add(this._velocity, this.acceleration);
         [this.x, this.y] = Vec2.add(Vec2.fromTuple([this.x, this.y]), this._velocity).toTuple();
         this.hitbox.move(this.x, this.y);
     }
@@ -61,6 +61,10 @@ class Ball extends Container {
             length,
             Vec2.normalize(this._velocity)
         );
+    }
+
+    getVelocityLength(): number {
+        return Vec2.norm(this._velocity);
     }
 
     private _onCollide({ collidedShape }: CollideEvent) {

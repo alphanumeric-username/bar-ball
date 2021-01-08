@@ -8,7 +8,9 @@ type MouseTracker = {
 var _mouseX: number = 0;
 var _mouseY: number = 0;
 
-app.view.addEventListener('mousemove', (e) => [_mouseX, _mouseY] = [e.clientX, e.clientY]);
+app.view.addEventListener('mousemove', (e) => {
+    [_mouseX, _mouseY] = [e.clientX - app.view.offsetLeft, e.clientY - app.view.offsetTop];
+});
 
 const mouse: MouseTracker = {
     getX(): number {
