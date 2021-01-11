@@ -13,9 +13,9 @@ class Bar extends Container {
         super();
         this._createGraphics();
         this.hitbox = new Line(this.x + 128, this.y, this.x, this.y);
-        this.hitbox.group = 'bar';
+        this.hitbox.group.add('bar');
         this.hitbox.onCollide = ({ collidedShape }) => {
-            if (collidedShape.group == 'ball') {
+            if (collidedShape.group.has('ball')) {
                 this.onCollideBall();
             }
         }

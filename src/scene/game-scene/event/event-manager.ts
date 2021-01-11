@@ -8,6 +8,7 @@ class EventManager implements IEventManager {
     eventTable: IEvent[] = [];
     
     private _lastTime: number = 0;
+    eventIsRunning: boolean = false;
 
     constructor(scene: Scene) {
         this.scene = scene;

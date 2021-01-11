@@ -3,7 +3,7 @@ type OnCollideEvent = {
 }
 
 interface IShape {
-    group?: string;
+    group?: Set<string>;
     readonly name: string;
     shapeSpace: IShapeSpace;
     onCollide(e: OnCollideEvent): void;

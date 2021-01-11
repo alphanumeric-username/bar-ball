@@ -5,7 +5,7 @@ class Circle implements IShape{
     pos: Vec2;
     r: number;
     readonly name: string = 'circle';
-    group?: string;
+    group?: Set<string> = new Set()
     shapeSpace: IShapeSpace = null;
 
     constructor(x: number, y: number, r: number) {

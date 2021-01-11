@@ -46,6 +46,6 @@ The ball becomes faster.
 
 The bar is lifted a bit.
 
-## Bar/Ball growing
+## Bar/Ball shortening
 
-The bar of the ball size grows.
+The bar of the ball size diminishes.

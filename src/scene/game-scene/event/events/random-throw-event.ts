@@ -16,7 +16,7 @@ class RandomThrowEvent extends EventImplementation {
     private _targetAngle: number = 0;
     private _currentAngle: number = 0;
     private _lastBallState: BallState;
-    likeliness: number = 0.2;
+    likeliness: number = 0;//.2;
     arrow: Container;
 
     startTime: number = 2;

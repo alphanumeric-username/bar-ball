@@ -34,7 +34,7 @@ class Ball extends Container {
         this.acceleration = new Vec2(0, 0.25);
         this._createGraphics();
         this.hitbox = new Circle(this.x, this.y, radius);
-        this.hitbox.group = 'ball';
+        this.hitbox.group.add('ball');
         this.hitbox.onCollide = (e) => {
             this._onCollide(e);
         }
@@ -83,7 +83,7 @@ class Ball extends Container {
 
     private _onCollide({ collidedShape }: CollideEvent) {
         this.colliding = true;
-        if (collidedShape.group == 'lose') {
+        if (collidedShape.group.has('lose')) {
             playNote('basic-wave', 440*Math.pow(2, -21/12), 0.1, { type: 'sawtooth' });
             this.onLose();
         } else if (this.currentCollidingLine == collidedShape) {
@@ -93,7 +93,7 @@ class Ball extends Container {
             this.reflect(normal);
 
             const group = collidedShape.group;
-            if (group == 'bar') {
+            if (group.has('bar')) {
                 this._collidedWithBar(collidedShape);
                 playNote('basic-wave', 440*Math.pow(2, -2/12), 0.1, { type: 'sawtooth' });
             } else {

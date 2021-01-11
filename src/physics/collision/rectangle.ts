@@ -7,7 +7,7 @@ class Rectangle implements IShape {
     readonly pos: Vec2;
     readonly size: Vec2;
     readonly name: string = 'rectangle';
-    group?: string;
+    group?: Set<string> = new Set()
     shapeSpace: IShapeSpace = null;
 
     constructor(x: number, y: number, w: number, h: number) {

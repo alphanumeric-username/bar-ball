@@ -19,20 +19,20 @@ class GameScene extends Scene {
     shapeSpace: ShapeSpace;
     eventManager: IEventManager;
 
-    private _leftBound: Line;
-    private _topBound: Line;
-    private _rightBound: Line;
-    private _bottomBound: Line;
+    leftBound: Line;
+    topBound: Line;
+    rightBound: Line;
+    bottomBound: Line;
 
     initStage() {
         this.eventManager = createEventManager(this);
         this.shapeSpace = new ShapeSpace();
         
-        this._leftBound = new Line(0, screenResolution.height, 0, 0);
-        this._topBound = new Line(0, 0, screenResolution.width, 0);
-        this._rightBound = new Line(screenResolution.width, 0, screenResolution.width, screenResolution.height);
-        this._bottomBound = new Line(screenResolution.width, screenResolution.height, 0, screenResolution.height);
-        this._bottomBound.group = 'lose';
+        this.leftBound = new Line(0, screenResolution.height, 0, 0);
+        this.topBound = new Line(0, 0, screenResolution.width, 0);
+        this.rightBound = new Line(screenResolution.width, 0, screenResolution.width, screenResolution.height);
+        this.bottomBound = new Line(screenResolution.width, screenResolution.height, 0, screenResolution.height);
+        this.bottomBound.group.add('lose');
         
         this.bar = new Bar();
         this.bar.y = screenResolution.height - this.bar.height - 10;
@@ -56,10 +56,10 @@ class GameScene extends Scene {
 
         this.shapeSpace.add(this.bar.hitbox);
         this.shapeSpace.add(this.ball.hitbox);
-        this.shapeSpace.add(this._leftBound);
-        this.shapeSpace.add(this._topBound);
-        this.shapeSpace.add(this._rightBound);
-        this.shapeSpace.add(this._bottomBound);
+        this.shapeSpace.add(this.leftBound);
+        this.shapeSpace.add(this.topBound);
+        this.shapeSpace.add(this.rightBound);
+        this.shapeSpace.add(this.bottomBound);
 
         this.stage.addChild(this.scoreDisplay, this.bar, this.ball);
     }

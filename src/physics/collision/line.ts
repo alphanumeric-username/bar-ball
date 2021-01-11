@@ -6,7 +6,8 @@ class Line implements IShape {
     endPos: Vec2;
     private _normal: Vec2;
     readonly name: string = 'line';
-    group?: string;
+    group?: Set<string> = new Set()
+    // bounciness?: number;
     shapeSpace: IShapeSpace = null;
 
     constructor(x_start: number, y_start: number, x_end: number, y_end: number) {
