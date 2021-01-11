@@ -12,7 +12,7 @@ A wind comes to the stage and pulls the ball to left or right. Depending on the 
 
 ## No gravity
 
-The ball loses gravity.
+The ball gradually loses gravity as it changes to a bluish black.
 
 ## Random bar
 
@@ -45,3 +45,7 @@ The ball becomes faster.
 ## Bar lifting
 
 The bar is lifted a bit.
+
+## Bar/Ball growing
+
+The bar of the ball size grows.

@@ -18,7 +18,7 @@ var app = new pixi_js_1.Application({
 document.body.appendChild(app.view);
 exports["default"] = app;
 
-},{"./constants":2,"pixi.js":73}],2:[function(require,module,exports){
+},{"./constants":2,"pixi.js":75}],2:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.colors = void 0;
@@ -48,7 +48,7 @@ var Game = /** @class */ (function () {
 }());
 exports["default"] = Game;
 
-},{"../scene/scene":22,"../scene/start-menu-scene":23}],4:[function(require,module,exports){
+},{"../scene/scene":24,"../scene/start-menu-scene":25}],4:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var app_1 = require("./app");
@@ -430,7 +430,7 @@ var GameOverScene = /** @class */ (function (_super) {
 }(scene_1.Scene));
 exports["default"] = GameOverScene;
 
-},{"../app":1,"../constants":2,"../ui/button":28,"./game-scene/score-display":21,"./scene":22,"./start-menu-scene":23,"pixi.js":73}],15:[function(require,module,exports){
+},{"../app":1,"../constants":2,"../ui/button":30,"./game-scene/score-display":23,"./scene":24,"./start-menu-scene":25,"pixi.js":75}],15:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -480,6 +480,7 @@ var GameScene = /** @class */ (function (_super) {
         this.ball.y = (app_1.screenResolution.height - this.ball.y) / 2;
         this.ball.onLose = function () {
             _this.sceneManager.changeScene(game_over_scene_1["default"], { score: _this.scoreDisplay.getScore(), previousScene: GameScene });
+            _this._running = false;
         };
         this.scoreDisplay = new score_display_1["default"]();
         this.scoreDisplay.x = (app_1.screenResolution.width - this.scoreDisplay.width) / 2;
@@ -516,7 +517,7 @@ var GameScene = /** @class */ (function (_super) {
 }(scene_1.Scene));
 exports["default"] = GameScene;
 
-},{"../app":1,"../physics/collision":8,"./game-over-scene":14,"./game-scene/ball":16,"./game-scene/bar":17,"./game-scene/event":18,"./game-scene/score-display":21,"./scene":22}],16:[function(require,module,exports){
+},{"../app":1,"../physics/collision":8,"./game-over-scene":14,"./game-scene/ball":16,"./game-scene/bar":17,"./game-scene/event":18,"./game-scene/score-display":23,"./scene":24}],16:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -542,7 +543,7 @@ var Ball = /** @class */ (function (_super) {
     function Ball(radius) {
         var _this = _super.call(this) || this;
         _this.radius = radius;
-        _this._velocity = new vec2_1["default"](-6 * Math.random() + 3, 0);
+        _this.velocity = new vec2_1["default"](-6 * Math.random() + 3, 0);
         _this.acceleration = new vec2_1["default"](0, 0.25);
         _this._createGraphics();
         _this.hitbox = new collision_1.Circle(_this.x, _this.y, radius);
@@ -561,32 +562,35 @@ var Ball = /** @class */ (function (_super) {
     };
     Ball.prototype.update = function () {
         var _a;
-        if (this._colliding) {
-            this._colliding = false;
+        if (this.colliding) {
+            this.colliding = false;
         }
         else {
-            this._currentCollidingLine = null;
+            this.currentCollidingLine = null;
         }
-        this._velocity = vec2_1["default"].add(this._velocity, this.acceleration);
-        _a = vec2_1["default"].add(vec2_1["default"].fromTuple([this.x, this.y]), this._velocity).toTuple(), this.x = _a[0], this.y = _a[1];
+        this.velocity = vec2_1["default"].add(this.velocity, this.acceleration);
+        _a = vec2_1["default"].add(vec2_1["default"].fromTuple([this.x, this.y]), this.velocity).toTuple(), this.x = _a[0], this.y = _a[1];
         this.hitbox.move(this.x, this.y);
     };
     Ball.prototype.reflect = function (normal, bounciness) {
         if (bounciness === void 0) { bounciness = 1; }
-        var newVel = vec2_1["default"].scale(bounciness, vec2_1["default"].sub(this._velocity, vec2_1["default"].scale(2 * vec2_1["default"].dot(this._velocity, normal), normal)));
-        this._velocity = newVel;
+        var newVel = vec2_1["default"].scale(bounciness, vec2_1["default"].sub(this.velocity, vec2_1["default"].scale(2 * vec2_1["default"].dot(this.velocity, normal), normal)));
+        this.velocity = newVel;
     };
     Ball.prototype.setVelocityLength = function (length) {
-        this._velocity = vec2_1["default"].scale(length, vec2_1["default"].normalize(this._velocity));
+        this.velocity = vec2_1["default"].scale(length, vec2_1["default"].normalize(this.velocity));
+    };
+    Ball.prototype.getVelocityLength = function () {
+        return vec2_1["default"].norm(this.velocity);
     };
     Ball.prototype._onCollide = function (_a) {
         var collidedShape = _a.collidedShape;
-        this._colliding = true;
+        this.colliding = true;
         if (collidedShape.group == 'lose') {
             audio_1.playNote('basic-wave', 440 * Math.pow(2, -21 / 12), 0.1, { type: 'sawtooth' });
             this.onLose();
         }
-        else if (this._currentCollidingLine == collidedShape) {
+        else if (this.currentCollidingLine == collidedShape) {
             return;
         }
         else if (collidedShape instanceof collision_1.Line) {
@@ -600,20 +604,82 @@ var Ball = /** @class */ (function (_super) {
             else {
                 audio_1.playNote('basic-wave', 440 * Math.pow(2, -9 / 12), 0.1, { type: 'sawtooth' });
             }
-            this._currentCollidingLine = collidedShape;
+            this.currentCollidingLine = collidedShape;
         }
     };
     Ball.prototype._collidedWithBar = function (bar) {
         var maxDeviation = 0.5;
-        var currentVelocityLength = vec2_1["default"].norm(this._velocity);
+        var currentVelocityLength = vec2_1["default"].norm(this.velocity);
         var currentPosition = new vec2_1["default"](this.x, this.y);
         var barOrigin = bar.getMiddlePoint();
         var barCurrentPosition = vec2_1["default"].sub(currentPosition, barOrigin);
         var barTangent = vec2_1["default"].normalize(vec2_1["default"].sub(bar.endPos, barOrigin));
         var deviation = maxDeviation * vec2_1["default"].dot(vec2_1["default"].normalize(barCurrentPosition), barTangent);
         var newVelocity = vec2_1["default"].add(bar.getNormal(), vec2_1["default"].scale(deviation, barTangent));
-        this._velocity = newVelocity;
+        this.velocity = newVelocity;
         this.setVelocityLength(Math.max(currentVelocityLength, 15));
+    };
+    Ball.prototype.getState = function (filter) {
+        if (filter === void 0) { filter = ["acceleration.dir", "acceleration.length", "velocity.dir", "velocity.length", "position"]; }
+        var state = {
+            acceleration: {
+                dir: null,
+                length: null
+            },
+            velocity: {
+                dir: null,
+                length: null
+            },
+            position: null
+        };
+        for (var _i = 0, filter_1 = filter; _i < filter_1.length; _i++) {
+            var f = filter_1[_i];
+            switch (f) {
+                case 'acceleration.dir':
+                    state.acceleration.dir = vec2_1["default"].normalize(this.acceleration);
+                    break;
+                case 'acceleration.length':
+                    state.acceleration.length = vec2_1["default"].norm(this.acceleration);
+                    break;
+                case 'velocity.dir':
+                    state.velocity.dir = vec2_1["default"].normalize(this.velocity);
+                    break;
+                case 'velocity.length':
+                    state.velocity.length = vec2_1["default"].norm(this.velocity);
+                    break;
+                case 'position':
+                    state.position = new vec2_1["default"](this.x, this.y);
+            }
+        }
+        return state;
+    };
+    Ball.prototype.setState = function (state) {
+        var _a;
+        if (state.acceleration) {
+            var newAccelerationDir = vec2_1["default"].normalize(this.acceleration);
+            var newAccelerationLength = vec2_1["default"].norm(this.acceleration);
+            if (state.acceleration.dir != null && state.acceleration.dir != undefined) {
+                newAccelerationDir = state.acceleration.dir;
+            }
+            if (state.acceleration.length != null && state.acceleration.length != undefined) {
+                newAccelerationLength = state.acceleration.length;
+            }
+            this.acceleration = vec2_1["default"].scale(newAccelerationLength, newAccelerationDir);
+        }
+        if (state.velocity) {
+            var newVelocityDir = vec2_1["default"].normalize(this.velocity);
+            var newVelocityLength = vec2_1["default"].norm(this.velocity);
+            if (state.velocity.dir != null && state.velocity.dir != undefined) {
+                newVelocityDir = state.velocity.dir;
+            }
+            if (state.velocity.length != null && state.velocity.length != undefined) {
+                newVelocityLength = state.velocity.length;
+            }
+            this.velocity = vec2_1["default"].scale(newVelocityLength, newVelocityDir);
+        }
+        if (state.position != null && state.position != undefined) {
+            _a = state.position.toTuple(), this.x = _a[0], this.y = _a[1];
+        }
     };
     Ball.prototype.onLose = function () {
     };
@@ -621,7 +687,7 @@ var Ball = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = Ball;
 
-},{"../../constants":2,"../../math/vec2":7,"../../physics/collision":8,"../../service/audio":24,"pixi.js":73}],17:[function(require,module,exports){
+},{"../../constants":2,"../../math/vec2":7,"../../physics/collision":8,"../../service/audio":26,"pixi.js":75}],17:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -676,24 +742,25 @@ var Bar = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = Bar;
 
-},{"../../app":1,"../../constants":2,"../../math/util":6,"../../physics/collision":8,"../../service/mouse":27,"pixi.js":73}],18:[function(require,module,exports){
+},{"../../app":1,"../../constants":2,"../../math/util":6,"../../physics/collision":8,"../../service/mouse":29,"pixi.js":75}],18:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.NoGravityEvent = exports.createEventManager = void 0;
 var event_manager_1 = require("./event/event-manager");
 var no_gravity_event_1 = require("./event/events/no-gravity-event");
 exports.NoGravityEvent = no_gravity_event_1["default"];
+var random_throw_event_1 = require("./event/events/random-throw-event");
 function createEventManager(scene) {
     var eventManager = new event_manager_1["default"](scene);
     eventManager.registerEvent(new no_gravity_event_1["default"]());
+    eventManager.registerEvent(new random_throw_event_1["default"]());
     return eventManager;
 }
 exports.createEventManager = createEventManager;
 
-},{"./event/event-manager":19,"./event/events/no-gravity-event":20}],19:[function(require,module,exports){
+},{"./event/event-manager":19,"./event/events/no-gravity-event":21,"./event/events/random-throw-event":22}],19:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
-var util_1 = require("../../../math/util");
 var EventManager = /** @class */ (function () {
     function EventManager(scene) {
         this.eventTable = [];
@@ -702,18 +769,18 @@ var EventManager = /** @class */ (function () {
         this._lastTime = new Date().valueOf() / 1000;
     }
     EventManager.prototype.registerEvent = function (event) {
-        this.eventTable.push([event, 0.0]);
+        this.eventTable.push(event);
     };
     EventManager.prototype.onScoreChange = function (_a) {
         var _this = this;
         var score = _a.score;
-        this.eventTable.forEach(function (ep) {
-            if (!ep[0].running) {
-                if (Math.random() < ep[1]) {
-                    ep[0].start(_this.scene, 8 + Math.floor(score / 10));
-                    ep[1] = 0;
+        this.eventTable.forEach(function (e) {
+            if (!e.running) {
+                if (Math.random() < e.likeliness) {
+                    e.start(_this.scene, 8 + Math.floor(score / 10));
+                    // e[1] = 0;
                 }
-                ep[1] = util_1.clamp(ep[1] + 0.025, 0, 1);
+                // e[1] = clamp(e[1] + 0.025, 0, 1);
             }
         });
     };
@@ -722,8 +789,7 @@ var EventManager = /** @class */ (function () {
         var t = new Date().valueOf() / 1000;
         var dt = t - t0;
         this._lastTime = t;
-        this.eventTable.forEach(function (_a) {
-            var e = _a[0], p = _a[1];
+        this.eventTable.forEach(function (e) {
             if (e.running) {
                 e.update(dt);
             }
@@ -733,45 +799,202 @@ var EventManager = /** @class */ (function () {
 }());
 exports["default"] = EventManager;
 
-},{"../../../math/util":6}],20:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
+var EventImplementation = /** @class */ (function () {
+    function EventImplementation() {
+        this.likeliness = 0;
+        this.duration = 0;
+        this.elapsedTime = 0;
+    }
+    EventImplementation.prototype.update = function (dt) {
+        this.elapsedTime += dt;
+    };
+    EventImplementation.prototype.start = function (scene, duration) {
+        this.running = true;
+        this.currentScene = scene;
+        this.duration = duration;
+        this.elapsedTime = 0;
+    };
+    EventImplementation.prototype.stop = function () {
+        this.elapsedTime = 0;
+        this.duration = 0;
+        this.running = false;
+        this.currentScene = null;
+    };
+    return EventImplementation;
+}());
+exports["default"] = EventImplementation;
+
+},{}],21:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+exports.__esModule = true;
+var event_implementation_1 = require("./event-implementation");
 var vec2_1 = require("../../../../math/vec2");
-var NoGravityEvent = /** @class */ (function () {
+var NoGravityEvent = /** @class */ (function (_super) {
+    __extends(NoGravityEvent, _super);
     function NoGravityEvent() {
-        this._duration = 0;
-        this._elapsedTime = 0;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.likeliness = 0; //.025;
+        return _this;
     }
     NoGravityEvent.prototype.update = function (dt) {
-        this._elapsedTime += dt;
-        // this._currentScene.ball.setVelocityLength(2);
-        if (this._elapsedTime >= this._duration) {
-            this._stop();
+        _super.prototype.update.call(this, dt);
+        if (this.elapsedTime >= this.duration) {
+            this.stop();
         }
     };
     NoGravityEvent.prototype.start = function (scene, duration) {
+        _super.prototype.start.call(this, scene, duration);
         console.log('NO_GRAVITY: start');
-        this._currentScene = scene;
-        this._lastAcceleration = this._currentScene.ball.acceleration;
-        this._currentScene.ball.setVelocityLength(5);
-        this._currentScene.ball.acceleration = new vec2_1["default"](0, 0);
-        this._duration = duration;
+        this._lastBallState = this.currentScene.ball.getState([
+            'acceleration.dir',
+            'acceleration.length',
+            'velocity.length'
+        ]);
+        this._lastBallState.velocity.length = 5;
+        this.currentScene.ball.setState({
+            acceleration: {
+                dir: new vec2_1["default"](0, 0)
+            },
+            velocity: {
+                length: 5
+            }
+        });
+        this.duration = duration;
         this.running = true;
     };
-    NoGravityEvent.prototype._stop = function () {
+    NoGravityEvent.prototype.stop = function () {
+        this.currentScene.ball.setState(this._lastBallState);
         console.log('NO_GRAVITY: stop');
-        this.running = false;
-        this._currentScene.ball.acceleration = this._lastAcceleration;
-        this._currentScene.ball.setVelocityLength(5);
-        this._elapsedTime = 0;
-        this._duration = 0;
-        this._currentScene = null;
+        _super.prototype.stop.call(this);
     };
     return NoGravityEvent;
-}());
+}(event_implementation_1["default"]));
 exports["default"] = NoGravityEvent;
 
-},{"../../../../math/vec2":7}],21:[function(require,module,exports){
+},{"../../../../math/vec2":7,"./event-implementation":20}],22:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+exports.__esModule = true;
+var event_implementation_1 = require("./event-implementation");
+var util_1 = require("../../../../math/util");
+var vec2_1 = require("../../../../math/vec2");
+var geometry_1 = require("../../../../ui/geometry");
+var constants_1 = require("../../../../constants");
+var RandomThrowEvent = /** @class */ (function (_super) {
+    __extends(RandomThrowEvent, _super);
+    function RandomThrowEvent() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this._state = 'stopped';
+        _this._targetAngle = 0;
+        _this._currentAngle = 0;
+        _this.likeliness = 0.2;
+        _this.startTime = 2;
+        _this.rotationTime = 1.5;
+        _this.throwingTime = 0.5;
+        return _this;
+    }
+    RandomThrowEvent.prototype.start = function (scene, duration) {
+        console.log('THROW: start');
+        _super.prototype.start.call(this, scene, duration);
+        this._createGraphics();
+        this._state = 'starting';
+        this._targetAngle = Math.random() * (2 * Math.PI);
+    };
+    RandomThrowEvent.prototype.update = function (dt) {
+        _super.prototype.update.call(this, dt);
+        switch (this._state) {
+            case 'starting':
+                if (this.elapsedTime >= this.startTime) {
+                    if (this.currentScene.ball.currentCollidingLine != null) {
+                        this.startTime += 0.5;
+                        return;
+                    }
+                    this._lastBallState = this.currentScene.ball.getState([
+                        'acceleration.dir',
+                        'acceleration.length',
+                        'velocity.length',
+                    ]);
+                    this.currentScene.ball.setState({
+                        acceleration: {
+                            dir: new vec2_1["default"](0, 0)
+                        },
+                        velocity: {
+                            dir: new vec2_1["default"](0, 0)
+                        }
+                    });
+                    this._state = 'rotating';
+                    this.currentScene.ball.addChild(this.arrow);
+                    this.elapsedTime = 0;
+                }
+                break;
+            case 'rotating':
+                this._currentAngle = util_1.clamp(this.elapsedTime / this.rotationTime, 0, 1) * (2 * Math.PI + this._targetAngle);
+                this._updateGraphics();
+                if (this.elapsedTime >= this.rotationTime) {
+                    this._state = 'throwing';
+                    this.elapsedTime = 0;
+                }
+                break;
+            case 'throwing':
+                if (this.elapsedTime >= this.throwingTime) {
+                    this._lastBallState.velocity.dir = new vec2_1["default"](Math.cos(this._currentAngle), Math.sin(this._currentAngle));
+                    this.currentScene.ball.setState(this._lastBallState);
+                    this.stop();
+                }
+                break;
+        }
+    };
+    RandomThrowEvent.prototype.stop = function () {
+        console.log('THROW: stop');
+        _super.prototype.stop.call(this);
+        this.arrow.parent.removeChild(this.arrow);
+        this.arrow = null;
+        this._targetAngle = 0;
+        this._state = 'stopped';
+    };
+    RandomThrowEvent.prototype._createGraphics = function () {
+        this.arrow = new geometry_1.Triangle(0, 0, 8, 4, 0, 8, {
+            fill: constants_1.colors.primary
+        });
+        this.arrow.pivot.set(0, this.arrow.height / 2);
+    };
+    RandomThrowEvent.prototype._updateGraphics = function () {
+        this.arrow.rotation = this._currentAngle;
+        this.arrow.position.set((this.currentScene.ball.radius + 4) * Math.cos(this._currentAngle), (this.currentScene.ball.radius + 4) * Math.sin(this._currentAngle));
+    };
+    return RandomThrowEvent;
+}(event_implementation_1["default"]));
+exports["default"] = RandomThrowEvent;
+
+},{"../../../../constants":2,"../../../../math/util":6,"../../../../math/vec2":7,"../../../../ui/geometry":31,"./event-implementation":20}],23:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -820,7 +1043,7 @@ var ScoreDisplay = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = ScoreDisplay;
 
-},{"../../constants":2,"pixi.js":73}],22:[function(require,module,exports){
+},{"../../constants":2,"pixi.js":75}],24:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.SceneManager = exports.Scene = void 0;
@@ -858,7 +1081,7 @@ var SceneManager = /** @class */ (function () {
 }());
 exports.SceneManager = SceneManager;
 
-},{"pixi.js":73}],23:[function(require,module,exports){
+},{"pixi.js":75}],25:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -917,7 +1140,7 @@ var StartMenuScene = /** @class */ (function (_super) {
 }(scene_1.Scene));
 exports["default"] = StartMenuScene;
 
-},{"../app":1,"../constants":2,"../service/audio":24,"../ui/button":28,"../ui/geometry":29,"./game-scene":15,"./scene":22,"pixi.js":73}],24:[function(require,module,exports){
+},{"../app":1,"../constants":2,"../service/audio":26,"../ui/button":30,"../ui/geometry":31,"./game-scene":15,"./scene":24,"pixi.js":75}],26:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.initAudioService = exports.playNote = void 0;
@@ -935,7 +1158,7 @@ function initAudioService() {
 }
 exports.initAudioService = initAudioService;
 
-},{"./audio/instruments":25}],25:[function(require,module,exports){
+},{"./audio/instruments":27}],27:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.playNote = exports.initInstruments = exports.provideContext = exports.instruments = void 0;
@@ -966,7 +1189,7 @@ function playNote(instrumentName, frequency, duration, args) {
 }
 exports.playNote = playNote;
 
-},{"./instruments/basic-wave":26}],26:[function(require,module,exports){
+},{"./instruments/basic-wave":28}],28:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var BasicWave = /** @class */ (function () {
@@ -985,7 +1208,7 @@ var BasicWave = /** @class */ (function () {
 }());
 exports["default"] = BasicWave;
 
-},{}],27:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var app_1 = require("../app");
@@ -1005,7 +1228,7 @@ var mouse = {
 };
 exports["default"] = mouse;
 
-},{"../app":1}],28:[function(require,module,exports){
+},{"../app":1}],30:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1059,14 +1282,14 @@ var Button = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = Button;
 
-},{"../constants":2,"pixi.js":73}],29:[function(require,module,exports){
+},{"../constants":2,"pixi.js":75}],31:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.Triangle = void 0;
 var triangle_1 = require("./geometry/triangle");
 exports.Triangle = triangle_1["default"];
 
-},{"./geometry/triangle":30}],30:[function(require,module,exports){
+},{"./geometry/triangle":32}],32:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1107,7 +1330,7 @@ var Triangle = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = Triangle;
 
-},{"pixi.js":73}],31:[function(require,module,exports){
+},{"pixi.js":75}],33:[function(require,module,exports){
 /*!
  * @pixi/accessibility - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -1702,7 +1925,7 @@ exports.AccessibilityManager = AccessibilityManager;
 exports.accessibleTarget = accessibleTarget;
 
 
-},{"@pixi/display":35,"@pixi/utils":64}],32:[function(require,module,exports){
+},{"@pixi/display":37,"@pixi/utils":66}],34:[function(require,module,exports){
 /*!
  * @pixi/app - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -1983,7 +2206,7 @@ Application.registerPlugin(ResizePlugin);
 exports.Application = Application;
 
 
-},{"@pixi/core":34,"@pixi/display":35}],33:[function(require,module,exports){
+},{"@pixi/core":36,"@pixi/display":37}],35:[function(require,module,exports){
 /*!
  * @pixi/constants - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -2147,7 +2370,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 })(exports.MSAA_QUALITY || (exports.MSAA_QUALITY = {}));
 
 
-},{}],34:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 /*!
  * @pixi/core - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -13168,7 +13391,7 @@ exports.systems = systems;
 exports.uniformParsers = uniformParsers;
 
 
-},{"@pixi/constants":33,"@pixi/math":46,"@pixi/runner":55,"@pixi/settings":56,"@pixi/ticker":63,"@pixi/utils":64}],35:[function(require,module,exports){
+},{"@pixi/constants":35,"@pixi/math":48,"@pixi/runner":57,"@pixi/settings":58,"@pixi/ticker":65,"@pixi/utils":66}],37:[function(require,module,exports){
 /*!
  * @pixi/display - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -14849,7 +15072,7 @@ exports.DisplayObject = DisplayObject;
 exports.TemporaryDisplayObject = TemporaryDisplayObject;
 
 
-},{"@pixi/math":46,"@pixi/settings":56,"@pixi/utils":64}],36:[function(require,module,exports){
+},{"@pixi/math":48,"@pixi/settings":58,"@pixi/utils":66}],38:[function(require,module,exports){
 /*!
  * @pixi/extract - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -15077,7 +15300,7 @@ var Extract = /** @class */ (function () {
 exports.Extract = Extract;
 
 
-},{"@pixi/core":34,"@pixi/math":46,"@pixi/utils":64}],37:[function(require,module,exports){
+},{"@pixi/core":36,"@pixi/math":48,"@pixi/utils":66}],39:[function(require,module,exports){
 /*!
  * @pixi/filter-alpha - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -15172,7 +15395,7 @@ var AlphaFilter = /** @class */ (function (_super) {
 exports.AlphaFilter = AlphaFilter;
 
 
-},{"@pixi/core":34}],38:[function(require,module,exports){
+},{"@pixi/core":36}],40:[function(require,module,exports){
 /*!
  * @pixi/filter-blur - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -16007,7 +16230,7 @@ exports.BlurFilter = BlurFilter;
 exports.BlurFilterPass = BlurFilterPass;
 
 
-},{"@pixi/core":34,"@pixi/settings":56}],39:[function(require,module,exports){
+},{"@pixi/core":36,"@pixi/settings":58}],41:[function(require,module,exports){
 /*!
  * @pixi/filter-color-matrix - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -16545,7 +16768,7 @@ ColorMatrixFilter.prototype.grayscale = ColorMatrixFilter.prototype.greyscale;
 exports.ColorMatrixFilter = ColorMatrixFilter;
 
 
-},{"@pixi/core":34}],40:[function(require,module,exports){
+},{"@pixi/core":36}],42:[function(require,module,exports){
 /*!
  * @pixi/filter-displacement - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -16686,7 +16909,7 @@ var DisplacementFilter = /** @class */ (function (_super) {
 exports.DisplacementFilter = DisplacementFilter;
 
 
-},{"@pixi/core":34,"@pixi/math":46}],41:[function(require,module,exports){
+},{"@pixi/core":36,"@pixi/math":48}],43:[function(require,module,exports){
 /*!
  * @pixi/filter-fxaa - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -16756,7 +16979,7 @@ var FXAAFilter = /** @class */ (function (_super) {
 exports.FXAAFilter = FXAAFilter;
 
 
-},{"@pixi/core":34}],42:[function(require,module,exports){
+},{"@pixi/core":36}],44:[function(require,module,exports){
 /*!
  * @pixi/filter-noise - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -16866,7 +17089,7 @@ var NoiseFilter = /** @class */ (function (_super) {
 exports.NoiseFilter = NoiseFilter;
 
 
-},{"@pixi/core":34}],43:[function(require,module,exports){
+},{"@pixi/core":36}],45:[function(require,module,exports){
 /*!
  * @pixi/graphics - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -20124,7 +20347,7 @@ exports.LineStyle = LineStyle;
 exports.graphicsUtils = index;
 
 
-},{"@pixi/constants":33,"@pixi/core":34,"@pixi/display":35,"@pixi/math":46,"@pixi/utils":64}],44:[function(require,module,exports){
+},{"@pixi/constants":35,"@pixi/core":36,"@pixi/display":37,"@pixi/math":48,"@pixi/utils":66}],46:[function(require,module,exports){
 /*!
  * @pixi/interaction - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -22336,7 +22559,7 @@ exports.InteractionTrackingData = InteractionTrackingData;
 exports.interactiveTarget = interactiveTarget;
 
 
-},{"@pixi/display":35,"@pixi/math":46,"@pixi/ticker":63,"@pixi/utils":64}],45:[function(require,module,exports){
+},{"@pixi/display":37,"@pixi/math":48,"@pixi/ticker":65,"@pixi/utils":66}],47:[function(require,module,exports){
 /*!
  * @pixi/loaders - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -22666,7 +22889,7 @@ exports.LoaderResource = LoaderResource;
 exports.TextureLoader = TextureLoader;
 
 
-},{"@pixi/core":34,"resource-loader":79}],46:[function(require,module,exports){
+},{"@pixi/core":36,"resource-loader":81}],48:[function(require,module,exports){
 /*!
  * @pixi/math - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -24600,7 +24823,7 @@ exports.Transform = Transform;
 exports.groupD8 = groupD8;
 
 
-},{}],47:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 /*!
  * @pixi/mesh-extras - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -25340,7 +25563,7 @@ exports.SimplePlane = SimplePlane;
 exports.SimpleRope = SimpleRope;
 
 
-},{"@pixi/constants":33,"@pixi/core":34,"@pixi/mesh":48}],48:[function(require,module,exports){
+},{"@pixi/constants":35,"@pixi/core":36,"@pixi/mesh":50}],50:[function(require,module,exports){
 /*!
  * @pixi/mesh - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -26062,7 +26285,7 @@ exports.MeshGeometry = MeshGeometry;
 exports.MeshMaterial = MeshMaterial;
 
 
-},{"@pixi/constants":33,"@pixi/core":34,"@pixi/display":35,"@pixi/math":46,"@pixi/settings":56,"@pixi/utils":64}],49:[function(require,module,exports){
+},{"@pixi/constants":35,"@pixi/core":36,"@pixi/display":37,"@pixi/math":48,"@pixi/settings":58,"@pixi/utils":66}],51:[function(require,module,exports){
 /*!
  * @pixi/mixin-cache-as-bitmap - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -26392,7 +26615,7 @@ display.DisplayObject.prototype._cacheAsBitmapDestroy = function _cacheAsBitmapD
 exports.CacheData = CacheData;
 
 
-},{"@pixi/core":34,"@pixi/display":35,"@pixi/math":46,"@pixi/settings":56,"@pixi/sprite":59,"@pixi/utils":64}],50:[function(require,module,exports){
+},{"@pixi/core":36,"@pixi/display":37,"@pixi/math":48,"@pixi/settings":58,"@pixi/sprite":61,"@pixi/utils":66}],52:[function(require,module,exports){
 /*!
  * @pixi/mixin-get-child-by-name - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -26444,7 +26667,7 @@ display.Container.prototype.getChildByName = function getChildByName(name, deep)
 };
 
 
-},{"@pixi/display":35}],51:[function(require,module,exports){
+},{"@pixi/display":37}],53:[function(require,module,exports){
 /*!
  * @pixi/mixin-get-global-position - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -26482,7 +26705,7 @@ display.DisplayObject.prototype.getGlobalPosition = function getGlobalPosition(p
 };
 
 
-},{"@pixi/display":35,"@pixi/math":46}],52:[function(require,module,exports){
+},{"@pixi/display":37,"@pixi/math":48}],54:[function(require,module,exports){
 /*!
  * @pixi/particles - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -27299,7 +27522,7 @@ exports.ParticleContainer = ParticleContainer;
 exports.ParticleRenderer = ParticleRenderer;
 
 
-},{"@pixi/constants":33,"@pixi/core":34,"@pixi/display":35,"@pixi/math":46,"@pixi/utils":64}],53:[function(require,module,exports){
+},{"@pixi/constants":35,"@pixi/core":36,"@pixi/display":37,"@pixi/math":48,"@pixi/utils":66}],55:[function(require,module,exports){
 /*!
  * @pixi/polyfill - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -27418,7 +27641,7 @@ if (!window.Int32Array) {
 }
 
 
-},{"es6-promise-polyfill":66,"object-assign":71}],54:[function(require,module,exports){
+},{"es6-promise-polyfill":68,"object-assign":73}],56:[function(require,module,exports){
 /*!
  * @pixi/prepare - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -28061,7 +28284,7 @@ exports.Prepare = Prepare;
 exports.TimeLimiter = TimeLimiter;
 
 
-},{"@pixi/core":34,"@pixi/display":35,"@pixi/graphics":43,"@pixi/settings":56,"@pixi/text":62,"@pixi/ticker":63}],55:[function(require,module,exports){
+},{"@pixi/core":36,"@pixi/display":37,"@pixi/graphics":45,"@pixi/settings":58,"@pixi/text":64,"@pixi/ticker":65}],57:[function(require,module,exports){
 /*!
  * @pixi/runner - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -28265,7 +28488,7 @@ Object.defineProperties(Runner.prototype, {
 exports.Runner = Runner;
 
 
-},{}],56:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 /*!
  * @pixi/settings - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -28555,7 +28778,7 @@ exports.isMobile = isMobile;
 exports.settings = settings;
 
 
-},{"ismobilejs":68}],57:[function(require,module,exports){
+},{"ismobilejs":70}],59:[function(require,module,exports){
 /*!
  * @pixi/sprite-animated - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -29029,7 +29252,7 @@ var AnimatedSprite = /** @class */ (function (_super) {
 exports.AnimatedSprite = AnimatedSprite;
 
 
-},{"@pixi/core":34,"@pixi/sprite":59,"@pixi/ticker":63}],58:[function(require,module,exports){
+},{"@pixi/core":36,"@pixi/sprite":61,"@pixi/ticker":65}],60:[function(require,module,exports){
 /*!
  * @pixi/sprite-tiling - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -29444,7 +29667,7 @@ exports.TilingSprite = TilingSprite;
 exports.TilingSpriteRenderer = TilingSpriteRenderer;
 
 
-},{"@pixi/constants":33,"@pixi/core":34,"@pixi/math":46,"@pixi/sprite":59,"@pixi/utils":64}],59:[function(require,module,exports){
+},{"@pixi/constants":35,"@pixi/core":36,"@pixi/math":48,"@pixi/sprite":61,"@pixi/utils":66}],61:[function(require,module,exports){
 /*!
  * @pixi/sprite - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -30039,7 +30262,7 @@ var Sprite = /** @class */ (function (_super) {
 exports.Sprite = Sprite;
 
 
-},{"@pixi/constants":33,"@pixi/core":34,"@pixi/display":35,"@pixi/math":46,"@pixi/settings":56,"@pixi/utils":64}],60:[function(require,module,exports){
+},{"@pixi/constants":35,"@pixi/core":36,"@pixi/display":37,"@pixi/math":48,"@pixi/settings":58,"@pixi/utils":66}],62:[function(require,module,exports){
 /*!
  * @pixi/spritesheet - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -30383,7 +30606,7 @@ exports.Spritesheet = Spritesheet;
 exports.SpritesheetLoader = SpritesheetLoader;
 
 
-},{"@pixi/core":34,"@pixi/loaders":45,"@pixi/math":46,"@pixi/utils":64}],61:[function(require,module,exports){
+},{"@pixi/core":36,"@pixi/loaders":47,"@pixi/math":48,"@pixi/utils":66}],63:[function(require,module,exports){
 /*!
  * @pixi/text-bitmap - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -32188,7 +32411,7 @@ exports.BitmapFontLoader = BitmapFontLoader;
 exports.BitmapText = BitmapText;
 
 
-},{"@pixi/core":34,"@pixi/display":35,"@pixi/loaders":45,"@pixi/math":46,"@pixi/mesh":48,"@pixi/settings":56,"@pixi/text":62,"@pixi/utils":64}],62:[function(require,module,exports){
+},{"@pixi/core":36,"@pixi/display":37,"@pixi/loaders":47,"@pixi/math":48,"@pixi/mesh":50,"@pixi/settings":58,"@pixi/text":64,"@pixi/utils":66}],64:[function(require,module,exports){
 /*!
  * @pixi/text - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -34249,7 +34472,7 @@ exports.TextMetrics = TextMetrics;
 exports.TextStyle = TextStyle;
 
 
-},{"@pixi/core":34,"@pixi/math":46,"@pixi/settings":56,"@pixi/sprite":59,"@pixi/utils":64}],63:[function(require,module,exports){
+},{"@pixi/core":36,"@pixi/math":48,"@pixi/settings":58,"@pixi/sprite":61,"@pixi/utils":66}],65:[function(require,module,exports){
 /*!
  * @pixi/ticker - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -35101,7 +35324,7 @@ exports.Ticker = Ticker;
 exports.TickerPlugin = TickerPlugin;
 
 
-},{"@pixi/settings":56}],64:[function(require,module,exports){
+},{"@pixi/settings":58}],66:[function(require,module,exports){
 /*!
  * @pixi/utils - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -36038,7 +36261,7 @@ exports.trimCanvas = trimCanvas;
 exports.uid = uid;
 
 
-},{"@pixi/constants":33,"@pixi/settings":56,"earcut":65,"eventemitter3":67,"url":81}],65:[function(require,module,exports){
+},{"@pixi/constants":35,"@pixi/settings":58,"earcut":67,"eventemitter3":69,"url":83}],67:[function(require,module,exports){
 'use strict';
 
 module.exports = earcut;
@@ -36719,7 +36942,7 @@ earcut.flatten = function (data) {
     return result;
 };
 
-},{}],66:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 (function (global,setImmediate){(function (){
 (function(global){
 
@@ -37069,7 +37292,7 @@ Promise.reject = function(reason){
 })(typeof window != 'undefined' ? window : typeof global != 'undefined' ? global : typeof self != 'undefined' ? self : this);
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("timers").setImmediate)
-},{"timers":80}],67:[function(require,module,exports){
+},{"timers":82}],69:[function(require,module,exports){
 'use strict';
 
 var has = Object.prototype.hasOwnProperty
@@ -37407,7 +37630,7 @@ if ('undefined' !== typeof module) {
   module.exports = EventEmitter;
 }
 
-},{}],68:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -37417,7 +37640,7 @@ __export(require("./isMobile"));
 var isMobile_1 = require("./isMobile");
 exports["default"] = isMobile_1["default"];
 
-},{"./isMobile":69}],69:[function(require,module,exports){
+},{"./isMobile":71}],71:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var appleIphone = /iPhone/i;
@@ -37546,7 +37769,7 @@ function isMobile(param) {
 }
 exports["default"] = isMobile;
 
-},{}],70:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -37713,7 +37936,7 @@ MiniSignal.MiniSignalBinding = MiniSignalBinding;
 exports['default'] = MiniSignal;
 module.exports = exports['default'];
 
-},{}],71:[function(require,module,exports){
+},{}],73:[function(require,module,exports){
 /*
 object-assign
 (c) Sindre Sorhus
@@ -37805,7 +38028,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 	return to;
 };
 
-},{}],72:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 'use strict'
 
 function parseURI (str, opts) {
@@ -37856,7 +38079,7 @@ function parseURI (str, opts) {
 
 module.exports = parseURI
 
-},{}],73:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 /*!
  * pixi.js - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -39422,7 +39645,7 @@ exports.filters = filters;
 exports.useDeprecated = useDeprecated;
 
 
-},{"@pixi/accessibility":31,"@pixi/app":32,"@pixi/constants":33,"@pixi/core":34,"@pixi/display":35,"@pixi/extract":36,"@pixi/filter-alpha":37,"@pixi/filter-blur":38,"@pixi/filter-color-matrix":39,"@pixi/filter-displacement":40,"@pixi/filter-fxaa":41,"@pixi/filter-noise":42,"@pixi/graphics":43,"@pixi/interaction":44,"@pixi/loaders":45,"@pixi/math":46,"@pixi/mesh":48,"@pixi/mesh-extras":47,"@pixi/mixin-cache-as-bitmap":49,"@pixi/mixin-get-child-by-name":50,"@pixi/mixin-get-global-position":51,"@pixi/particles":52,"@pixi/polyfill":53,"@pixi/prepare":54,"@pixi/runner":55,"@pixi/settings":56,"@pixi/sprite":59,"@pixi/sprite-animated":57,"@pixi/sprite-tiling":58,"@pixi/spritesheet":60,"@pixi/text":62,"@pixi/text-bitmap":61,"@pixi/ticker":63,"@pixi/utils":64}],74:[function(require,module,exports){
+},{"@pixi/accessibility":33,"@pixi/app":34,"@pixi/constants":35,"@pixi/core":36,"@pixi/display":37,"@pixi/extract":38,"@pixi/filter-alpha":39,"@pixi/filter-blur":40,"@pixi/filter-color-matrix":41,"@pixi/filter-displacement":42,"@pixi/filter-fxaa":43,"@pixi/filter-noise":44,"@pixi/graphics":45,"@pixi/interaction":46,"@pixi/loaders":47,"@pixi/math":48,"@pixi/mesh":50,"@pixi/mesh-extras":49,"@pixi/mixin-cache-as-bitmap":51,"@pixi/mixin-get-child-by-name":52,"@pixi/mixin-get-global-position":53,"@pixi/particles":54,"@pixi/polyfill":55,"@pixi/prepare":56,"@pixi/runner":57,"@pixi/settings":58,"@pixi/sprite":61,"@pixi/sprite-animated":59,"@pixi/sprite-tiling":60,"@pixi/spritesheet":62,"@pixi/text":64,"@pixi/text-bitmap":63,"@pixi/ticker":65,"@pixi/utils":66}],76:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -39608,7 +39831,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],75:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 (function (global){(function (){
 /*! https://mths.be/punycode v1.3.2 by @mathias */
 ;(function(root) {
@@ -40142,7 +40365,7 @@ process.umask = function() { return 0; };
 }(this));
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],76:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -40228,7 +40451,7 @@ var isArray = Array.isArray || function (xs) {
   return Object.prototype.toString.call(xs) === '[object Array]';
 };
 
-},{}],77:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -40315,13 +40538,13 @@ var objectKeys = Object.keys || function (obj) {
   return res;
 };
 
-},{}],78:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 'use strict';
 
 exports.decode = exports.parse = require('./decode');
 exports.encode = exports.stringify = require('./encode');
 
-},{"./decode":76,"./encode":77}],79:[function(require,module,exports){
+},{"./decode":78,"./encode":79}],81:[function(require,module,exports){
 /*!
  * resource-loader - v3.0.1
  * https://github.com/pixijs/pixi-sound
@@ -42672,7 +42895,7 @@ exports.encodeBinary = encodeBinary;
 exports.middleware = index;
 
 
-},{"mini-signals":70,"parse-uri":72}],80:[function(require,module,exports){
+},{"mini-signals":72,"parse-uri":74}],82:[function(require,module,exports){
 (function (setImmediate,clearImmediate){(function (){
 var nextTick = require('process/browser.js').nextTick;
 var apply = Function.prototype.apply;
@@ -42751,7 +42974,7 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   delete immediateIds[id];
 };
 }).call(this)}).call(this,require("timers").setImmediate,require("timers").clearImmediate)
-},{"process/browser.js":74,"timers":80}],81:[function(require,module,exports){
+},{"process/browser.js":76,"timers":82}],83:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -43485,7 +43708,7 @@ Url.prototype.parseHost = function() {
   if (host) this.hostname = host;
 };
 
-},{"./util":82,"punycode":75,"querystring":78}],82:[function(require,module,exports){
+},{"./util":84,"punycode":77,"querystring":80}],84:[function(require,module,exports){
 'use strict';
 
 module.exports = {

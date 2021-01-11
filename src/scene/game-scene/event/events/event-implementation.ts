@@ -3,6 +3,7 @@ import { IEvent } from "../event-interface";
 
 abstract class EventImplementation implements IEvent {
 
+    likeliness: number = 0;
     running: boolean;
     protected duration: number = 0;
     protected elapsedTime: number = 0;
@@ -16,6 +17,7 @@ abstract class EventImplementation implements IEvent {
         this.running = true;
         this.currentScene = scene;
         this.duration = duration;
+        this.elapsedTime = 0;
     }
 
     protected stop(): void {

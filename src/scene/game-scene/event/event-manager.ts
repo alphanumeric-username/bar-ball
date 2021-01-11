@@ -5,7 +5,7 @@ import { clamp } from '../../../math/util';
 class EventManager implements IEventManager {
 
     scene: Scene;
-    eventTable: [IEvent, number][] = [];
+    eventTable: IEvent[] = [];
     
     private _lastTime: number = 0;
 
@@ -14,17 +14,17 @@ class EventManager implements IEventManager {
         this._lastTime = new Date().valueOf()/1000;
     }
     registerEvent(event: IEvent): void {
-        this.eventTable.push([event, 0.0]);
+        this.eventTable.push(event);
     }
 
     onScoreChange({ score }: ScoreChangeEvent): void {
-        this.eventTable.forEach((ep) => {
-            if (!ep[0].running) {
-                if (Math.random() < ep[1]) {
-                    ep[0].start(this.scene, 8 + Math.floor(score/10));
-                    ep[1] = 0;
+        this.eventTable.forEach((e) => {
+            if (!e.running) {
+                if (Math.random() < e.likeliness) {
+                    e.start(this.scene, 8 + Math.floor(score/10));
+                    // e[1] = 0;
                 }
-                ep[1] = clamp(ep[1] + 0.025, 0, 1);
+                // e[1] = clamp(e[1] + 0.025, 0, 1);
             }
         });
     }
@@ -34,7 +34,7 @@ class EventManager implements IEventManager {
         const t = new Date().valueOf()/1000;
         const dt = t - t0;
         this._lastTime = t;
-        this.eventTable.forEach(([e, p]) => {
+        this.eventTable.forEach(e => {
             if (e.running) {
                 e.update(dt);
             }
