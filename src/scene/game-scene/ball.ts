@@ -88,7 +88,7 @@ class Ball extends Container {
             this.onLose();
         } else if (this.currentCollidingLine == collidedShape) {
             return;
-        } else if (collidedShape instanceof Line) {
+        } else if (collidedShape instanceof Line && collidedShape.group.has('reflective')) {
             const normal = collidedShape.getNormal();
             this.reflect(normal);
 

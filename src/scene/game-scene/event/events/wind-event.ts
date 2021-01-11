@@ -8,7 +8,6 @@ import { Line } from "../../../../physics/collision";
 import { Container } from "pixi.js";
 import { Triangle } from "../../../../ui/geometry";
 import { colors } from "../../../../constants";
-import { screenResolution } from "../../../../app";
 
 
 class WindEvent extends EventImplementation {

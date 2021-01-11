@@ -1,5 +1,5 @@
 import Vec2 from "../../math/vec2";
-import { Line, Circle, Rectangle } from "../collision";
+import { Line, Circle, Rectangle, EmptyRectangle } from "../collision";
 import { solveQuadEq } from "../../math/quad-eq";
 import { between } from "../../math/util";
 import { IShape } from "../collision";
@@ -59,12 +59,12 @@ function testLineLineIntersection(shape1: IShape, shape2: IShape): boolean {
     return true;
 }
 
-function testLineRectangleIntersection(line: Line, rectangle: Rectangle): boolean {
-    if (rectangle.contains(line.startPos) || rectangle.contains(line.endPos)) {
-        return true;
-    }
+function testCircleEmptyRectangleIntersection(shape1: IShape, shape2: IShape): boolean {
+    var circle: Circle = shape1 instanceof Circle ? shape1 as Circle : shape2 as Circle;
+    var rect: EmptyRectangle = shape1 instanceof EmptyRectangle ? shape1 as EmptyRectangle : shape2 as EmptyRectangle;
+
     
-    return false;
+
 }
 
 function getIntersectionTestFunctionFor(shape1: string, shape2: string): (a: any, b: any) => boolean {

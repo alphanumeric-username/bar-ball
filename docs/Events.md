@@ -6,46 +6,46 @@ Some events are more likely to occur than others. Its probalities are affected b
 
 Here is a list of events that occurs in Bar/Ball.
 
-## Wind
+## [x] Wind
 
 A wind comes to the stage and pulls the ball to left or right. Depending on the direction of the wind, the left of right wall gains additional bounciness.
 
-## No gravity
+## [x] No gravity
 
 The ball gradually loses gravity as it changes to a bluish black.
 
-## Random bar
+## [ ] Random bar
 
 A bar appears randomly in the stage.
 
-## Rain
+## [ ] Rain
 
 Starts rainning bouncy drops in a random direction.
 
-## Random throw
+## [x] Random throw
 
 The ball is throw in a random direction.
 
-## Double bar
+## [ ] Double bar
 
 The bar duplicates. Then, one of the bar disappears.
 
-## Weight growth
+## [ ] Weight growth
 
 The ball suddenly becomes heavier until touch the bar.
 
-## Curtain
+## [ ] Curtain
 
 A curtain randomly appears covering an area of the stage.
 
-## Hurry
+## [ ] Hurry
 
 The ball becomes faster.
 
-## Bar lifting
+## [ ] Bar lifting
 
 The bar is lifted a bit.
 
-## Bar/Ball shortening
+## [ ] Bar/Ball shortening
 
 The bar of the ball size diminishes.

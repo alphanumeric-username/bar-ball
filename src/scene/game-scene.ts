@@ -32,6 +32,9 @@ class GameScene extends Scene {
         this.topBound = new Line(0, 0, screenResolution.width, 0);
         this.rightBound = new Line(screenResolution.width, 0, screenResolution.width, screenResolution.height);
         this.bottomBound = new Line(screenResolution.width, screenResolution.height, 0, screenResolution.height);
+        this.leftBound.group.add('reflective');
+        this.topBound.group.add('reflective');
+        this.rightBound.group.add('reflective');
         this.bottomBound.group.add('lose');
         
         this.bar = new Bar();
