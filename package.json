@@ -2,9 +2,10 @@
   "name": "bar-ball",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
     "build": "mkdir build && tsc && browserify build/main.js -o pages/js/dist.js &&  rm build -rf || rm build -rf"
   },
   "author": "",
@@ -14,6 +15,7 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
+    "express": "^4.17.1",
     "pixi.js": "^5.3.7"
   }
 }

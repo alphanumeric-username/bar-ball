@@ -9,14 +9,15 @@ import { Container, Graphics } from 'pixi.js';
 import { colors } from '../../../../constants';
 
 class RandomBarEvent extends EventImplementation {
-    likeliness: number = 0.5;
+    name: string = 'random-bar'
+    likeliness: number = 0.1;
     currentScene: GameScene;
 
     barGraphics: Graphics;
     barShape: EmptyRectangle;
 
     readonly minWidth = 128;
-    readonly maxWidth = 256;
+    readonly maxWidth = 384;
     readonly height = 32;
 
     state: 'stopped' | 'starting' | 'started' | 'stopping' = 'stopped'
@@ -25,7 +26,6 @@ class RandomBarEvent extends EventImplementation {
 
     start(scene: Scene, duration: number): void {
         console.log('RANDOM_BAR: start');
-        console.log('RANDOM_BAR: duration:', duration);
         super.start(scene, duration);
         this._createShape();
         this._createGraphics();

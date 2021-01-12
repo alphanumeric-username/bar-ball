@@ -1,0 +1,17 @@
+{
+    "ball-diminish": {
+        "likeliness": 0.015
+    },
+    "no-gravity": {
+        "likeliness": 0.025
+    },
+    "random-bar": {
+        "likeliness": 0.1
+    },
+    "random-throw": {
+        "likeliness": 0.08
+    },
+    "wind": {
+        "likeliness": 0.025
+    }
+}

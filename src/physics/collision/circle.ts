@@ -17,6 +17,10 @@ class Circle implements IShape{
         this.pos = new Vec2(x, y);
     }
 
+    resize(r: number) {
+        this.r = r;
+    }
+
     onCollide(e: CollideEvent): void {
 
     }

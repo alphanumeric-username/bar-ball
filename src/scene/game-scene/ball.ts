@@ -22,12 +22,13 @@ type BallStateFilter = 'acceleration.dir' | 'acceleration.length' | 'velocity.di
 
 class Ball extends Container {
 
-    readonly radius: number;
+    radius: number;
     velocity: Vec2;
     acceleration: Vec2;
     readonly hitbox: Circle;
     currentCollidingLine: Line;
     colliding: boolean;
+    color: number = colors.primary;
 
     constructor(radius: number) {
         super();
@@ -44,10 +45,23 @@ class Ball extends Container {
 
     private _createGraphics() {
         const circle = new Graphics();
-        circle.beginFill(colors.primary);
+        circle.beginFill(this.color);
         circle.drawCircle(0, 0, this.radius);
         circle.endFill();
         this.addChild(circle);
+    }
+
+    private _clearGraphics() {
+        this.removeChildren();
+    }
+
+    recreate(radius: number = this.radius, color: number = this.color) {
+
+        this.radius = radius;
+        this.color = color;
+
+        this._clearGraphics();
+        this._createGraphics();
     }
 
     update() {
@@ -59,6 +73,7 @@ class Ball extends Container {
         this.velocity = Vec2.add(this.velocity, this.acceleration);
         [this.x, this.y] = Vec2.add(Vec2.fromTuple([this.x, this.y]), this.velocity).toTuple();
         this.hitbox.move(this.x, this.y);
+        this.hitbox.resize(this.radius);
     }
 
     reflect(normal: Vec2, bounciness: number = 1) {

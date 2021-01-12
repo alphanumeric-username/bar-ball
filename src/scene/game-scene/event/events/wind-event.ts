@@ -12,7 +12,8 @@ import { colors } from "../../../../constants";
 
 class WindEvent extends EventImplementation {
     currentScene: GameScene;
-    likeliness: number = 0;
+    likeliness: number = 0.025;
+    name: string = 'wind';
 
     windDirection: Vec2;
     windForce: number;
@@ -21,6 +22,12 @@ class WindEvent extends EventImplementation {
     lastBallState: BallState;
 
     windDirectionIndicator: Container;
+
+    constructor() {
+        super();
+        this.mutex.add('no-gravity');
+        this.mutex.add('random-throw');
+    }
 
     start(scene: Scene, duration: number): void {
         console.log('WIND: start');

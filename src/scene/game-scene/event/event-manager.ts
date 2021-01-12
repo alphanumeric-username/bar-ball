@@ -5,7 +5,7 @@ import { clamp } from '../../../math/util';
 class EventManager implements IEventManager {
 
     scene: Scene;
-    eventTable: IEvent[] = [];
+    eventTable: Map<string, IEvent> = new Map();
     
     private _lastTime: number = 0;
     eventIsRunning: boolean = false;
@@ -15,17 +15,23 @@ class EventManager implements IEventManager {
         this._lastTime = new Date().valueOf()/1000;
     }
     registerEvent(event: IEvent): void {
-        this.eventTable.push(event);
+        this.eventTable.set(event.name, event);
     }
 
     onScoreChange({ score }: ScoreChangeEvent): void {
         this.eventTable.forEach((e) => {
             if (!e.running) {
-                if (Math.random() < e.likeliness) {
-                    e.start(this.scene, 8 + Math.floor(score/10));
-                    // e[1] = 0;
+                if (Math.random() < e.likeliness*(1 + score/100)) {
+                    var mutexIsRunning = false;
+                    e.mutex.forEach(evtName => {
+                        if (this.eventTable.get(evtName).running) {
+                            mutexIsRunning = true;
+                        }
+                    });
+                    if (!mutexIsRunning) {
+                        e.start(this.scene, 8 + Math.floor(score/100));
+                    }
                 }
-                // e[1] = clamp(e[1] + 0.025, 0, 1);
             }
         });
     }

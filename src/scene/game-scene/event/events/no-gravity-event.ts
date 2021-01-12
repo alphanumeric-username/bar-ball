@@ -3,11 +3,19 @@ import GameScene from '../../../game-scene';
 import EventImplementation from './event-implementation';
 import Vec2 from '../../../../math/vec2';
 import { BallState } from '../../ball';
+import { colors } from '../../../../constants';
 
 class NoGravityEvent extends EventImplementation {
+    likeliness: number = 0.025;
+    name: string = 'no-gravity';
     protected currentScene: GameScene;
-    likeliness: number = 0;//.025;
     private _lastBallState: BallState;
+
+    constructor() {
+        super();
+        this.mutex.add('random-throw');
+        this.mutex.add('wind');
+    }
 
     update(dt: number): void {
         super.update(dt);
@@ -32,10 +40,12 @@ class NoGravityEvent extends EventImplementation {
                 length: 5
             }
         });
+        this.currentScene.ball.recreate(this.currentScene.ball.radius, colors.primary_cold);
     }
     
     stop() {
         this.currentScene.ball.setState(this._lastBallState);
+        this.currentScene.ball.recreate(this.currentScene.ball.radius, colors.primary);
         console.log('NO_GRAVITY: stop');
         super.stop();
     }

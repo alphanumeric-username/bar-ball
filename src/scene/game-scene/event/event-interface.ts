@@ -5,8 +5,10 @@ type ScoreChangeEvent = {
 };
 
 interface IEvent {
+    name: string,
     likeliness: number,
     running: boolean,
+    mutex: Set<string>,
     update(dt: number): void
     start(scene: Scene, duration: number): void,
     stop(): void
@@ -16,7 +18,7 @@ interface IEventManager {
     scene: Scene,
     onScoreChange(e: ScoreChangeEvent): void,
     update(): void,
-    eventTable: IEvent[]
+    eventTable: Map<string, IEvent>,
     registerEvent(event: IEvent): void
     gameOver(): void;
 }

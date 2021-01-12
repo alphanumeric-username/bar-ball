@@ -18,7 +18,7 @@ The ball gradually loses gravity as it changes to a bluish black.
 
 A bar appears randomly in the stage.
 
-## [ ] Rain
+## [ ] Rain *
 
 Starts rainning bouncy drops in a random direction.
 
@@ -34,7 +34,7 @@ The bar duplicates. Then, one of the bar disappears.
 
 The ball suddenly becomes heavier until touch the bar.
 
-## [ ] Curtain
+## [ ] Curtain *
 
 A curtain randomly appears covering an area of the stage.
 
@@ -42,10 +42,14 @@ A curtain randomly appears covering an area of the stage.
 
 The ball becomes faster.
 
-## [ ] Bar lifting
+## [ ] Bar lifting *
 
 The bar is lifted a bit.
 
-## [ ] Bar/Ball shortening
+## [x] Ball diminishing
 
-The bar of the ball size diminishes.
+The ball size diminishes.
+
+## [ ] Bar diminishing *
+
+The bar size diminishes.

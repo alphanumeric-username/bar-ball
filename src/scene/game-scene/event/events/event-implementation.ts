@@ -3,8 +3,10 @@ import { IEvent } from "../event-interface";
 
 abstract class EventImplementation implements IEvent {
 
+    abstract name: string;
     likeliness: number = 0;
     running: boolean;
+    mutex: Set<string> = new Set();
     protected duration: number = 0;
     protected elapsedTime: number = 0;
     protected currentScene: Scene
