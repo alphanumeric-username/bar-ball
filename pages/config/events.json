@@ -5,6 +5,9 @@
     "no-gravity": {
         "likeliness": 0.025
     },
+    "rain": {
+        "likeliness": 0.01
+    },
     "random-bar": {
         "likeliness": 0.1
     },

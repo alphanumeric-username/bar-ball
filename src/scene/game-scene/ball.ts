@@ -4,6 +4,7 @@ import { Circle, Line, CollideEvent } from '../../physics/collision';
 import Vec2 from "../../math/vec2";
 import { playNote } from '../../service/audio';
 import { setInfo } from '../../service/debug';
+import { randomElement } from "../../math/util";
 
 
 type BallState = {
@@ -113,9 +114,9 @@ class Ball extends Container {
             const group = collidedShape.group;
             if (group.has('bar')) {
                 this._collidedWithBar(collidedShape);
-                playNote('basic-wave', 440*Math.pow(2, -2/12), 0.1, { type: 'sawtooth' });
+                playNote('basic-wave', 440*Math.pow(2, randomElement([-2, 2])/12), 0.1, { type: 'sawtooth' });
             } else {
-                playNote('basic-wave', 440*Math.pow(2, -9/12), 0.1, { type: 'sawtooth' });
+                playNote('basic-wave', 440*Math.pow(2, randomElement([-9, -5])/12), 0.1, { type: 'sawtooth' });
             }
 
             this.currentCollidingLine = collidedShape;

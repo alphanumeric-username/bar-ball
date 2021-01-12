@@ -704,6 +704,7 @@ var constants_1 = require("../../constants");
 var collision_1 = require("../../physics/collision");
 var vec2_1 = require("../../math/vec2");
 var audio_1 = require("../../service/audio");
+var util_1 = require("../../math/util");
 var Ball = /** @class */ (function (_super) {
     __extends(Ball, _super);
     function Ball(radius) {
@@ -779,10 +780,10 @@ var Ball = /** @class */ (function (_super) {
             var group = collidedShape.group;
             if (group.has('bar')) {
                 this._collidedWithBar(collidedShape);
-                audio_1.playNote('basic-wave', 440 * Math.pow(2, -2 / 12), 0.1, { type: 'sawtooth' });
+                audio_1.playNote('basic-wave', 440 * Math.pow(2, util_1.randomElement([-2, 2]) / 12), 0.1, { type: 'sawtooth' });
             }
             else {
-                audio_1.playNote('basic-wave', 440 * Math.pow(2, -9 / 12), 0.1, { type: 'sawtooth' });
+                audio_1.playNote('basic-wave', 440 * Math.pow(2, util_1.randomElement([-9, -5]) / 12), 0.1, { type: 'sawtooth' });
             }
             this.currentCollidingLine = collidedShape;
         }
@@ -867,7 +868,7 @@ var Ball = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = Ball;
 
-},{"../../constants":3,"../../math/vec2":9,"../../physics/collision":10,"../../service/audio":32,"pixi.js":81}],20:[function(require,module,exports){
+},{"../../constants":3,"../../math/util":8,"../../math/vec2":9,"../../physics/collision":10,"../../service/audio":32,"pixi.js":81}],20:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {

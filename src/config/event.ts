@@ -5,6 +5,9 @@ interface EventsConfig {
     "no-gravity": {
         "likeliness": number
     },
+    "rain": {
+        "likeliness": number
+    },
     "random-bar": {
         "likeliness": number
     },
