@@ -3,6 +3,8 @@ import { colors } from '../../constants';
 import { Circle, Line, CollideEvent } from '../../physics/collision';
 import Vec2 from "../../math/vec2";
 import { playNote } from '../../service/audio';
+import { setInfo } from '../../service/debug';
+
 
 type BallState = {
     acceleration?: {
@@ -90,6 +92,7 @@ class Ball extends Container {
             return;
         } else if (collidedShape instanceof Line && collidedShape.group.has('reflective')) {
             const normal = collidedShape.getNormal();
+            // setInfo('ball-normal', `(${normal.x}, ${normal.y})`);
             this.reflect(normal);
 
             const group = collidedShape.group;

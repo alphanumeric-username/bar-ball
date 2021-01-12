@@ -20,7 +20,7 @@ abstract class EventImplementation implements IEvent {
         this.elapsedTime = 0;
     }
 
-    protected stop(): void {
+    stop(): void {
         this.elapsedTime = 0;
         this.duration = 0;
         this.running = false;

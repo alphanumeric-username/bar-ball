@@ -32,11 +32,9 @@ class NoGravityEvent extends EventImplementation {
                 length: 5
             }
         });
-        this.duration = duration;
-        this.running = true;
     }
     
-    protected stop() {
+    stop() {
         this.currentScene.ball.setState(this._lastBallState);
         console.log('NO_GRAVITY: stop');
         super.stop();

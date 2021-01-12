@@ -41,6 +41,10 @@ class EventManager implements IEventManager {
             }
         });
     }
+
+    gameOver() {
+        this.eventTable.forEach(e => e.running ? e.stop() : null);
+    }
 }
 
 export default EventManager;

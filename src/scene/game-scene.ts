@@ -50,6 +50,7 @@ class GameScene extends Scene {
         this.ball.y = (screenResolution.height - this.ball.y)/2
         this.ball.onLose = () => {
             this.sceneManager.changeScene(GameOverScene, { score: this.scoreDisplay.getScore(), previousScene: GameScene });
+            this.eventManager.gameOver();
             this._running = false;
         }
 

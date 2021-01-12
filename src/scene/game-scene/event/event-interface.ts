@@ -9,6 +9,7 @@ interface IEvent {
     running: boolean,
     update(dt: number): void
     start(scene: Scene, duration: number): void,
+    stop(): void
 }
 
 interface IEventManager {
@@ -17,6 +18,7 @@ interface IEventManager {
     update(): void,
     eventTable: IEvent[]
     registerEvent(event: IEvent): void
+    gameOver(): void;
 }
 
 export {

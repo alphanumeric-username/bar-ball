@@ -63,8 +63,12 @@ function testCircleEmptyRectangleIntersection(shape1: IShape, shape2: IShape): b
     var circle: Circle = shape1 instanceof Circle ? shape1 as Circle : shape2 as Circle;
     var rect: EmptyRectangle = shape1 instanceof EmptyRectangle ? shape1 as EmptyRectangle : shape2 as EmptyRectangle;
 
-    
-
+    for (const side of rect.sides) {
+        if (testLineCircleIntersection(circle, side)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function getIntersectionTestFunctionFor(shape1: string, shape2: string): (a: any, b: any) => boolean {
@@ -75,6 +79,9 @@ function getIntersectionTestFunctionFor(shape1: string, shape2: string): (a: any
     }
     if (shapeNames.size == 1 && shapeNames.has('line')) {
         return testLineLineIntersection;
+    }
+    if (shapeNames.has('circle') && shapeNames.has('empty-rectangle')) {
+        return testCircleEmptyRectangleIntersection;
     }
 }
 

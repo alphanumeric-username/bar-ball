@@ -13,6 +13,7 @@ class EmptyRectangle implements IShape {
     shapeSpace: IShapeSpace;
 
     sides: ReadonlyArray<EmptyRectangleSide>;
+    points: ReadonlyArray<Vec2>;
     position: Vec2;
 
     constructor(x: number, y: number, width: number, height: number, rotation: number) {
@@ -32,9 +33,11 @@ class EmptyRectangle implements IShape {
         this.sides = [
             new EmptyRectangleSide(p1.x, p1.y, p3.x, p3.y),
             new EmptyRectangleSide(p2.x, p2.y, p1.x, p1.y),
-            new EmptyRectangleSide(p4.x, p4.y, p3.x, p3.y),
+            new EmptyRectangleSide(p4.x, p4.y, p2.x, p2.y),
             new EmptyRectangleSide(p3.x, p3.y, p4.x, p4.y),
         ];
+
+        this.points = [p1, p2, p4, p3];
     }
 
     move(x: number, y: number) {

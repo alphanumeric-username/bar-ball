@@ -12,7 +12,7 @@ import { colors } from "../../../../constants";
 
 class WindEvent extends EventImplementation {
     currentScene: GameScene;
-    likeliness: number = 0.2;
+    likeliness: number = 0;
 
     windDirection: Vec2;
     windForce: number;
