@@ -18,7 +18,7 @@ The ball gradually loses gravity as it changes to a bluish black.
 
 A bar appears randomly in the stage.
 
-## [ ] Rain *
+## [x] Rain
 
 Starts rainning bouncy drops in a random direction.
 

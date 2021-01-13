@@ -13,7 +13,7 @@ class EmptyRectangle implements IShape {
     shapeSpace: IShapeSpace;
 
     sides: ReadonlyArray<EmptyRectangleSide>;
-    points: ReadonlyArray<Vec2>;
+    points: Vec2[];
     position: Vec2;
 
     constructor(x: number, y: number, width: number, height: number, rotation: number) {
@@ -41,7 +41,15 @@ class EmptyRectangle implements IShape {
     }
 
     move(x: number, y: number) {
-
+        const dr = Vec2.sub(new Vec2(x, y), this.position);
+        this.sides.forEach(s => {
+            s.move(...Vec2.add(s.startPos, dr).toTuple(), ...Vec2.add(s.endPos, dr).toTuple());
+        });
+        for (let i = 0; i < this.points.length; i++) {
+            const p = this.points[i];
+            this.points[i] = Vec2.add(p, dr);
+        }
+        this.position = Vec2.add(this.position, dr);
     }
 
     onCollide(e: CollideEvent): void {

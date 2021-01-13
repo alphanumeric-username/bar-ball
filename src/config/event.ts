@@ -18,7 +18,8 @@ interface EventsConfig {
         "likeliness": number
     },
     "rain": {
-        "likeliness": number
+        "likeliness": number,
+        "drop-generation-period": number
     },
     "random-bar": {
         "likeliness": number
