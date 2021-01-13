@@ -2,6 +2,18 @@ interface EventsConfig {
     "ball-diminish": {
         "likeliness": number
     },
+    "bar-diminish": {
+        "likeliness": number
+    },
+    "bar-lift": {
+        "likeliness": number
+    },
+    "curtain": {
+        "likeliness": number,
+        "curtain": {
+            'alpha': number
+        }
+    },
     "no-gravity": {
         "likeliness": number
     },
@@ -21,9 +33,7 @@ interface EventsConfig {
 
 var eventsConfig: EventsConfig;
 
-function getConfig(): EventsConfig {
-    return eventsConfig;
-}
+const getConfig = () => eventsConfig;
 
 const loadEventConfig = async () => eventsConfig = await fetch('/config/events.json').then(res => res.json());
 

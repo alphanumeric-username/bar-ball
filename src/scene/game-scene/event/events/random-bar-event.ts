@@ -7,10 +7,11 @@ import { clamp, randomInt } from '../../../../math/util';
 import { screenResolution } from '../../../../app';
 import { Container, Graphics } from 'pixi.js';
 import { colors } from '../../../../constants';
+import { getConfig } from '../../../../config/event';
 
 class RandomBarEvent extends EventImplementation {
     name: string = 'random-bar'
-    likeliness: number = 0.1;
+    likeliness: number = getConfig()['random-bar'].likeliness;
     currentScene: GameScene;
 
     barGraphics: Graphics;

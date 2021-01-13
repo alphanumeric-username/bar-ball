@@ -1,20 +1,41 @@
 {
     "ball-diminish": {
-        "likeliness": 0.015
+        "likeliness": 0.015,
+        "_likeliness": 0
+    },
+    "bar-diminish": {
+        "likeliness": 0.015,
+        "_likeliness": 0
+    },
+    "bar-lift": {
+        "likeliness": 0.015,
+        "_likeliness": 0
+    },
+    "curtain": {
+        "likeliness": 0.01,
+        "_likeliness": 0.2,
+        "curtain": {
+            "alpha": 0.95
+        }
     },
     "no-gravity": {
-        "likeliness": 0.025
+        "likeliness": 0.025,
+        "_likeliness": 0
     },
     "rain": {
-        "likeliness": 0.01
+        "likeliness": 0.01,
+        "_likeliness": 0
     },
     "random-bar": {
-        "likeliness": 0.1
+        "likeliness": 0.1,
+        "_likeliness": 0
     },
     "random-throw": {
-        "likeliness": 0.08
+        "likeliness": 0.08,
+        "_likeliness": 0
     },
     "wind": {
-        "likeliness": 0.025
+        "likeliness": 0.025,
+        "_likeliness": 0
     }
 }

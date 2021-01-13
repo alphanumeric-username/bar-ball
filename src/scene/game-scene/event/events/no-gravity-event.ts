@@ -4,9 +4,10 @@ import EventImplementation from './event-implementation';
 import Vec2 from '../../../../math/vec2';
 import { BallState } from '../../ball';
 import { colors } from '../../../../constants';
+import { getConfig } from '../../../../config/event';
 
 class NoGravityEvent extends EventImplementation {
-    likeliness: number = 0.025;
+    likeliness: number = getConfig()['no-gravity'].likeliness;
     name: string = 'no-gravity';
     protected currentScene: GameScene;
     private _lastBallState: BallState;

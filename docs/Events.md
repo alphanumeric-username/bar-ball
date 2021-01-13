@@ -34,7 +34,7 @@ The bar duplicates. Then, one of the bar disappears.
 
 The ball suddenly becomes heavier until touch the bar.
 
-## [ ] Curtain *
+## [x] Curtain
 
 A curtain randomly appears covering an area of the stage.
 
