@@ -5,13 +5,16 @@
     },
     "bar-diminish": {
         "_likeliness": 0.015,
-        "likeliness": 0.2,
+        "likeliness": 0,
         "diminish-factor": 0.4,
         "transition-time": 0.5
     },
     "bar-lift": {
         "_likeliness": 0.015,
-        "likeliness": 0
+        "likeliness": 0.2,
+        "lift-amount": 128,
+        "delay": 0.75,
+        "transition-time": 0.5
     },
     "curtain": {
         "_likeliness": 0.01,

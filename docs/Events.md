@@ -30,8 +30,7 @@ The ball is throw in a random direction.
 
 A curtain randomly appears covering an area of the stage.
 
-
-## [ ] Bar lifting *
+## [x] Bar lifting
 
 The bar is lifted a bit.
 
@@ -39,7 +38,7 @@ The bar is lifted a bit.
 
 The ball size diminishes.
 
-## [ ] Bar diminishing *
+## [x] Bar diminishing
 
 The bar size diminishes.
 
