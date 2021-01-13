@@ -26,21 +26,10 @@ Starts rainning bouncy drops in a random direction.
 
 The ball is throw in a random direction.
 
-## [ ] Double bar
-
-The bar duplicates. Then, one of the bar disappears.
-
-## [ ] Weight growth
-
-The ball suddenly becomes heavier until touch the bar.
-
 ## [x] Curtain
 
 A curtain randomly appears covering an area of the stage.
 
-## [ ] Hurry
-
-The ball becomes faster.
 
 ## [ ] Bar lifting *
 
@@ -53,3 +42,15 @@ The ball size diminishes.
 ## [ ] Bar diminishing *
 
 The bar size diminishes.
+
+## [ ] Double bar
+
+The bar duplicates. Then, one of the bar disappears.
+
+## [ ] Weight growth
+
+The ball suddenly becomes heavier until touch the bar.
+
+## [ ] Hurry
+
+The ball becomes faster.

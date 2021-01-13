@@ -5,7 +5,9 @@
     },
     "bar-diminish": {
         "_likeliness": 0.015,
-        "likeliness": 0
+        "likeliness": 0.2,
+        "diminish-factor": 0.4,
+        "transition-time": 0.5
     },
     "bar-lift": {
         "_likeliness": 0.015,
@@ -24,7 +26,7 @@
     },
     "rain": {
         "_likeliness": 0.01,
-        "likeliness": 0.2,
+        "likeliness": 0,
         "drop-generation-period": 0.2
     },
     "random-bar": {

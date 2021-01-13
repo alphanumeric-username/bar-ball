@@ -3,7 +3,9 @@ interface EventsConfig {
         "likeliness": number
     },
     "bar-diminish": {
-        "likeliness": number
+        "likeliness": number,
+        "diminish-factor": number,
+        "transition-time": number,
     },
     "bar-lift": {
         "likeliness": number

@@ -3,10 +3,13 @@ import BasicWave from './instruments/basic-wave';
 
 const instruments: Map<string, IInstrument> = new Map<string, IInstrument>();
 var _ctx: AudioContext = null;
+var _destination: AudioNode & { numSources?: number };
 var initialized = false;
 
 function provideContext(ctx:AudioContext) {
     _ctx = ctx;
+    _destination = ctx.createGain();
+    _destination.numSources = 0;
 }
 
 function initInstruments() {
