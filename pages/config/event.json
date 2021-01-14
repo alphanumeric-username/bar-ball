@@ -1,47 +1,47 @@
 {
     "ball-diminish": {
-        "_likeliness": 0.015,
-        "likeliness": 0
+        "likeliness": 0.015,
+        "_likeliness": 0
     },
     "bar-diminish": {
-        "_likeliness": 0.015,
-        "likeliness": 0,
+        "likeliness": 0.005,
+        "_likeliness": 0,
         "diminish-factor": 0.4,
         "transition-time": 0.5
     },
     "bar-lift": {
-        "_likeliness": 0.015,
-        "likeliness": 0.2,
+        "likeliness": 0.035,
+        "_likeliness": 0,
         "lift-amount": 128,
         "delay": 0.75,
         "transition-time": 0.5
     },
     "curtain": {
-        "_likeliness": 0.01,
-        "likeliness": 0,
+        "likeliness": 0.01,
+        "_likeliness": 0,
         "curtain": {
-            "alpha": 0.95
+            "alpha": 0.85
         }
     },
     "no-gravity": {
-        "_likeliness": 0.025,
-        "likeliness": 0
+        "likeliness": 0.01,
+        "_likeliness": 0
     },
     "rain": {
-        "_likeliness": 0.01,
-        "likeliness": 0,
+        "likeliness": 0.0005,
+        "_likeliness": 0,
         "drop-generation-period": 0.2
     },
     "random-bar": {
-        "_likeliness": 0.1,
-        "likeliness": 0
+        "likeliness": 0.1,
+        "_likeliness": 0
     },
     "random-throw": {
-        "_likeliness": 0.08,
-        "likeliness": 0
+        "likeliness": 0.03,
+        "_likeliness": 0
     },
     "wind": {
-        "_likeliness": 0.025,
-        "likeliness": 0
+        "likeliness": 0.003,
+        "_likeliness": 0
     }
 }

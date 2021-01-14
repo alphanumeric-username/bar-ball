@@ -15,7 +15,7 @@ const app = new Application({
     width: screenResolution.width,
     height: screenResolution.height,
     backgroundColor: colors.secondary,
-    antialias: true,
+    antialias: true
 });
 
 document.body.appendChild(app.view);

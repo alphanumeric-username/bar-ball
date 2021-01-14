@@ -8,7 +8,7 @@ class EventManager implements IEventManager {
     eventTable: Map<string, IEvent> = new Map();
     
     private _lastTime: number = 0;
-    eventIsRunning: boolean = false;
+    runningEvents: number = 0;
 
     constructor(scene: Scene) {
         this.scene = scene;
@@ -21,7 +21,7 @@ class EventManager implements IEventManager {
     onScoreChange({ score }: ScoreChangeEvent): void {
         this.eventTable.forEach((e) => {
             if (!e.running) {
-                if (Math.random() < e.likeliness*(1 + score/100)) {
+                if (Math.random() < e.likeliness*(1 + score/100 - this.runningEvents/10)) {
                     var mutexIsRunning = false;
                     e.mutex.forEach(evtName => {
                         if (this.eventTable.get(evtName).running) {
@@ -41,11 +41,14 @@ class EventManager implements IEventManager {
         const t = new Date().valueOf()/1000;
         const dt = t - t0;
         this._lastTime = t;
+        var _runningEvents = 0;
         this.eventTable.forEach(e => {
             if (e.running) {
                 e.update(dt);
+                _runningEvents++;
             }
         });
+        this.runningEvents = _runningEvents;
     }
 
     gameOver() {

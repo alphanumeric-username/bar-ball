@@ -974,7 +974,7 @@ var EventManager = /** @class */ (function () {
     function EventManager(scene) {
         this.eventTable = new Map();
         this._lastTime = 0;
-        this.eventIsRunning = false;
+        this.runningEvents = 0;
         this.scene = scene;
         this._lastTime = new Date().valueOf() / 1000;
     }
@@ -986,7 +986,7 @@ var EventManager = /** @class */ (function () {
         var score = _a.score;
         this.eventTable.forEach(function (e) {
             if (!e.running) {
-                if (Math.random() < e.likeliness * (1 + score / 100)) {
+                if (Math.random() < e.likeliness * (1 + score / 100 - _this.runningEvents / 10)) {
                     var mutexIsRunning = false;
                     e.mutex.forEach(function (evtName) {
                         if (_this.eventTable.get(evtName).running) {
@@ -1005,11 +1005,14 @@ var EventManager = /** @class */ (function () {
         var t = new Date().valueOf() / 1000;
         var dt = t - t0;
         this._lastTime = t;
+        var _runningEvents = 0;
         this.eventTable.forEach(function (e) {
             if (e.running) {
                 e.update(dt);
+                _runningEvents++;
             }
         });
+        this.runningEvents = _runningEvents;
     };
     EventManager.prototype.gameOver = function () {
         this.eventTable.forEach(function (e) { return e.running ? e.stop() : null; });
