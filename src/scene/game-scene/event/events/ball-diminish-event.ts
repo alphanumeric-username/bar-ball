@@ -1,4 +1,4 @@
-import { getConfig } from "../../../../config/event";
+import { getEventConfig } from "../../../../config/event";
 import { clamp } from "../../../../math/util";
 import GameScene from "../../../game-scene";
 import { Scene } from "../../../scene";
@@ -6,7 +6,7 @@ import EventImplementation from "./event-implementation";
 
 class BallDiminishEvent extends EventImplementation {
     name: string = 'ball-diminish';
-    likeliness: number = getConfig()["ball-diminish"].likeliness;
+    likeliness: number = getEventConfig()["ball-diminish"].likeliness;
     currentScene: GameScene;
     lastRadius: number;
     targetRadius: number;

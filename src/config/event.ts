@@ -39,11 +39,11 @@ interface EventsConfig {
 
 var eventsConfig: EventsConfig;
 
-const getConfig = () => eventsConfig;
+const getEventConfig = () => eventsConfig;
 
 const loadEventConfig = async () => eventsConfig = await fetch('/config/event.json').then(res => res.json());
 
 export {
-    getConfig,
+    getEventConfig,
     loadEventConfig
 };

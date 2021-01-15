@@ -18,7 +18,7 @@ var app = new pixi_js_1.Application({
 document.body.appendChild(app.view);
 exports["default"] = app;
 
-},{"./constants":3,"pixi.js":85}],2:[function(require,module,exports){
+},{"./constants":4,"pixi.js":89}],2:[function(require,module,exports){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -57,10 +57,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.loadEventConfig = exports.getConfig = void 0;
+exports.loadEventConfig = exports.getEventConfig = void 0;
 var eventsConfig;
-var getConfig = function () { return eventsConfig; };
-exports.getConfig = getConfig;
+var getEventConfig = function () { return eventsConfig; };
+exports.getEventConfig = getEventConfig;
 var loadEventConfig = function () { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
     switch (_a.label) {
         case 0: return [4 /*yield*/, fetch('/config/event.json').then(function (res) { return res.json(); })];
@@ -70,6 +70,113 @@ var loadEventConfig = function () { return __awaiter(void 0, void 0, void 0, fun
 exports.loadEventConfig = loadEventConfig;
 
 },{}],3:[function(require,module,exports){
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+exports.__esModule = true;
+exports.saveScore = exports.getScores = exports.initDatabase = void 0;
+var database_1 = require("../service/database");
+;
+var MAX_LEADERBOARD_ENTRIES = 10;
+var stores = [
+    {
+        name: 'leaderboard',
+        storeParams: {
+            autoIncrement: true,
+            keyPath: 'id'
+        }
+    }
+];
+function initDatabase() {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, database_1.openDatabase(stores)];
+                case 1:
+                    _a.sent();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.initDatabase = initDatabase;
+function saveScore(newEntry) {
+    return __awaiter(this, void 0, void 0, function () {
+        var entries, sortedEntries, reversedEntries, _a, stayEntries, removeEntries;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0: return [4 /*yield*/, database_1.readAll('leaderboard')];
+                case 1:
+                    entries = _b.sent();
+                    entries.push(newEntry);
+                    sortedEntries = entries.sort(function (a, b) { return a.score - b.score; });
+                    sortedEntries.forEach(function (entry, i) {
+                        entry.order = sortedEntries.length - i;
+                    });
+                    reversedEntries = sortedEntries.reverse();
+                    _a = [reversedEntries.slice(0, MAX_LEADERBOARD_ENTRIES), reversedEntries.slice(MAX_LEADERBOARD_ENTRIES)], stayEntries = _a[0], removeEntries = _a[1];
+                    return [4 /*yield*/, database_1.writeAll('leaderboard', stayEntries)];
+                case 2:
+                    _b.sent();
+                    return [4 /*yield*/, database_1.removeAll('leaderboard', removeEntries.map(function (entry) { return entry.id; }).filter(function (id) { return id != null && id != undefined; }))];
+                case 3:
+                    _b.sent();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.saveScore = saveScore;
+function getScores() {
+    return __awaiter(this, void 0, void 0, function () {
+        var scores;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, database_1.readAll('leaderboard')];
+                case 1:
+                    scores = _a.sent();
+                    return [2 /*return*/, scores.sort(function (a, b) { return a.order - b.order; })];
+            }
+        });
+    });
+}
+exports.getScores = getScores;
+
+},{"../service/database":42}],4:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.colors = void 0;
@@ -81,7 +188,7 @@ var colors = {
 };
 exports.colors = colors;
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var scene_1 = require("../scene/scene");
@@ -100,20 +207,23 @@ var Game = /** @class */ (function () {
 }());
 exports["default"] = Game;
 
-},{"../scene/scene":34,"../scene/start-menu-scene":35}],5:[function(require,module,exports){
+},{"../scene/scene":37,"../scene/start-menu-scene":38}],6:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var event_1 = require("./config/event");
+var leaderboard_1 = require("./config/leaderboard");
 var app_1 = require("./app");
 var game_1 = require("./game/game");
-event_1.loadEventConfig()
-    .then(function () {
+Promise.all([
+    event_1.loadEventConfig(),
+    leaderboard_1.initDatabase()
+]).then(function () {
     new game_1["default"]({
         app: app_1["default"]
     });
-})["catch"](function (err) { return console.error('Could not load config:\n', err); });
+})["catch"](function (err) { return console.error('Could not init:\n', err); });
 
-},{"./app":1,"./config/event":2,"./game/game":4}],6:[function(require,module,exports){
+},{"./app":1,"./config/event":2,"./config/leaderboard":3,"./game/game":5}],7:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var vec2_1 = require("./vec2");
@@ -137,7 +247,7 @@ var Mat2 = /** @class */ (function () {
 }());
 exports["default"] = Mat2;
 
-},{"./vec2":9}],7:[function(require,module,exports){
+},{"./vec2":10}],8:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.solveQuadEq = exports.quadEqDelta = void 0;
@@ -155,7 +265,7 @@ function solveQuadEq(a, b, c) {
 }
 exports.solveQuadEq = solveQuadEq;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.between = exports.randomElement = exports.randomInt = exports.clamp = void 0;
@@ -179,7 +289,7 @@ function randomElement(set) {
 }
 exports.randomElement = randomElement;
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var Vec2 = /** @class */ (function () {
@@ -230,7 +340,7 @@ var Vec2 = /** @class */ (function () {
 }());
 exports["default"] = Vec2;
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.ShapeSpace = exports.EmptyRectangle = exports.Rectangle = exports.Line = exports.Circle = void 0;
@@ -245,7 +355,7 @@ exports.EmptyRectangle = empty_rectangle_1["default"];
 var shape_space_1 = require("./collision/shape-space");
 exports.ShapeSpace = shape_space_1["default"];
 
-},{"./collision/circle":11,"./collision/empty-rectangle":12,"./collision/line":14,"./collision/rectangle":15,"./collision/shape-space":16}],11:[function(require,module,exports){
+},{"./collision/circle":12,"./collision/empty-rectangle":13,"./collision/line":15,"./collision/rectangle":16,"./collision/shape-space":17}],12:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var vec2_1 = require("../../math/vec2");
@@ -269,7 +379,7 @@ var Circle = /** @class */ (function () {
 }());
 exports["default"] = Circle;
 
-},{"../../math/vec2":9}],12:[function(require,module,exports){
+},{"../../math/vec2":10}],13:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -339,7 +449,7 @@ var EmptyRectangle = /** @class */ (function () {
 }());
 exports["default"] = EmptyRectangle;
 
-},{"../../math/mat2":6,"../../math/vec2":9,"./line":14}],13:[function(require,module,exports){
+},{"../../math/mat2":7,"../../math/vec2":10,"./line":15}],14:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.testIntersection = exports.testLineCircleIntersection = void 0;
@@ -420,7 +530,7 @@ function testIntersection(shape1, shape2) {
 }
 exports.testIntersection = testIntersection;
 
-},{"../../math/quad-eq":7,"../../math/util":8,"../../math/vec2":9,"../collision":10}],14:[function(require,module,exports){
+},{"../../math/quad-eq":8,"../../math/util":9,"../../math/vec2":10,"../collision":11}],15:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var vec2_1 = require("../../math/vec2");
@@ -466,7 +576,7 @@ var Line = /** @class */ (function () {
 }());
 exports["default"] = Line;
 
-},{"../../math/vec2":9}],15:[function(require,module,exports){
+},{"../../math/vec2":10}],16:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var util_1 = require("../../math/util");
@@ -500,7 +610,7 @@ var Rectangle = /** @class */ (function () {
 }());
 exports["default"] = Rectangle;
 
-},{"../../math/util":8,"../../math/vec2":9}],16:[function(require,module,exports){
+},{"../../math/util":9,"../../math/vec2":10}],17:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var intersection_test_1 = require("./intersection-test");
@@ -542,7 +652,7 @@ var ShapeSpace = /** @class */ (function () {
 }());
 exports["default"] = ShapeSpace;
 
-},{"./intersection-test":13}],17:[function(require,module,exports){
+},{"./intersection-test":14}],18:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -581,6 +691,7 @@ var GameOverScene = /** @class */ (function (_super) {
         scoreDisplay.y = 5 * app_1.screenResolution.height / 12;
         var playAgainButton = new button_1["default"]('Play Again', new pixi_js_1.TextStyle({
             fill: 'white',
+            fontFamily: 'Roboto',
             fontSize: 48
         }), { padding: 8, backgroundColor: constants_1.colors.primary });
         playAgainButton.position.set((app_1.screenResolution.width - playAgainButton.width) / 2, 3 * app_1.screenResolution.height / 4);
@@ -590,12 +701,14 @@ var GameOverScene = /** @class */ (function (_super) {
         };
         var scoreText = new pixi_js_1.Text('Score:', new pixi_js_1.TextStyle({
             fill: constants_1.colors.secondary_dark,
+            fontFamily: 'Roboto',
             fontSize: 24
         }));
         scoreText.x = (app_1.screenResolution.width - scoreText.width) / 2;
         scoreText.y = scoreDisplay.y - scoreText.height - 8;
         var gameOverText = new pixi_js_1.Text('Game Over', new pixi_js_1.TextStyle({
             fill: constants_1.colors.primary,
+            fontFamily: 'Roboto',
             fontSize: 72
         }));
         gameOverText.x = (app_1.screenResolution.width - gameOverText.width) / 2;
@@ -606,7 +719,7 @@ var GameOverScene = /** @class */ (function (_super) {
 }(scene_1.Scene));
 exports["default"] = GameOverScene;
 
-},{"../app":1,"../constants":3,"../ui/button":40,"./game-scene/score-display":33,"./scene":34,"./start-menu-scene":35,"pixi.js":85}],18:[function(require,module,exports){
+},{"../app":1,"../constants":4,"../ui/button":44,"./game-scene/score-display":34,"./scene":37,"./start-menu-scene":38,"pixi.js":89}],19:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -630,6 +743,7 @@ var bar_1 = require("./game-scene/bar");
 var score_display_1 = require("./game-scene/score-display");
 var collision_1 = require("../physics/collision");
 var event_1 = require("./game-scene/event");
+var leaderboard_1 = require("../config/leaderboard");
 var GameScene = /** @class */ (function (_super) {
     __extends(GameScene, _super);
     function GameScene() {
@@ -659,8 +773,10 @@ var GameScene = /** @class */ (function (_super) {
         this.ball.y = (app_1.screenResolution.height - this.ball.y) / 2;
         this.ball.onLose = function () {
             _this.eventManager.gameOver();
-            _this.sceneManager.changeScene(game_over_scene_1["default"], { score: _this.scoreDisplay.getScore(), previousScene: GameScene });
             _this._running = false;
+            leaderboard_1.saveScore({ score: _this.scoreDisplay.getScore() }).then(function () {
+                _this.sceneManager.changeScene(game_over_scene_1["default"], { score: _this.scoreDisplay.getScore(), previousScene: GameScene });
+            });
         };
         this.scoreDisplay = new score_display_1["default"]();
         this.scoreDisplay.x = (app_1.screenResolution.width - this.scoreDisplay.width) / 2;
@@ -697,7 +813,7 @@ var GameScene = /** @class */ (function (_super) {
 }(scene_1.Scene));
 exports["default"] = GameScene;
 
-},{"../app":1,"../physics/collision":10,"./game-over-scene":17,"./game-scene/ball":19,"./game-scene/bar":20,"./game-scene/event":21,"./game-scene/score-display":33,"./scene":34}],19:[function(require,module,exports){
+},{"../app":1,"../config/leaderboard":3,"../physics/collision":11,"./game-over-scene":18,"./game-scene/ball":20,"./game-scene/bar":21,"./game-scene/event":22,"./game-scene/score-display":34,"./scene":37}],20:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -882,7 +998,7 @@ var Ball = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = Ball;
 
-},{"../../constants":3,"../../math/util":8,"../../math/vec2":9,"../../physics/collision":10,"../../service/audio":36,"pixi.js":85}],20:[function(require,module,exports){
+},{"../../constants":4,"../../math/util":9,"../../math/vec2":10,"../../physics/collision":11,"../../service/audio":39,"pixi.js":89}],21:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -938,7 +1054,7 @@ var Bar = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = Bar;
 
-},{"../../app":1,"../../constants":3,"../../math/util":8,"../../physics/collision":10,"../../service/mouse":39,"pixi.js":85}],21:[function(require,module,exports){
+},{"../../app":1,"../../constants":4,"../../math/util":9,"../../physics/collision":11,"../../service/mouse":43,"pixi.js":89}],22:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.createEventManager = void 0;
@@ -967,7 +1083,7 @@ function createEventManager(scene) {
 }
 exports.createEventManager = createEventManager;
 
-},{"./event/event-manager":22,"./event/events/ball-diminish-event":23,"./event/events/bar-diminish-event":24,"./event/events/bar-lift-event":25,"./event/events/curtain-event":26,"./event/events/no-gravity-event":28,"./event/events/rain-event":29,"./event/events/random-bar-event":30,"./event/events/random-throw-event":31,"./event/events/wind-event":32}],22:[function(require,module,exports){
+},{"./event/event-manager":23,"./event/events/ball-diminish-event":24,"./event/events/bar-diminish-event":25,"./event/events/bar-lift-event":26,"./event/events/curtain-event":27,"./event/events/no-gravity-event":29,"./event/events/rain-event":30,"./event/events/random-bar-event":31,"./event/events/random-throw-event":32,"./event/events/wind-event":33}],23:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var EventManager = /** @class */ (function () {
@@ -1021,7 +1137,7 @@ var EventManager = /** @class */ (function () {
 }());
 exports["default"] = EventManager;
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1045,7 +1161,7 @@ var BallDiminishEvent = /** @class */ (function (_super) {
     function BallDiminishEvent() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.name = 'ball-diminish';
-        _this.likeliness = event_1.getConfig()["ball-diminish"].likeliness;
+        _this.likeliness = event_1.getEventConfig()["ball-diminish"].likeliness;
         _this.state = 'stopped';
         _this.transitionTime = 0.5;
         return _this;
@@ -1093,7 +1209,7 @@ var BallDiminishEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = BallDiminishEvent;
 
-},{"../../../../config/event":2,"../../../../math/util":8,"./event-implementation":27}],24:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../math/util":9,"./event-implementation":28}],25:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1117,9 +1233,9 @@ var BarDiminishEvent = /** @class */ (function (_super) {
     function BarDiminishEvent() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.name = 'bar-diminish';
-        _this.likeliness = event_1.getConfig()["bar-diminish"].likeliness;
-        _this.diminishFactor = event_1.getConfig()["bar-diminish"]["diminish-factor"];
-        _this.transitionTime = event_1.getConfig()["bar-diminish"]["transition-time"];
+        _this.likeliness = event_1.getEventConfig()["bar-diminish"].likeliness;
+        _this.diminishFactor = event_1.getEventConfig()["bar-diminish"]["diminish-factor"];
+        _this.transitionTime = event_1.getEventConfig()["bar-diminish"]["transition-time"];
         return _this;
     }
     BarDiminishEvent.prototype.start = function (scene, duration) {
@@ -1164,7 +1280,7 @@ var BarDiminishEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = BarDiminishEvent;
 
-},{"../../../../config/event":2,"../../../../math/util":8,"./event-implementation":27}],25:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../math/util":9,"./event-implementation":28}],26:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1188,10 +1304,10 @@ var BarLiftEvent = /** @class */ (function (_super) {
     function BarLiftEvent() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.name = 'bar-lift';
-        _this.likeliness = event_1.getConfig()["bar-lift"].likeliness;
-        _this.liftAmount = event_1.getConfig()["bar-lift"]["lift-amount"];
-        _this.delay = event_1.getConfig()["bar-lift"].delay;
-        _this.transitionTime = event_1.getConfig()["bar-lift"]["transition-time"];
+        _this.likeliness = event_1.getEventConfig()["bar-lift"].likeliness;
+        _this.liftAmount = event_1.getEventConfig()["bar-lift"]["lift-amount"];
+        _this.delay = event_1.getEventConfig()["bar-lift"].delay;
+        _this.transitionTime = event_1.getEventConfig()["bar-lift"]["transition-time"];
         _this.state = 'stopped';
         return _this;
     }
@@ -1242,7 +1358,7 @@ var BarLiftEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = BarLiftEvent;
 
-},{"../../../../config/event":2,"../../../../math/util":8,"./event-implementation":27}],26:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../math/util":9,"./event-implementation":28}],27:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1269,10 +1385,10 @@ var CurtainEvent = /** @class */ (function (_super) {
     function CurtainEvent() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.name = 'curtain';
-        _this.likeliness = event_1.getConfig().curtain.likeliness;
+        _this.likeliness = event_1.getEventConfig().curtain.likeliness;
         _this.width = app_1.screenResolution.width / 2;
         _this.heigth = app_1.screenResolution.height;
-        _this.curtainAlpha = event_1.getConfig().curtain.curtain.alpha;
+        _this.curtainAlpha = event_1.getEventConfig().curtain.curtain.alpha;
         _this.state = 'stopped';
         _this.startTime = 0.5;
         _this.stopTime = 1;
@@ -1331,7 +1447,7 @@ var CurtainEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = CurtainEvent;
 
-},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":3,"../../../../math/util":8,"./event-implementation":27,"pixi.js":85}],27:[function(require,module,exports){
+},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":9,"./event-implementation":28,"pixi.js":89}],28:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var EventImplementation = /** @class */ (function () {
@@ -1360,7 +1476,7 @@ var EventImplementation = /** @class */ (function () {
 }());
 exports["default"] = EventImplementation;
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1384,7 +1500,7 @@ var NoGravityEvent = /** @class */ (function (_super) {
     __extends(NoGravityEvent, _super);
     function NoGravityEvent() {
         var _this = _super.call(this) || this;
-        _this.likeliness = event_1.getConfig()['no-gravity'].likeliness;
+        _this.likeliness = event_1.getEventConfig()['no-gravity'].likeliness;
         _this.name = 'no-gravity';
         _this.mutex.add('random-throw');
         _this.mutex.add('wind');
@@ -1425,7 +1541,7 @@ var NoGravityEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = NoGravityEvent;
 
-},{"../../../../config/event":2,"../../../../constants":3,"../../../../math/vec2":9,"./event-implementation":27}],29:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../constants":4,"../../../../math/vec2":10,"./event-implementation":28}],30:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1482,9 +1598,9 @@ var RainEvent = /** @class */ (function (_super) {
     function RainEvent() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.name = 'rain';
-        _this.likeliness = event_1.getConfig().rain.likeliness;
+        _this.likeliness = event_1.getEventConfig().rain.likeliness;
         _this.gravity = new vec2_1["default"](0, 0.25);
-        _this.dropGenerationPeriod = event_1.getConfig().rain['drop-generation-period'];
+        _this.dropGenerationPeriod = event_1.getEventConfig().rain['drop-generation-period'];
         _this.dropGenerationTimeCounter = 0;
         _this.state = 'stopped';
         return _this;
@@ -1543,7 +1659,7 @@ var RainEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = RainEvent;
 
-},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":3,"../../../../math/vec2":9,"../../../../physics/collision":10,"./event-implementation":27,"pixi.js":85}],30:[function(require,module,exports){
+},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":4,"../../../../math/vec2":10,"../../../../physics/collision":11,"./event-implementation":28,"pixi.js":89}],31:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1571,7 +1687,7 @@ var RandomBarEvent = /** @class */ (function (_super) {
     function RandomBarEvent() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.name = 'random-bar';
-        _this.likeliness = event_1.getConfig()['random-bar'].likeliness;
+        _this.likeliness = event_1.getEventConfig()['random-bar'].likeliness;
         _this.minWidth = 128;
         _this.maxWidth = 384;
         _this.height = 32;
@@ -1647,7 +1763,7 @@ var RandomBarEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = RandomBarEvent;
 
-},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":3,"../../../../math/util":8,"../../../../physics/collision":10,"./event-implementation":27,"pixi.js":85}],31:[function(require,module,exports){
+},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":9,"../../../../physics/collision":11,"./event-implementation":28,"pixi.js":89}],32:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1677,7 +1793,7 @@ var RandomThrowEvent = /** @class */ (function (_super) {
         _this._targetAngle = 0;
         _this._currentAngle = 0;
         _this.name = 'random-throw';
-        _this.likeliness = event_1.getConfig()["random-throw"].likeliness;
+        _this.likeliness = event_1.getEventConfig()["random-throw"].likeliness;
         _this.startTime = 2;
         _this.rotationTime = 1.5;
         _this.throwingTime = 0.5;
@@ -1760,7 +1876,7 @@ var RandomThrowEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = RandomThrowEvent;
 
-},{"../../../../config/event":2,"../../../../constants":3,"../../../../math/util":8,"../../../../math/vec2":9,"../../../../ui/geometry":41,"./event-implementation":27}],32:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":9,"../../../../math/vec2":10,"../../../../ui/geometry":45,"./event-implementation":28}],33:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1786,7 +1902,7 @@ var WindEvent = /** @class */ (function (_super) {
     __extends(WindEvent, _super);
     function WindEvent() {
         var _this = _super.call(this) || this;
-        _this.likeliness = event_1.getConfig().wind.likeliness;
+        _this.likeliness = event_1.getEventConfig().wind.likeliness;
         _this.name = 'wind';
         _this.mutex.add('no-gravity');
         _this.mutex.add('random-throw');
@@ -1841,7 +1957,7 @@ var WindEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = WindEvent;
 
-},{"../../../../config/event":2,"../../../../constants":3,"../../../../math/util":8,"../../../../math/vec2":9,"../../../../ui/geometry":41,"./event-implementation":27}],33:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":9,"../../../../math/vec2":10,"../../../../ui/geometry":45,"./event-implementation":28}],34:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1872,6 +1988,7 @@ var ScoreDisplay = /** @class */ (function (_super) {
     ScoreDisplay.prototype._createGraphics = function () {
         this._text = new pixi_js_1.Text(this._score.toString(), new pixi_js_1.TextStyle({
             fill: constants_1.colors.secondary_dark,
+            fontFamily: 'Roboto',
             fontSize: this._fontSize
         }));
         this.addChild(this._text);
@@ -1890,7 +2007,112 @@ var ScoreDisplay = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = ScoreDisplay;
 
-},{"../../constants":3,"pixi.js":85}],34:[function(require,module,exports){
+},{"../../constants":4,"pixi.js":89}],35:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+exports.__esModule = true;
+var scene_1 = require("./scene");
+var leaderboard_display_1 = require("./leaderboard-scene/leaderboard-display");
+var app_1 = require("../app");
+var pixi_js_1 = require("pixi.js");
+var constants_1 = require("../constants");
+var button_1 = require("../ui/button");
+var start_menu_scene_1 = require("./start-menu-scene");
+var LeaderboardScene = /** @class */ (function (_super) {
+    __extends(LeaderboardScene, _super);
+    function LeaderboardScene() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    LeaderboardScene.prototype.beforeInitStage = function (args) {
+        this.scores = args.scores;
+    };
+    LeaderboardScene.prototype.initStage = function () {
+        var _this = this;
+        var padding = 16;
+        var title = new pixi_js_1.Text('Leaderboard', new pixi_js_1.TextStyle({
+            fill: constants_1.colors.primary,
+            fontFamily: 'Roboto',
+            fontSize: 72
+        }));
+        title.x = (app_1.screenResolution.width - title.width) / 2;
+        title.y = app_1.screenResolution.height / 8;
+        var leaderboardDisplay = new leaderboard_display_1["default"](this.scores);
+        leaderboardDisplay.x = (app_1.screenResolution.width - leaderboardDisplay.width) / 2;
+        leaderboardDisplay.y = title.y + title.height + padding;
+        var backButton = new button_1["default"]('<-', new pixi_js_1.TextStyle({
+            fill: 0xFFFFFF,
+            fontSize: 32
+        }), { padding: 8, backgroundColor: constants_1.colors.primary });
+        backButton.x = (app_1.screenResolution.width - backButton.width) / 2;
+        backButton.y = leaderboardDisplay.y + leaderboardDisplay.height + padding;
+        backButton.onClick = function () { return _this.sceneManager.changeScene(start_menu_scene_1["default"]); };
+        this.stage.addChild(leaderboardDisplay, title, backButton);
+    };
+    return LeaderboardScene;
+}(scene_1.Scene));
+exports["default"] = LeaderboardScene;
+
+},{"../app":1,"../constants":4,"../ui/button":44,"./leaderboard-scene/leaderboard-display":36,"./scene":37,"./start-menu-scene":38,"pixi.js":89}],36:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+exports.__esModule = true;
+var pixi_js_1 = require("pixi.js");
+var constants_1 = require("../../constants");
+var LeaderboardDisplay = /** @class */ (function (_super) {
+    __extends(LeaderboardDisplay, _super);
+    function LeaderboardDisplay(scores) {
+        var _this = _super.call(this) || this;
+        _this.scores = scores;
+        _this._createGraphics();
+        return _this;
+    }
+    LeaderboardDisplay.prototype._createGraphics = function () {
+        var _this = this;
+        this.scores.forEach(function (score, idx) {
+            var text = new pixi_js_1.Text("" + score.order + _this._getOrderSuffix(score.order) + " - " + score.score + " ", new pixi_js_1.TextStyle({
+                fill: constants_1.colors.primary,
+                fontFamily: 'Roboto',
+                fontSize: 24
+            }));
+            text.y = idx * text.height;
+            _this.addChild(text);
+        });
+    };
+    LeaderboardDisplay.prototype._getOrderSuffix = function (n) {
+        return n == 1 ? 'st' :
+            n == 2 ? 'nd' :
+                n == 3 ? 'rd' :
+                    'th';
+    };
+    return LeaderboardDisplay;
+}(pixi_js_1.Container));
+exports["default"] = LeaderboardDisplay;
+
+},{"../../constants":4,"pixi.js":89}],37:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.SceneManager = exports.Scene = void 0;
@@ -1928,7 +2150,7 @@ var SceneManager = /** @class */ (function () {
 }());
 exports.SceneManager = SceneManager;
 
-},{"pixi.js":85}],35:[function(require,module,exports){
+},{"pixi.js":89}],38:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1948,10 +2170,12 @@ var button_1 = require("../ui/button");
 var geometry_1 = require("../ui/geometry");
 var scene_1 = require("./scene");
 var game_scene_1 = require("./game-scene");
+var leaderboard_scene_1 = require("./leaderboard-scene");
 var app_1 = require("../app");
 var pixi_js_1 = require("pixi.js");
 var constants_1 = require("../constants");
 var audio_1 = require("../service/audio");
+var leaderboard_1 = require("../config/leaderboard");
 var StartMenuScene = /** @class */ (function (_super) {
     __extends(StartMenuScene, _super);
     function StartMenuScene() {
@@ -1959,6 +2183,7 @@ var StartMenuScene = /** @class */ (function (_super) {
     }
     StartMenuScene.prototype.initStage = function () {
         var _this = this;
+        var buttonsContainer = new pixi_js_1.Container();
         var k = 48;
         var triangle = new geometry_1.Triangle(0, 0, 0, k * 1, k * Math.sqrt(3) / 2, k * 0.5, {
             fill: 0xFFFFFF
@@ -1968,26 +2193,43 @@ var StartMenuScene = /** @class */ (function (_super) {
             audio_1.initAudioService();
             _this.sceneManager.changeScene(game_scene_1["default"]);
         };
-        startButton.position.set((app_1.screenResolution.width - startButton.width) / 2, 2 * app_1.screenResolution.height / 3);
+        buttonsContainer.addChild(startButton);
+        var leaderboard = new pixi_js_1.Graphics();
+        leaderboard.beginFill(0xFFFFFF);
+        leaderboard.drawRect(0, 16, 15, 32);
+        leaderboard.drawRect(16, 0, 15, 48);
+        leaderboard.drawRect(32, 32, 16, 16);
+        leaderboard.endFill();
+        var leaderboardButton = new button_1["default"](leaderboard, null, { padding: 16, backgroundColor: constants_1.colors.primary });
+        leaderboardButton.onClick = function () {
+            leaderboard_1.getScores().then(function (scores) { return _this.sceneManager.changeScene(leaderboard_scene_1["default"], {
+                scores: scores
+            }); });
+        };
+        leaderboardButton.x = startButton.width + 16;
+        buttonsContainer.addChild(leaderboardButton);
+        buttonsContainer.position.set((app_1.screenResolution.width - buttonsContainer.width) / 2, 2 * app_1.screenResolution.height / 3);
         var copyright = new pixi_js_1.Text('© 2021 alphanumeric-username', new pixi_js_1.TextStyle({
+            fontFamily: 'Roboto',
             fill: constants_1.colors.primary,
             fontSize: 20
         }));
         copyright.x = app_1.screenResolution.width - copyright.width - 4;
         copyright.y = app_1.screenResolution.height - copyright.height - 4;
         var title = new pixi_js_1.Text('Bar/Ball', new pixi_js_1.TextStyle({
+            fontFamily: 'Roboto',
             fill: constants_1.colors.primary,
             fontSize: 96
         }));
         title.x = (app_1.screenResolution.width - title.width) / 2;
         title.y = app_1.screenResolution.height / 3;
-        this.stage.addChild(startButton, copyright, title);
+        this.stage.addChild(buttonsContainer, copyright, title);
     };
     return StartMenuScene;
 }(scene_1.Scene));
 exports["default"] = StartMenuScene;
 
-},{"../app":1,"../constants":3,"../service/audio":36,"../ui/button":40,"../ui/geometry":41,"./game-scene":18,"./scene":34,"pixi.js":85}],36:[function(require,module,exports){
+},{"../app":1,"../config/leaderboard":3,"../constants":4,"../service/audio":39,"../ui/button":44,"../ui/geometry":45,"./game-scene":19,"./leaderboard-scene":35,"./scene":37,"pixi.js":89}],39:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.initAudioService = exports.playNote = void 0;
@@ -2005,7 +2247,7 @@ function initAudioService() {
 }
 exports.initAudioService = initAudioService;
 
-},{"./audio/instruments":37}],37:[function(require,module,exports){
+},{"./audio/instruments":40}],40:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.playNote = exports.initInstruments = exports.provideContext = exports.instruments = void 0;
@@ -2039,7 +2281,7 @@ function playNote(instrumentName, frequency, duration, args) {
 }
 exports.playNote = playNote;
 
-},{"./instruments/basic-wave":38}],38:[function(require,module,exports){
+},{"./instruments/basic-wave":41}],41:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var BasicWave = /** @class */ (function () {
@@ -2060,7 +2302,123 @@ var BasicWave = /** @class */ (function () {
 }());
 exports["default"] = BasicWave;
 
-},{}],39:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
+"use strict";
+exports.__esModule = true;
+exports.removeAll = exports.remove = exports.writeAll = exports.write = exports.readAll = exports.read = exports.openDatabase = void 0;
+var DB_NAME = 'com.alphanumeric_username.bar_ball.db';
+var DB_VERSION = 1;
+var db = null;
+function openDatabase(stores) {
+    var request = window.indexedDB.open(DB_NAME, DB_VERSION);
+    var promise = new Promise(function (resolve, reject) {
+        request.onerror = function (e) {
+            console.error('Database error:', e);
+            reject();
+        };
+        request.onsuccess = function () {
+            db = db == null ? request.result : db;
+            resolve();
+        };
+        request.onupgradeneeded = function (e) {
+            db = e.target.result;
+            stores.forEach(function (store) {
+                var objStore = db.createObjectStore(store.name, store.storeParams);
+                if (store.indexes) {
+                    store.indexes.forEach(function (idx) {
+                        objStore.createIndex(idx.name, idx.keyPath, idx.options);
+                    });
+                }
+            });
+        };
+    });
+    return promise;
+}
+exports.openDatabase = openDatabase;
+function read(store, key) {
+    var promise = new Promise(function (resolve, reject) {
+        var objStore = db.transaction(store, 'readonly').objectStore(store);
+        var req = objStore.get(key);
+        var successCallback = function () {
+            resolve(req.result);
+        };
+        var errorCallback = function () {
+            reject();
+        };
+        req.addEventListener('success', successCallback);
+        req.addEventListener('error', errorCallback);
+    });
+    return promise;
+}
+exports.read = read;
+function readAll(store) {
+    var promise = new Promise(function (resolve, reject) {
+        var objStore = db.transaction(store, 'readonly').objectStore(store);
+        var req = objStore.getAll();
+        var successCallback = function () {
+            resolve(req.result);
+        };
+        var errorCallback = function () {
+            reject();
+        };
+        req.addEventListener('success', successCallback);
+        req.addEventListener('error', errorCallback);
+    });
+    return promise;
+}
+exports.readAll = readAll;
+function write(store, data) {
+    var promise = new Promise(function (resolve, reject) {
+        var objStore = db.transaction(store, 'readwrite').objectStore(store);
+        var req = objStore.put(data);
+        var successCallback = function () {
+            resolve();
+        };
+        var errorCallback = function () {
+            reject();
+        };
+        req.addEventListener('success', successCallback);
+        req.addEventListener('error', errorCallback);
+    });
+    return promise;
+}
+exports.write = write;
+function writeAll(store, data) {
+    var promises = [];
+    data.forEach(function (d) {
+        var promise = write(store, d);
+        promises.push(promise);
+    });
+    return Promise.all(promises);
+}
+exports.writeAll = writeAll;
+function remove(store, key) {
+    var promise = new Promise(function (resolve, reject) {
+        var objStore = db.transaction(store, 'readwrite').objectStore(store);
+        var req = objStore["delete"](key);
+        var successCallback = function () {
+            resolve();
+        };
+        var errorCallback = function () {
+            reject();
+        };
+        req.addEventListener('success', successCallback);
+        req.addEventListener('error', errorCallback);
+    });
+    return promise;
+}
+exports.remove = remove;
+function removeAll(store, keys) {
+    var promises = [];
+    keys.forEach(function (k) {
+        var promise = remove(store, k);
+        promises.push(promise);
+    });
+    return Promise.all(promises);
+}
+exports.removeAll = removeAll;
+
+},{}],43:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var app_1 = require("../app");
@@ -2080,7 +2438,7 @@ var mouse = {
 };
 exports["default"] = mouse;
 
-},{"../app":1}],40:[function(require,module,exports){
+},{"../app":1}],44:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2120,7 +2478,7 @@ var Button = /** @class */ (function (_super) {
         _this._box = new pixi_js_1.Graphics();
         _this._box.beginFill();
         _this._box.beginFill(buttonStyle.backgroundColor, 1);
-        _this._box.drawRect(0, 0, _this._content.width + 2 * buttonStyle.padding, _this._content.height + 2 * buttonStyle.padding);
+        _this._box.drawRoundedRect(0, 0, _this._content.width + 2 * buttonStyle.padding, _this._content.height + 2 * buttonStyle.padding, 12);
         _this._box.endFill();
         _this.addChild(_this._box);
         _this.addChild(_this._content);
@@ -2134,14 +2492,14 @@ var Button = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = Button;
 
-},{"../constants":3,"pixi.js":85}],41:[function(require,module,exports){
+},{"../constants":4,"pixi.js":89}],45:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.Triangle = void 0;
 var triangle_1 = require("./geometry/triangle");
 exports.Triangle = triangle_1["default"];
 
-},{"./geometry/triangle":42}],42:[function(require,module,exports){
+},{"./geometry/triangle":46}],46:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2182,7 +2540,7 @@ var Triangle = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = Triangle;
 
-},{"pixi.js":85}],43:[function(require,module,exports){
+},{"pixi.js":89}],47:[function(require,module,exports){
 /*!
  * @pixi/accessibility - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -2777,7 +3135,7 @@ exports.AccessibilityManager = AccessibilityManager;
 exports.accessibleTarget = accessibleTarget;
 
 
-},{"@pixi/display":47,"@pixi/utils":76}],44:[function(require,module,exports){
+},{"@pixi/display":51,"@pixi/utils":80}],48:[function(require,module,exports){
 /*!
  * @pixi/app - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -3058,7 +3416,7 @@ Application.registerPlugin(ResizePlugin);
 exports.Application = Application;
 
 
-},{"@pixi/core":46,"@pixi/display":47}],45:[function(require,module,exports){
+},{"@pixi/core":50,"@pixi/display":51}],49:[function(require,module,exports){
 /*!
  * @pixi/constants - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -3222,7 +3580,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 })(exports.MSAA_QUALITY || (exports.MSAA_QUALITY = {}));
 
 
-},{}],46:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 /*!
  * @pixi/core - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -14243,7 +14601,7 @@ exports.systems = systems;
 exports.uniformParsers = uniformParsers;
 
 
-},{"@pixi/constants":45,"@pixi/math":58,"@pixi/runner":67,"@pixi/settings":68,"@pixi/ticker":75,"@pixi/utils":76}],47:[function(require,module,exports){
+},{"@pixi/constants":49,"@pixi/math":62,"@pixi/runner":71,"@pixi/settings":72,"@pixi/ticker":79,"@pixi/utils":80}],51:[function(require,module,exports){
 /*!
  * @pixi/display - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -15924,7 +16282,7 @@ exports.DisplayObject = DisplayObject;
 exports.TemporaryDisplayObject = TemporaryDisplayObject;
 
 
-},{"@pixi/math":58,"@pixi/settings":68,"@pixi/utils":76}],48:[function(require,module,exports){
+},{"@pixi/math":62,"@pixi/settings":72,"@pixi/utils":80}],52:[function(require,module,exports){
 /*!
  * @pixi/extract - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -16152,7 +16510,7 @@ var Extract = /** @class */ (function () {
 exports.Extract = Extract;
 
 
-},{"@pixi/core":46,"@pixi/math":58,"@pixi/utils":76}],49:[function(require,module,exports){
+},{"@pixi/core":50,"@pixi/math":62,"@pixi/utils":80}],53:[function(require,module,exports){
 /*!
  * @pixi/filter-alpha - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -16247,7 +16605,7 @@ var AlphaFilter = /** @class */ (function (_super) {
 exports.AlphaFilter = AlphaFilter;
 
 
-},{"@pixi/core":46}],50:[function(require,module,exports){
+},{"@pixi/core":50}],54:[function(require,module,exports){
 /*!
  * @pixi/filter-blur - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -17082,7 +17440,7 @@ exports.BlurFilter = BlurFilter;
 exports.BlurFilterPass = BlurFilterPass;
 
 
-},{"@pixi/core":46,"@pixi/settings":68}],51:[function(require,module,exports){
+},{"@pixi/core":50,"@pixi/settings":72}],55:[function(require,module,exports){
 /*!
  * @pixi/filter-color-matrix - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -17620,7 +17978,7 @@ ColorMatrixFilter.prototype.grayscale = ColorMatrixFilter.prototype.greyscale;
 exports.ColorMatrixFilter = ColorMatrixFilter;
 
 
-},{"@pixi/core":46}],52:[function(require,module,exports){
+},{"@pixi/core":50}],56:[function(require,module,exports){
 /*!
  * @pixi/filter-displacement - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -17761,7 +18119,7 @@ var DisplacementFilter = /** @class */ (function (_super) {
 exports.DisplacementFilter = DisplacementFilter;
 
 
-},{"@pixi/core":46,"@pixi/math":58}],53:[function(require,module,exports){
+},{"@pixi/core":50,"@pixi/math":62}],57:[function(require,module,exports){
 /*!
  * @pixi/filter-fxaa - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -17831,7 +18189,7 @@ var FXAAFilter = /** @class */ (function (_super) {
 exports.FXAAFilter = FXAAFilter;
 
 
-},{"@pixi/core":46}],54:[function(require,module,exports){
+},{"@pixi/core":50}],58:[function(require,module,exports){
 /*!
  * @pixi/filter-noise - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -17941,7 +18299,7 @@ var NoiseFilter = /** @class */ (function (_super) {
 exports.NoiseFilter = NoiseFilter;
 
 
-},{"@pixi/core":46}],55:[function(require,module,exports){
+},{"@pixi/core":50}],59:[function(require,module,exports){
 /*!
  * @pixi/graphics - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -21199,7 +21557,7 @@ exports.LineStyle = LineStyle;
 exports.graphicsUtils = index;
 
 
-},{"@pixi/constants":45,"@pixi/core":46,"@pixi/display":47,"@pixi/math":58,"@pixi/utils":76}],56:[function(require,module,exports){
+},{"@pixi/constants":49,"@pixi/core":50,"@pixi/display":51,"@pixi/math":62,"@pixi/utils":80}],60:[function(require,module,exports){
 /*!
  * @pixi/interaction - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -23411,7 +23769,7 @@ exports.InteractionTrackingData = InteractionTrackingData;
 exports.interactiveTarget = interactiveTarget;
 
 
-},{"@pixi/display":47,"@pixi/math":58,"@pixi/ticker":75,"@pixi/utils":76}],57:[function(require,module,exports){
+},{"@pixi/display":51,"@pixi/math":62,"@pixi/ticker":79,"@pixi/utils":80}],61:[function(require,module,exports){
 /*!
  * @pixi/loaders - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -23741,7 +24099,7 @@ exports.LoaderResource = LoaderResource;
 exports.TextureLoader = TextureLoader;
 
 
-},{"@pixi/core":46,"resource-loader":91}],58:[function(require,module,exports){
+},{"@pixi/core":50,"resource-loader":95}],62:[function(require,module,exports){
 /*!
  * @pixi/math - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -25675,7 +26033,7 @@ exports.Transform = Transform;
 exports.groupD8 = groupD8;
 
 
-},{}],59:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 /*!
  * @pixi/mesh-extras - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -26415,7 +26773,7 @@ exports.SimplePlane = SimplePlane;
 exports.SimpleRope = SimpleRope;
 
 
-},{"@pixi/constants":45,"@pixi/core":46,"@pixi/mesh":60}],60:[function(require,module,exports){
+},{"@pixi/constants":49,"@pixi/core":50,"@pixi/mesh":64}],64:[function(require,module,exports){
 /*!
  * @pixi/mesh - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -27137,7 +27495,7 @@ exports.MeshGeometry = MeshGeometry;
 exports.MeshMaterial = MeshMaterial;
 
 
-},{"@pixi/constants":45,"@pixi/core":46,"@pixi/display":47,"@pixi/math":58,"@pixi/settings":68,"@pixi/utils":76}],61:[function(require,module,exports){
+},{"@pixi/constants":49,"@pixi/core":50,"@pixi/display":51,"@pixi/math":62,"@pixi/settings":72,"@pixi/utils":80}],65:[function(require,module,exports){
 /*!
  * @pixi/mixin-cache-as-bitmap - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -27467,7 +27825,7 @@ display.DisplayObject.prototype._cacheAsBitmapDestroy = function _cacheAsBitmapD
 exports.CacheData = CacheData;
 
 
-},{"@pixi/core":46,"@pixi/display":47,"@pixi/math":58,"@pixi/settings":68,"@pixi/sprite":71,"@pixi/utils":76}],62:[function(require,module,exports){
+},{"@pixi/core":50,"@pixi/display":51,"@pixi/math":62,"@pixi/settings":72,"@pixi/sprite":75,"@pixi/utils":80}],66:[function(require,module,exports){
 /*!
  * @pixi/mixin-get-child-by-name - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -27519,7 +27877,7 @@ display.Container.prototype.getChildByName = function getChildByName(name, deep)
 };
 
 
-},{"@pixi/display":47}],63:[function(require,module,exports){
+},{"@pixi/display":51}],67:[function(require,module,exports){
 /*!
  * @pixi/mixin-get-global-position - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -27557,7 +27915,7 @@ display.DisplayObject.prototype.getGlobalPosition = function getGlobalPosition(p
 };
 
 
-},{"@pixi/display":47,"@pixi/math":58}],64:[function(require,module,exports){
+},{"@pixi/display":51,"@pixi/math":62}],68:[function(require,module,exports){
 /*!
  * @pixi/particles - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -28374,7 +28732,7 @@ exports.ParticleContainer = ParticleContainer;
 exports.ParticleRenderer = ParticleRenderer;
 
 
-},{"@pixi/constants":45,"@pixi/core":46,"@pixi/display":47,"@pixi/math":58,"@pixi/utils":76}],65:[function(require,module,exports){
+},{"@pixi/constants":49,"@pixi/core":50,"@pixi/display":51,"@pixi/math":62,"@pixi/utils":80}],69:[function(require,module,exports){
 /*!
  * @pixi/polyfill - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -28493,7 +28851,7 @@ if (!window.Int32Array) {
 }
 
 
-},{"es6-promise-polyfill":78,"object-assign":83}],66:[function(require,module,exports){
+},{"es6-promise-polyfill":82,"object-assign":87}],70:[function(require,module,exports){
 /*!
  * @pixi/prepare - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -29136,7 +29494,7 @@ exports.Prepare = Prepare;
 exports.TimeLimiter = TimeLimiter;
 
 
-},{"@pixi/core":46,"@pixi/display":47,"@pixi/graphics":55,"@pixi/settings":68,"@pixi/text":74,"@pixi/ticker":75}],67:[function(require,module,exports){
+},{"@pixi/core":50,"@pixi/display":51,"@pixi/graphics":59,"@pixi/settings":72,"@pixi/text":78,"@pixi/ticker":79}],71:[function(require,module,exports){
 /*!
  * @pixi/runner - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -29340,7 +29698,7 @@ Object.defineProperties(Runner.prototype, {
 exports.Runner = Runner;
 
 
-},{}],68:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 /*!
  * @pixi/settings - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -29630,7 +29988,7 @@ exports.isMobile = isMobile;
 exports.settings = settings;
 
 
-},{"ismobilejs":80}],69:[function(require,module,exports){
+},{"ismobilejs":84}],73:[function(require,module,exports){
 /*!
  * @pixi/sprite-animated - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -30104,7 +30462,7 @@ var AnimatedSprite = /** @class */ (function (_super) {
 exports.AnimatedSprite = AnimatedSprite;
 
 
-},{"@pixi/core":46,"@pixi/sprite":71,"@pixi/ticker":75}],70:[function(require,module,exports){
+},{"@pixi/core":50,"@pixi/sprite":75,"@pixi/ticker":79}],74:[function(require,module,exports){
 /*!
  * @pixi/sprite-tiling - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -30519,7 +30877,7 @@ exports.TilingSprite = TilingSprite;
 exports.TilingSpriteRenderer = TilingSpriteRenderer;
 
 
-},{"@pixi/constants":45,"@pixi/core":46,"@pixi/math":58,"@pixi/sprite":71,"@pixi/utils":76}],71:[function(require,module,exports){
+},{"@pixi/constants":49,"@pixi/core":50,"@pixi/math":62,"@pixi/sprite":75,"@pixi/utils":80}],75:[function(require,module,exports){
 /*!
  * @pixi/sprite - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -31114,7 +31472,7 @@ var Sprite = /** @class */ (function (_super) {
 exports.Sprite = Sprite;
 
 
-},{"@pixi/constants":45,"@pixi/core":46,"@pixi/display":47,"@pixi/math":58,"@pixi/settings":68,"@pixi/utils":76}],72:[function(require,module,exports){
+},{"@pixi/constants":49,"@pixi/core":50,"@pixi/display":51,"@pixi/math":62,"@pixi/settings":72,"@pixi/utils":80}],76:[function(require,module,exports){
 /*!
  * @pixi/spritesheet - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -31458,7 +31816,7 @@ exports.Spritesheet = Spritesheet;
 exports.SpritesheetLoader = SpritesheetLoader;
 
 
-},{"@pixi/core":46,"@pixi/loaders":57,"@pixi/math":58,"@pixi/utils":76}],73:[function(require,module,exports){
+},{"@pixi/core":50,"@pixi/loaders":61,"@pixi/math":62,"@pixi/utils":80}],77:[function(require,module,exports){
 /*!
  * @pixi/text-bitmap - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -33263,7 +33621,7 @@ exports.BitmapFontLoader = BitmapFontLoader;
 exports.BitmapText = BitmapText;
 
 
-},{"@pixi/core":46,"@pixi/display":47,"@pixi/loaders":57,"@pixi/math":58,"@pixi/mesh":60,"@pixi/settings":68,"@pixi/text":74,"@pixi/utils":76}],74:[function(require,module,exports){
+},{"@pixi/core":50,"@pixi/display":51,"@pixi/loaders":61,"@pixi/math":62,"@pixi/mesh":64,"@pixi/settings":72,"@pixi/text":78,"@pixi/utils":80}],78:[function(require,module,exports){
 /*!
  * @pixi/text - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -35324,7 +35682,7 @@ exports.TextMetrics = TextMetrics;
 exports.TextStyle = TextStyle;
 
 
-},{"@pixi/core":46,"@pixi/math":58,"@pixi/settings":68,"@pixi/sprite":71,"@pixi/utils":76}],75:[function(require,module,exports){
+},{"@pixi/core":50,"@pixi/math":62,"@pixi/settings":72,"@pixi/sprite":75,"@pixi/utils":80}],79:[function(require,module,exports){
 /*!
  * @pixi/ticker - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -36176,7 +36534,7 @@ exports.Ticker = Ticker;
 exports.TickerPlugin = TickerPlugin;
 
 
-},{"@pixi/settings":68}],76:[function(require,module,exports){
+},{"@pixi/settings":72}],80:[function(require,module,exports){
 /*!
  * @pixi/utils - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -37113,7 +37471,7 @@ exports.trimCanvas = trimCanvas;
 exports.uid = uid;
 
 
-},{"@pixi/constants":45,"@pixi/settings":68,"earcut":77,"eventemitter3":79,"url":93}],77:[function(require,module,exports){
+},{"@pixi/constants":49,"@pixi/settings":72,"earcut":81,"eventemitter3":83,"url":97}],81:[function(require,module,exports){
 'use strict';
 
 module.exports = earcut;
@@ -37794,7 +38152,7 @@ earcut.flatten = function (data) {
     return result;
 };
 
-},{}],78:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 (function (global,setImmediate){(function (){
 (function(global){
 
@@ -38144,7 +38502,7 @@ Promise.reject = function(reason){
 })(typeof window != 'undefined' ? window : typeof global != 'undefined' ? global : typeof self != 'undefined' ? self : this);
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("timers").setImmediate)
-},{"timers":92}],79:[function(require,module,exports){
+},{"timers":96}],83:[function(require,module,exports){
 'use strict';
 
 var has = Object.prototype.hasOwnProperty
@@ -38482,7 +38840,7 @@ if ('undefined' !== typeof module) {
   module.exports = EventEmitter;
 }
 
-},{}],80:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -38492,7 +38850,7 @@ __export(require("./isMobile"));
 var isMobile_1 = require("./isMobile");
 exports["default"] = isMobile_1["default"];
 
-},{"./isMobile":81}],81:[function(require,module,exports){
+},{"./isMobile":85}],85:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var appleIphone = /iPhone/i;
@@ -38621,7 +38979,7 @@ function isMobile(param) {
 }
 exports["default"] = isMobile;
 
-},{}],82:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -38788,7 +39146,7 @@ MiniSignal.MiniSignalBinding = MiniSignalBinding;
 exports['default'] = MiniSignal;
 module.exports = exports['default'];
 
-},{}],83:[function(require,module,exports){
+},{}],87:[function(require,module,exports){
 /*
 object-assign
 (c) Sindre Sorhus
@@ -38880,7 +39238,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 	return to;
 };
 
-},{}],84:[function(require,module,exports){
+},{}],88:[function(require,module,exports){
 'use strict'
 
 function parseURI (str, opts) {
@@ -38931,7 +39289,7 @@ function parseURI (str, opts) {
 
 module.exports = parseURI
 
-},{}],85:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 /*!
  * pixi.js - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -40497,7 +40855,7 @@ exports.filters = filters;
 exports.useDeprecated = useDeprecated;
 
 
-},{"@pixi/accessibility":43,"@pixi/app":44,"@pixi/constants":45,"@pixi/core":46,"@pixi/display":47,"@pixi/extract":48,"@pixi/filter-alpha":49,"@pixi/filter-blur":50,"@pixi/filter-color-matrix":51,"@pixi/filter-displacement":52,"@pixi/filter-fxaa":53,"@pixi/filter-noise":54,"@pixi/graphics":55,"@pixi/interaction":56,"@pixi/loaders":57,"@pixi/math":58,"@pixi/mesh":60,"@pixi/mesh-extras":59,"@pixi/mixin-cache-as-bitmap":61,"@pixi/mixin-get-child-by-name":62,"@pixi/mixin-get-global-position":63,"@pixi/particles":64,"@pixi/polyfill":65,"@pixi/prepare":66,"@pixi/runner":67,"@pixi/settings":68,"@pixi/sprite":71,"@pixi/sprite-animated":69,"@pixi/sprite-tiling":70,"@pixi/spritesheet":72,"@pixi/text":74,"@pixi/text-bitmap":73,"@pixi/ticker":75,"@pixi/utils":76}],86:[function(require,module,exports){
+},{"@pixi/accessibility":47,"@pixi/app":48,"@pixi/constants":49,"@pixi/core":50,"@pixi/display":51,"@pixi/extract":52,"@pixi/filter-alpha":53,"@pixi/filter-blur":54,"@pixi/filter-color-matrix":55,"@pixi/filter-displacement":56,"@pixi/filter-fxaa":57,"@pixi/filter-noise":58,"@pixi/graphics":59,"@pixi/interaction":60,"@pixi/loaders":61,"@pixi/math":62,"@pixi/mesh":64,"@pixi/mesh-extras":63,"@pixi/mixin-cache-as-bitmap":65,"@pixi/mixin-get-child-by-name":66,"@pixi/mixin-get-global-position":67,"@pixi/particles":68,"@pixi/polyfill":69,"@pixi/prepare":70,"@pixi/runner":71,"@pixi/settings":72,"@pixi/sprite":75,"@pixi/sprite-animated":73,"@pixi/sprite-tiling":74,"@pixi/spritesheet":76,"@pixi/text":78,"@pixi/text-bitmap":77,"@pixi/ticker":79,"@pixi/utils":80}],90:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -40683,7 +41041,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],87:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 (function (global){(function (){
 /*! https://mths.be/punycode v1.3.2 by @mathias */
 ;(function(root) {
@@ -41217,7 +41575,7 @@ process.umask = function() { return 0; };
 }(this));
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],88:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -41303,7 +41661,7 @@ var isArray = Array.isArray || function (xs) {
   return Object.prototype.toString.call(xs) === '[object Array]';
 };
 
-},{}],89:[function(require,module,exports){
+},{}],93:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -41390,13 +41748,13 @@ var objectKeys = Object.keys || function (obj) {
   return res;
 };
 
-},{}],90:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
 'use strict';
 
 exports.decode = exports.parse = require('./decode');
 exports.encode = exports.stringify = require('./encode');
 
-},{"./decode":88,"./encode":89}],91:[function(require,module,exports){
+},{"./decode":92,"./encode":93}],95:[function(require,module,exports){
 /*!
  * resource-loader - v3.0.1
  * https://github.com/pixijs/pixi-sound
@@ -43747,7 +44105,7 @@ exports.encodeBinary = encodeBinary;
 exports.middleware = index;
 
 
-},{"mini-signals":82,"parse-uri":84}],92:[function(require,module,exports){
+},{"mini-signals":86,"parse-uri":88}],96:[function(require,module,exports){
 (function (setImmediate,clearImmediate){(function (){
 var nextTick = require('process/browser.js').nextTick;
 var apply = Function.prototype.apply;
@@ -43826,7 +44184,7 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   delete immediateIds[id];
 };
 }).call(this)}).call(this,require("timers").setImmediate,require("timers").clearImmediate)
-},{"process/browser.js":86,"timers":92}],93:[function(require,module,exports){
+},{"process/browser.js":90,"timers":96}],97:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -44560,7 +44918,7 @@ Url.prototype.parseHost = function() {
   if (host) this.hostname = host;
 };
 
-},{"./util":94,"punycode":87,"querystring":90}],94:[function(require,module,exports){
+},{"./util":98,"punycode":91,"querystring":94}],98:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -44578,4 +44936,4 @@ module.exports = {
   }
 };
 
-},{}]},{},[5]);
+},{}]},{},[6]);

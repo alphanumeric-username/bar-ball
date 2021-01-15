@@ -1,5 +1,5 @@
 import EventImplementation from './event-implementation';
-import { getConfig } from '../../../../config/event';
+import { getEventConfig } from '../../../../config/event';
 import GameScene from '../../../game-scene';
 import { Scene } from '../../../scene';
 import Vec2 from '../../../../math/vec2';
@@ -45,13 +45,13 @@ class RainDrop extends Container {
 
 class RainEvent extends EventImplementation {
     name: string = 'rain';
-    likeliness: number = getConfig().rain.likeliness;
+    likeliness: number = getEventConfig().rain.likeliness;
     currentScene: GameScene;
 
     gravity: Vec2 = new Vec2(0, 0.25);
 
     raindrops: RainDrop[];
-    readonly dropGenerationPeriod: number = getConfig().rain['drop-generation-period'];
+    readonly dropGenerationPeriod: number = getEventConfig().rain['drop-generation-period'];
     dropGenerationTimeCounter: number = 0;
 
     state: 'stopped' | 'stopping' | 'raining' = 'stopped';

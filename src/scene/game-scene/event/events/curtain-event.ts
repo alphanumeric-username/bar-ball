@@ -3,20 +3,20 @@ import GameScene from '../../../game-scene';
 import { Scene } from '../../../scene';
 import { screenResolution } from '../../../../app';
 import { Graphics } from 'pixi.js';
-import { getConfig } from '../../../../config/event';
+import { getEventConfig } from '../../../../config/event';
 import { colors } from '../../../../constants';
 import { clamp } from '../../../../math/util';
 
 class CurtainEvent extends EventImplementation {
     name: string = 'curtain';
-    likeliness: number = getConfig().curtain.likeliness;
+    likeliness: number = getEventConfig().curtain.likeliness;
     currentScene: GameScene;
 
     readonly width: number = screenResolution.width/2;
     readonly heigth: number = screenResolution.height;
 
     curtain: Graphics;
-    readonly curtainAlpha = getConfig().curtain.curtain.alpha;
+    readonly curtainAlpha = getEventConfig().curtain.curtain.alpha;
 
     state: 'stopped' | 'starting' | 'started' | 'stopping' = 'stopped';
 

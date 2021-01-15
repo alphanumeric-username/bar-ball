@@ -7,7 +7,7 @@ import Vec2 from "../../../../math/vec2";
 import { Container } from "pixi.js";
 import { Triangle } from "../../../../ui/geometry";
 import { colors } from "../../../../constants";
-import { getConfig } from "../../../../config/event";
+import { getEventConfig } from "../../../../config/event";
 
 
 class RandomThrowEvent extends EventImplementation {
@@ -18,7 +18,7 @@ class RandomThrowEvent extends EventImplementation {
     private _currentAngle: number = 0;
     private _lastBallState: BallState;
     name: string = 'random-throw';
-    likeliness: number = getConfig()["random-throw"].likeliness;
+    likeliness: number = getEventConfig()["random-throw"].likeliness;
     arrow: Container;
 
     startTime: number = 2;

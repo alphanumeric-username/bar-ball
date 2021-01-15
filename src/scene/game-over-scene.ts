@@ -28,6 +28,7 @@ class GameOverScene extends Scene {
 
         const playAgainButton = new Button('Play Again', new TextStyle({
             fill: 'white',
+            fontFamily: 'Roboto',
             fontSize: 48
         }), { padding: 8, backgroundColor: colors.primary });
         playAgainButton.position.set(
@@ -41,6 +42,7 @@ class GameOverScene extends Scene {
 
         const scoreText = new Text('Score:', new TextStyle({
             fill: colors.secondary_dark,
+            fontFamily: 'Roboto',
             fontSize: 24
         }));
 
@@ -49,6 +51,7 @@ class GameOverScene extends Scene {
         
         const gameOverText = new Text('Game Over', new TextStyle({
             fill: colors.primary,
+            fontFamily: 'Roboto',
             fontSize: 72
         }));
         

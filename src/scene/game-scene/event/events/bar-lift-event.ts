@@ -1,4 +1,4 @@
-import { getConfig } from "../../../../config/event";
+import { getEventConfig } from "../../../../config/event";
 import { clamp } from "../../../../math/util";
 import GameScene from "../../../game-scene";
 import { Scene } from "../../../scene";
@@ -6,13 +6,13 @@ import EventImplementation from "./event-implementation";
 
 class BarLiftEvent extends EventImplementation {
     name: string = 'bar-lift';
-    likeliness = getConfig()["bar-lift"].likeliness;
+    likeliness = getEventConfig()["bar-lift"].likeliness;
 
     currentScene: GameScene;
 
-    readonly liftAmount = getConfig()["bar-lift"]["lift-amount"];
-    readonly delay = getConfig()["bar-lift"].delay;
-    readonly transitionTime = getConfig()["bar-lift"]["transition-time"];
+    readonly liftAmount = getEventConfig()["bar-lift"]["lift-amount"];
+    readonly delay = getEventConfig()["bar-lift"].delay;
+    readonly transitionTime = getEventConfig()["bar-lift"]["transition-time"];
 
     lastY: number;
     targetY: number;

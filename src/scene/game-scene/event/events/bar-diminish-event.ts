@@ -1,4 +1,4 @@
-import { getConfig } from "../../../../config/event";
+import { getEventConfig } from "../../../../config/event";
 import { clamp } from "../../../../math/util";
 import GameScene from "../../../game-scene";
 import { Scene } from "../../../scene";
@@ -6,16 +6,16 @@ import EventImplementation from "./event-implementation";
 
 class BarDiminishEvent extends EventImplementation {
     name: string = 'bar-diminish';
-    likeliness = getConfig()["bar-diminish"].likeliness;
+    likeliness = getEventConfig()["bar-diminish"].likeliness;
     currentScene: GameScene;
 
-    readonly diminishFactor: number = getConfig()["bar-diminish"]["diminish-factor"];
+    readonly diminishFactor: number = getEventConfig()["bar-diminish"]["diminish-factor"];
     targetWidth: number;
     lastWidth: number;
 
     state: 'stopped' | 'starting' | 'started' | 'stopping';
 
-    readonly transitionTime = getConfig()["bar-diminish"]["transition-time"];
+    readonly transitionTime = getEventConfig()["bar-diminish"]["transition-time"];
 
     start(scene: Scene, duration: number) {
         super.start(scene, duration);

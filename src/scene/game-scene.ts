@@ -8,6 +8,7 @@ import { Line, Circle, ShapeSpace } from '../physics/collision';
 import { Container } from 'pixi.js';
 import { IEventManager } from './game-scene/event/event-interface';
 import { createEventManager } from './game-scene/event';
+import { saveScore } from '../config/leaderboard';
 
 
 class GameScene extends Scene {
@@ -50,8 +51,10 @@ class GameScene extends Scene {
         this.ball.y = (screenResolution.height - this.ball.y)/2
         this.ball.onLose = () => {
             this.eventManager.gameOver();
-            this.sceneManager.changeScene(GameOverScene, { score: this.scoreDisplay.getScore(), previousScene: GameScene });
             this._running = false;
+            saveScore({ score: this.scoreDisplay.getScore() }).then(() => {
+                this.sceneManager.changeScene(GameOverScene, { score: this.scoreDisplay.getScore(), previousScene: GameScene });
+            });
         }
 
         this.scoreDisplay = new ScoreDisplay();

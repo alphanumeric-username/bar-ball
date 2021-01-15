@@ -8,12 +8,12 @@ import { Line } from "../../../../physics/collision";
 import { Container } from "pixi.js";
 import { Triangle } from "../../../../ui/geometry";
 import { colors } from "../../../../constants";
-import { getConfig } from "../../../../config/event";
+import { getEventConfig } from "../../../../config/event";
 
 
 class WindEvent extends EventImplementation {
     currentScene: GameScene;
-    likeliness: number = getConfig().wind.likeliness;
+    likeliness: number = getEventConfig().wind.likeliness;
     name: string = 'wind';
 
     windDirection: Vec2;
