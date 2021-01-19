@@ -24,7 +24,7 @@ class ScoreDisplay extends Container{
     private _createGraphics() {
         this._text = new Text(this._score.toString(), new TextStyle({
             fill: colors.secondary_dark,
-            fontFamily: 'Roboto',
+            fontFamily: 'Roboto-Thin',
             fontSize: this._fontSize
         }));
 

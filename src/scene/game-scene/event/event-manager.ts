@@ -7,12 +7,10 @@ class EventManager implements IEventManager {
     scene: Scene;
     eventTable: Map<string, IEvent> = new Map();
     
-    private _lastTime: number = 0;
     runningEvents: number = 0;
 
     constructor(scene: Scene) {
         this.scene = scene;
-        this._lastTime = new Date().valueOf()/1000;
     }
     registerEvent(event: IEvent): void {
         this.eventTable.set(event.name, event);
@@ -36,11 +34,7 @@ class EventManager implements IEventManager {
         });
     }
 
-    update(): void {
-        const t0 = this._lastTime;
-        const t = new Date().valueOf()/1000;
-        const dt = t - t0;
-        this._lastTime = t;
+    update(dt: number): void {
         var _runningEvents = 0;
         this.eventTable.forEach(e => {
             if (e.running) {

@@ -17,7 +17,7 @@ interface IEvent {
 interface IEventManager {
     scene: Scene,
     onScoreChange(e: ScoreChangeEvent): void,
-    update(): void,
+    update(dt: number): void,
     eventTable: Map<string, IEvent>,
     registerEvent(event: IEvent): void
     gameOver(): void;

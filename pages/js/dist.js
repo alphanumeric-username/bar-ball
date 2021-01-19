@@ -18,7 +18,7 @@ var app = new pixi_js_1.Application({
 document.body.appendChild(app.view);
 exports["default"] = app;
 
-},{"./constants":4,"pixi.js":89}],2:[function(require,module,exports){
+},{"./constants":4,"pixi.js":92}],2:[function(require,module,exports){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -176,7 +176,7 @@ function getScores() {
 }
 exports.getScores = getScores;
 
-},{"../service/database":42}],4:[function(require,module,exports){
+},{"../service/database":44}],4:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.colors = void 0;
@@ -207,21 +207,23 @@ var Game = /** @class */ (function () {
 }());
 exports["default"] = Game;
 
-},{"../scene/scene":37,"../scene/start-menu-scene":38}],6:[function(require,module,exports){
+},{"../scene/scene":39,"../scene/start-menu-scene":40}],6:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var event_1 = require("./config/event");
 var leaderboard_1 = require("./config/leaderboard");
 var app_1 = require("./app");
 var game_1 = require("./game/game");
-Promise.all([
-    event_1.loadEventConfig(),
-    leaderboard_1.initDatabase()
-]).then(function () {
-    new game_1["default"]({
-        app: app_1["default"]
-    });
-})["catch"](function (err) { return console.error('Could not init:\n', err); });
+window.onload = function () {
+    Promise.all([
+        event_1.loadEventConfig(),
+        leaderboard_1.initDatabase()
+    ]).then(function () {
+        new game_1["default"]({
+            app: app_1["default"]
+        });
+    })["catch"](function (err) { return console.error('Could not init:\n', err); });
+};
 
 },{"./app":1,"./config/event":2,"./config/leaderboard":3,"./game/game":5}],7:[function(require,module,exports){
 "use strict";
@@ -668,13 +670,63 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 exports.__esModule = true;
+var pixi_js_1 = require("pixi.js");
+var constants_1 = require("../../constants");
+var button_1 = require("../../ui/button");
+var HomeButton = /** @class */ (function (_super) {
+    __extends(HomeButton, _super);
+    function HomeButton() {
+        return _super.call(this, new pixi_js_1.Graphics()
+            .beginFill(0xFFFFFF)
+            .moveTo(24, 0)
+            .lineTo(0, 20)
+            .lineTo(8, 20)
+            .lineTo(8, 48)
+            .lineTo(40, 48)
+            .lineTo(40, 20)
+            .lineTo(48, 20)
+            .lineTo(24, 0)
+            .endFill()
+            .beginFill(constants_1.colors.primary)
+            .drawRect(16, 28, 16, 20)
+            .endFill(), null, {
+            padding: 16,
+            backgroundColor: constants_1.colors.primary
+        }) || this;
+    }
+    return HomeButton;
+}(button_1["default"]));
+;
+exports["default"] = HomeButton;
+
+},{"../../constants":4,"../../ui/button":46,"pixi.js":92}],19:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+exports.__esModule = true;
+var pixi_js_1 = require("pixi.js");
+require("@pixi/graphics-extras");
 var scene_1 = require("./scene");
 var start_menu_scene_1 = require("./start-menu-scene");
 var score_display_1 = require("./game-scene/score-display");
 var button_1 = require("../ui/button");
+var home_button_1 = require("./common-elements/home-button");
 var app_1 = require("../app");
-var pixi_js_1 = require("pixi.js");
 var constants_1 = require("../constants");
+var geometry_1 = require("../ui/geometry");
+var vec2_1 = require("../math/vec2");
+var game_scene_1 = require("./game-scene");
 var GameOverScene = /** @class */ (function (_super) {
     __extends(GameOverScene, _super);
     function GameOverScene() {
@@ -685,41 +737,87 @@ var GameOverScene = /** @class */ (function (_super) {
         this._previousScene = args.previousScene;
     };
     GameOverScene.prototype.initStage = function () {
-        var _this = this;
         var scoreDisplay = new score_display_1["default"]({ initialScore: this._score, fontSize: 128 });
         scoreDisplay.x = (app_1.screenResolution.width - scoreDisplay.width) / 2;
         scoreDisplay.y = 5 * app_1.screenResolution.height / 12;
-        var playAgainButton = new button_1["default"]('Play Again', new pixi_js_1.TextStyle({
-            fill: 'white',
-            fontFamily: 'Roboto',
-            fontSize: 48
-        }), { padding: 8, backgroundColor: constants_1.colors.primary });
-        playAgainButton.position.set((app_1.screenResolution.width - playAgainButton.width) / 2, 3 * app_1.screenResolution.height / 4);
-        playAgainButton.onClick = function () {
-            // this.sceneManager.changeScene(this._previousScene);
-            _this.sceneManager.changeScene(start_menu_scene_1["default"]);
-        };
         var scoreText = new pixi_js_1.Text('Score:', new pixi_js_1.TextStyle({
             fill: constants_1.colors.secondary_dark,
-            fontFamily: 'Roboto',
+            fontFamily: 'Roboto-Regular',
             fontSize: 24
         }));
         scoreText.x = (app_1.screenResolution.width - scoreText.width) / 2;
         scoreText.y = scoreDisplay.y - scoreText.height - 8;
+        var buttonContainer = new pixi_js_1.Container();
+        var playAgainButton = this._createPlayAgainButton();
+        var mainMenuButton = this._createMainMenuButton();
+        buttonContainer.addChild(playAgainButton);
+        mainMenuButton.x = playAgainButton.width + 16;
+        buttonContainer.addChild(mainMenuButton);
+        buttonContainer.position.set((app_1.screenResolution.width - buttonContainer.width) / 2, 3 * app_1.screenResolution.height / 4);
         var gameOverText = new pixi_js_1.Text('Game Over', new pixi_js_1.TextStyle({
             fill: constants_1.colors.primary,
-            fontFamily: 'Roboto',
+            fontFamily: 'Roboto-Regular',
             fontSize: 72
         }));
         gameOverText.x = (app_1.screenResolution.width - gameOverText.width) / 2;
         gameOverText.y = app_1.screenResolution.height / 6;
-        this.stage.addChild(scoreDisplay, playAgainButton, scoreText, gameOverText);
+        this.stage.addChild(scoreDisplay, scoreText, gameOverText, buttonContainer);
+    };
+    GameOverScene.prototype._createPlayAgainButton = function () {
+        var _this = this;
+        var arc = new pixi_js_1.Graphics().beginFill(0xFFFFFF)
+            .drawTorus(0, 0, 0.25, 0.5, Math.PI / 2, 7 * Math.PI / 4)
+            .endFill();
+        var _a = [Math.cos(7 * Math.PI / 4), Math.sin(7 * Math.PI / 4)], x0 = _a[0], y0 = _a[1];
+        var _b = vec2_1["default"].normal(new vec2_1["default"](x0, y0)).toTuple(), xn = _b[0], yn = _b[1];
+        var p1 = new vec2_1["default"](0.1 * x0, 0.1 * y0);
+        var p2 = new vec2_1["default"](0.65 * x0, 0.65 * y0);
+        var _c = vec2_1["default"].add(vec2_1["default"].scale(1 / 2, vec2_1["default"].add(p1, p2)), new vec2_1["default"](0.3 * xn, 0.3 * yn)).toTuple(), tipx = _c[0], tipy = _c[1];
+        var arrowTip = new geometry_1.Triangle(p1.x, p1.y, p2.x, p2.y, tipx, tipy, {
+            fill: 0xFFFFFF
+        });
+        arc.addChild(arrowTip);
+        arc.pivot.set(-0.5, -0.5);
+        arc.scale.set(48, 48);
+        var playAgainButton = new button_1["default"](arc, null, { padding: 16, backgroundColor: constants_1.colors.primary });
+        playAgainButton.onClick = function () {
+            _this.sceneManager.changeScene(game_scene_1["default"]);
+        };
+        // this.stage.addChild(playAgainButton);
+        return playAgainButton;
+    };
+    GameOverScene.prototype._createMainMenuButton = function () {
+        // const content = new Graphics()
+        // .beginFill(0xFFFFFF)
+        // .moveTo(24, 0)
+        // .lineTo(0, 20)
+        // .lineTo(8, 20)
+        // .lineTo(8, 48)
+        // .lineTo(40, 48)
+        // .lineTo(40, 20)
+        // .lineTo(48, 20)
+        // .lineTo(24, 0)
+        // .endFill()
+        // .beginFill(colors.primary)
+        // .drawRect(16, 28, 16, 20)
+        // .endFill();
+        var _this = this;
+        // const mainMenuButton = new Button(content, null, {
+        //     padding: 16,
+        //     backgroundColor: colors.primary
+        // });
+        var mainMenuButton = new home_button_1["default"]();
+        mainMenuButton.onClick = function () {
+            _this.sceneManager.changeScene(start_menu_scene_1["default"]);
+        };
+        // this.stage.addChild(mainMenuButton);
+        return mainMenuButton;
     };
     return GameOverScene;
 }(scene_1.Scene));
 exports["default"] = GameOverScene;
 
-},{"../app":1,"../constants":4,"../ui/button":44,"./game-scene/score-display":34,"./scene":37,"./start-menu-scene":38,"pixi.js":89}],19:[function(require,module,exports){
+},{"../app":1,"../constants":4,"../math/vec2":10,"../ui/button":46,"../ui/geometry":47,"./common-elements/home-button":18,"./game-scene":20,"./game-scene/score-display":36,"./scene":39,"./start-menu-scene":40,"@pixi/graphics-extras":61,"pixi.js":92}],20:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -741,18 +839,42 @@ var app_1 = require("../app");
 var ball_1 = require("./game-scene/ball");
 var bar_1 = require("./game-scene/bar");
 var score_display_1 = require("./game-scene/score-display");
+var pause_button_1 = require("./game-scene/pause-button");
 var collision_1 = require("../physics/collision");
+var pixi_js_1 = require("pixi.js");
 var event_1 = require("./game-scene/event");
 var leaderboard_1 = require("../config/leaderboard");
+var constants_1 = require("../constants");
+var util_1 = require("../math/util");
 var GameScene = /** @class */ (function (_super) {
     __extends(GameScene, _super);
     function GameScene() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.resumeTime = 3;
+        return _this;
     }
     GameScene.prototype.initStage = function () {
         var _this = this;
         this.eventManager = event_1.createEventManager(this);
         this.shapeSpace = new collision_1.ShapeSpace();
+        this.pauseKeyboardCallback = function (e) {
+            if (e.key == ' ') {
+                _this.pauseButton.onClick();
+            }
+        };
+        window.addEventListener('keyup', this.pauseKeyboardCallback);
+        this._createBounds();
+        this._createScoreDisplay();
+        this._createBar();
+        this._createBall();
+        this._createPauseButton();
+        this._createResumeCountdown();
+    };
+    GameScene.prototype.afterInitStage = function () {
+        this.state = 'running';
+        this.update();
+    };
+    GameScene.prototype._createBounds = function () {
         this.leftBound = new collision_1.Line(0, app_1.screenResolution.height, 0, 0);
         this.topBound = new collision_1.Line(0, 0, app_1.screenResolution.width, 0);
         this.rightBound = new collision_1.Line(app_1.screenResolution.width, 0, app_1.screenResolution.width, app_1.screenResolution.height);
@@ -761,6 +883,13 @@ var GameScene = /** @class */ (function (_super) {
         this.topBound.group.add('reflective');
         this.rightBound.group.add('reflective');
         this.bottomBound.group.add('lose');
+        this.shapeSpace.add(this.leftBound);
+        this.shapeSpace.add(this.topBound);
+        this.shapeSpace.add(this.rightBound);
+        this.shapeSpace.add(this.bottomBound);
+    };
+    GameScene.prototype._createBar = function () {
+        var _this = this;
         this.bar = new bar_1["default"]();
         this.bar.y = app_1.screenResolution.height - this.bar.height - 10;
         this.bar.onCollideBall = function () {
@@ -768,39 +897,84 @@ var GameScene = /** @class */ (function (_super) {
             _this.eventManager.onScoreChange({ score: _this.scoreDisplay.getScore() });
             _this.centerX(_this.scoreDisplay);
         };
+        this.shapeSpace.add(this.bar.hitbox);
+        this.stage.addChild(this.bar);
+    };
+    GameScene.prototype._createBall = function () {
+        var _this = this;
         this.ball = new ball_1["default"](16);
         this.ball.x = (app_1.screenResolution.width - this.ball.x) / 2;
         this.ball.y = (app_1.screenResolution.height - this.ball.y) / 2;
         this.ball.onLose = function () {
             _this.eventManager.gameOver();
-            _this._running = false;
+            _this.cleanup();
             leaderboard_1.saveScore({ score: _this.scoreDisplay.getScore() }).then(function () {
                 _this.sceneManager.changeScene(game_over_scene_1["default"], { score: _this.scoreDisplay.getScore(), previousScene: GameScene });
             });
         };
+        this.shapeSpace.add(this.ball.hitbox);
+        this.stage.addChild(this.ball);
+    };
+    GameScene.prototype._createScoreDisplay = function () {
         this.scoreDisplay = new score_display_1["default"]();
         this.scoreDisplay.x = (app_1.screenResolution.width - this.scoreDisplay.width) / 2;
         this.scoreDisplay.y = (app_1.screenResolution.height) / 6;
-        this.shapeSpace.add(this.bar.hitbox);
-        this.shapeSpace.add(this.ball.hitbox);
-        this.shapeSpace.add(this.leftBound);
-        this.shapeSpace.add(this.topBound);
-        this.shapeSpace.add(this.rightBound);
-        this.shapeSpace.add(this.bottomBound);
-        this.stage.addChild(this.scoreDisplay, this.bar, this.ball);
+        this.stage.addChild(this.scoreDisplay);
     };
-    GameScene.prototype.afterInitStage = function () {
-        this._running = true;
-        this.update();
+    GameScene.prototype._createPauseButton = function () {
+        var _this = this;
+        this.pauseButton = new pause_button_1["default"](32);
+        this.pauseButton.onClick = function () {
+            if (_this.state == 'running') {
+                _this.pauseButton.pause();
+                _this.state = 'paused';
+            }
+            else if (_this.state == 'paused') {
+                _this.pauseButton.resume();
+                _this.elapsedTime = 0;
+                _this.state = 'resuming';
+                _this.centerObj(_this.resumeCountdown);
+                _this.resumeCountdown.text = '3';
+                _this.stage.addChild(_this.resumeCountdown);
+            }
+        };
+        this.pauseButton.x = 16;
+        this.pauseButton.y = 16;
+        this.stage.addChild(this.pauseButton);
+    };
+    GameScene.prototype._createResumeCountdown = function () {
+        this.resumeCountdown = new pixi_js_1.Text('', new pixi_js_1.TextStyle({
+            fontSize: 256,
+            fontFamily: 'Roboto-Thin',
+            fill: constants_1.colors.primary
+        }));
+        this.resumeCountdown.alpha = 0.8;
+        this.centerObj(this.resumeCountdown);
     };
     GameScene.prototype.update = function () {
         var _this = this;
-        if (this._running) {
-            this.bar.update();
-            this.ball.update();
-            this.shapeSpace.update();
-            this.eventManager.update();
-            requestAnimationFrame(function () { return _this.update(); });
+        _super.prototype.update.call(this);
+        switch (this.state) {
+            case 'running':
+                this.bar.update();
+                this.ball.update();
+                this.shapeSpace.update();
+                this.eventManager.update(this.dt);
+                requestAnimationFrame(function () { return _this.update(); });
+                break;
+            case 'resuming':
+                // console.log(Math.floor(3 - this.elapsedTime) + 1);
+                this.resumeCountdown.text = util_1.clamp(Math.floor(3 - this.elapsedTime) + 1, 1, 3).toString();
+                this.centerObj(this.resumeCountdown);
+                if (this.elapsedTime >= this.resumeTime) {
+                    this.stage.removeChild(this.resumeCountdown);
+                    this.state = 'running';
+                }
+                requestAnimationFrame(function () { return _this.update(); });
+                break;
+            case 'paused':
+                requestAnimationFrame(function () { return _this.update(); });
+                break;
         }
     };
     GameScene.prototype.centerX = function (obj) {
@@ -809,11 +983,19 @@ var GameScene = /** @class */ (function (_super) {
     GameScene.prototype.centerY = function (obj) {
         obj.y = (app_1.screenResolution.height - obj.height) / 2;
     };
+    GameScene.prototype.cleanup = function () {
+        this.state = 'stopped';
+        window.removeEventListener('keydown', this.pauseKeyboardCallback);
+    };
+    GameScene.prototype.centerObj = function (obj) {
+        this.centerX(obj);
+        this.centerY(obj);
+    };
     return GameScene;
 }(scene_1.Scene));
 exports["default"] = GameScene;
 
-},{"../app":1,"../config/leaderboard":3,"../physics/collision":11,"./game-over-scene":18,"./game-scene/ball":20,"./game-scene/bar":21,"./game-scene/event":22,"./game-scene/score-display":34,"./scene":37}],20:[function(require,module,exports){
+},{"../app":1,"../config/leaderboard":3,"../constants":4,"../math/util":9,"../physics/collision":11,"./game-over-scene":19,"./game-scene/ball":21,"./game-scene/bar":22,"./game-scene/event":23,"./game-scene/pause-button":35,"./game-scene/score-display":36,"./scene":39,"pixi.js":92}],21:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -998,7 +1180,7 @@ var Ball = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = Ball;
 
-},{"../../constants":4,"../../math/util":9,"../../math/vec2":10,"../../physics/collision":11,"../../service/audio":39,"pixi.js":89}],21:[function(require,module,exports){
+},{"../../constants":4,"../../math/util":9,"../../math/vec2":10,"../../physics/collision":11,"../../service/audio":41,"pixi.js":92}],22:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1054,7 +1236,7 @@ var Bar = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = Bar;
 
-},{"../../app":1,"../../constants":4,"../../math/util":9,"../../physics/collision":11,"../../service/mouse":43,"pixi.js":89}],22:[function(require,module,exports){
+},{"../../app":1,"../../constants":4,"../../math/util":9,"../../physics/collision":11,"../../service/mouse":45,"pixi.js":92}],23:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.createEventManager = void 0;
@@ -1083,16 +1265,14 @@ function createEventManager(scene) {
 }
 exports.createEventManager = createEventManager;
 
-},{"./event/event-manager":23,"./event/events/ball-diminish-event":24,"./event/events/bar-diminish-event":25,"./event/events/bar-lift-event":26,"./event/events/curtain-event":27,"./event/events/no-gravity-event":29,"./event/events/rain-event":30,"./event/events/random-bar-event":31,"./event/events/random-throw-event":32,"./event/events/wind-event":33}],23:[function(require,module,exports){
+},{"./event/event-manager":24,"./event/events/ball-diminish-event":25,"./event/events/bar-diminish-event":26,"./event/events/bar-lift-event":27,"./event/events/curtain-event":28,"./event/events/no-gravity-event":30,"./event/events/rain-event":31,"./event/events/random-bar-event":32,"./event/events/random-throw-event":33,"./event/events/wind-event":34}],24:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var EventManager = /** @class */ (function () {
     function EventManager(scene) {
         this.eventTable = new Map();
-        this._lastTime = 0;
         this.runningEvents = 0;
         this.scene = scene;
-        this._lastTime = new Date().valueOf() / 1000;
     }
     EventManager.prototype.registerEvent = function (event) {
         this.eventTable.set(event.name, event);
@@ -1116,11 +1296,7 @@ var EventManager = /** @class */ (function () {
             }
         });
     };
-    EventManager.prototype.update = function () {
-        var t0 = this._lastTime;
-        var t = new Date().valueOf() / 1000;
-        var dt = t - t0;
-        this._lastTime = t;
+    EventManager.prototype.update = function (dt) {
         var _runningEvents = 0;
         this.eventTable.forEach(function (e) {
             if (e.running) {
@@ -1137,7 +1313,7 @@ var EventManager = /** @class */ (function () {
 }());
 exports["default"] = EventManager;
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1209,7 +1385,7 @@ var BallDiminishEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = BallDiminishEvent;
 
-},{"../../../../config/event":2,"../../../../math/util":9,"./event-implementation":28}],25:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../math/util":9,"./event-implementation":29}],26:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1280,7 +1456,7 @@ var BarDiminishEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = BarDiminishEvent;
 
-},{"../../../../config/event":2,"../../../../math/util":9,"./event-implementation":28}],26:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../math/util":9,"./event-implementation":29}],27:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1358,7 +1534,7 @@ var BarLiftEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = BarLiftEvent;
 
-},{"../../../../config/event":2,"../../../../math/util":9,"./event-implementation":28}],27:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../math/util":9,"./event-implementation":29}],28:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1447,7 +1623,7 @@ var CurtainEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = CurtainEvent;
 
-},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":9,"./event-implementation":28,"pixi.js":89}],28:[function(require,module,exports){
+},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":9,"./event-implementation":29,"pixi.js":92}],29:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var EventImplementation = /** @class */ (function () {
@@ -1476,7 +1652,7 @@ var EventImplementation = /** @class */ (function () {
 }());
 exports["default"] = EventImplementation;
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1541,7 +1717,7 @@ var NoGravityEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = NoGravityEvent;
 
-},{"../../../../config/event":2,"../../../../constants":4,"../../../../math/vec2":10,"./event-implementation":28}],30:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../constants":4,"../../../../math/vec2":10,"./event-implementation":29}],31:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1659,7 +1835,7 @@ var RainEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = RainEvent;
 
-},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":4,"../../../../math/vec2":10,"../../../../physics/collision":11,"./event-implementation":28,"pixi.js":89}],31:[function(require,module,exports){
+},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":4,"../../../../math/vec2":10,"../../../../physics/collision":11,"./event-implementation":29,"pixi.js":92}],32:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1763,7 +1939,7 @@ var RandomBarEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = RandomBarEvent;
 
-},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":9,"../../../../physics/collision":11,"./event-implementation":28,"pixi.js":89}],32:[function(require,module,exports){
+},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":9,"../../../../physics/collision":11,"./event-implementation":29,"pixi.js":92}],33:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1876,7 +2052,7 @@ var RandomThrowEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = RandomThrowEvent;
 
-},{"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":9,"../../../../math/vec2":10,"../../../../ui/geometry":45,"./event-implementation":28}],33:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":9,"../../../../math/vec2":10,"../../../../ui/geometry":47,"./event-implementation":29}],34:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1957,7 +2133,62 @@ var WindEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = WindEvent;
 
-},{"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":9,"../../../../math/vec2":10,"../../../../ui/geometry":45,"./event-implementation":28}],34:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":9,"../../../../math/vec2":10,"../../../../ui/geometry":47,"./event-implementation":29}],35:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+exports.__esModule = true;
+var pixi_js_1 = require("pixi.js");
+var constants_1 = require("../../constants");
+var geometry_1 = require("../../ui/geometry");
+var PauseButton = /** @class */ (function (_super) {
+    __extends(PauseButton, _super);
+    function PauseButton(size) {
+        var _this = _super.call(this) || this;
+        _this.size = size;
+        _this._createGraphics();
+        _this.interactive = true;
+        _this.addListener('click', function () { return _this.onClick(); });
+        return _this;
+    }
+    PauseButton.prototype.onClick = function () { };
+    PauseButton.prototype._createGraphics = function () {
+        this.addChild(new pixi_js_1.Graphics().beginFill(constants_1.colors.secondary)
+            .drawRect(0, 0, this.size, this.size)
+            .endFill());
+        this.pauseGraphics = new pixi_js_1.Graphics().beginFill(constants_1.colors.primary)
+            .drawRect(0, 0, this.size / 3, this.size)
+            .drawRect(2 * this.size / 3, 0, this.size / 3, this.size)
+            .endFill();
+        this.resumeGraphics = new geometry_1.Triangle(0, 0, this.size, this.size / 2, 0, this.size, {
+            fill: constants_1.colors.primary
+        });
+        this.addChild(this.pauseGraphics);
+    };
+    PauseButton.prototype.pause = function () {
+        this.removeChild(this.pauseGraphics);
+        this.addChild(this.resumeGraphics);
+    };
+    PauseButton.prototype.resume = function () {
+        this.removeChild(this.resumeGraphics);
+        this.addChild(this.pauseGraphics);
+    };
+    return PauseButton;
+}(pixi_js_1.Container));
+exports["default"] = PauseButton;
+
+},{"../../constants":4,"../../ui/geometry":47,"pixi.js":92}],36:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1988,7 +2219,7 @@ var ScoreDisplay = /** @class */ (function (_super) {
     ScoreDisplay.prototype._createGraphics = function () {
         this._text = new pixi_js_1.Text(this._score.toString(), new pixi_js_1.TextStyle({
             fill: constants_1.colors.secondary_dark,
-            fontFamily: 'Roboto',
+            fontFamily: 'Roboto-Thin',
             fontSize: this._fontSize
         }));
         this.addChild(this._text);
@@ -1997,7 +2228,7 @@ var ScoreDisplay = /** @class */ (function (_super) {
         return this._score;
     };
     ScoreDisplay.prototype.add = function () {
-        this._score += 1;
+        this._score += 1000;
         this.updateGraphics();
     };
     ScoreDisplay.prototype.updateGraphics = function () {
@@ -2007,7 +2238,7 @@ var ScoreDisplay = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = ScoreDisplay;
 
-},{"../../constants":4,"pixi.js":89}],35:[function(require,module,exports){
+},{"../../constants":4,"pixi.js":92}],37:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2028,8 +2259,8 @@ var leaderboard_display_1 = require("./leaderboard-scene/leaderboard-display");
 var app_1 = require("../app");
 var pixi_js_1 = require("pixi.js");
 var constants_1 = require("../constants");
-var button_1 = require("../ui/button");
 var start_menu_scene_1 = require("./start-menu-scene");
+var home_button_1 = require("./common-elements/home-button");
 var LeaderboardScene = /** @class */ (function (_super) {
     __extends(LeaderboardScene, _super);
     function LeaderboardScene() {
@@ -2043,20 +2274,18 @@ var LeaderboardScene = /** @class */ (function (_super) {
         var padding = 16;
         var title = new pixi_js_1.Text('Leaderboard', new pixi_js_1.TextStyle({
             fill: constants_1.colors.primary,
-            fontFamily: 'Roboto',
+            fontFamily: 'Roboto-Regular',
             fontSize: 72
         }));
         title.x = (app_1.screenResolution.width - title.width) / 2;
-        title.y = app_1.screenResolution.height / 8;
+        title.y = 32;
         var leaderboardDisplay = new leaderboard_display_1["default"](this.scores);
         leaderboardDisplay.x = (app_1.screenResolution.width - leaderboardDisplay.width) / 2;
         leaderboardDisplay.y = title.y + title.height + padding;
-        var backButton = new button_1["default"]('<-', new pixi_js_1.TextStyle({
-            fill: 0xFFFFFF,
-            fontSize: 32
-        }), { padding: 8, backgroundColor: constants_1.colors.primary });
+        var backButton = new home_button_1["default"]();
         backButton.x = (app_1.screenResolution.width - backButton.width) / 2;
-        backButton.y = leaderboardDisplay.y + leaderboardDisplay.height + padding;
+        // backButton.y = leaderboardDisplay.y + leaderboardDisplay.height + 2*padding;
+        backButton.y = app_1.screenResolution.height - backButton.height - 2 * padding;
         backButton.onClick = function () { return _this.sceneManager.changeScene(start_menu_scene_1["default"]); };
         this.stage.addChild(leaderboardDisplay, title, backButton);
     };
@@ -2064,7 +2293,7 @@ var LeaderboardScene = /** @class */ (function (_super) {
 }(scene_1.Scene));
 exports["default"] = LeaderboardScene;
 
-},{"../app":1,"../constants":4,"../ui/button":44,"./leaderboard-scene/leaderboard-display":36,"./scene":37,"./start-menu-scene":38,"pixi.js":89}],36:[function(require,module,exports){
+},{"../app":1,"../constants":4,"./common-elements/home-button":18,"./leaderboard-scene/leaderboard-display":38,"./scene":39,"./start-menu-scene":40,"pixi.js":92}],38:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2093,13 +2322,33 @@ var LeaderboardDisplay = /** @class */ (function (_super) {
     LeaderboardDisplay.prototype._createGraphics = function () {
         var _this = this;
         this.scores.forEach(function (score, idx) {
-            var text = new pixi_js_1.Text("" + score.order + _this._getOrderSuffix(score.order) + " - " + score.score + " ", new pixi_js_1.TextStyle({
+            var tableEntry = new pixi_js_1.Container();
+            var orderTxt = new pixi_js_1.Text("" + score.order + _this._getOrderSuffix(score.order), new pixi_js_1.TextStyle({
                 fill: constants_1.colors.primary,
-                fontFamily: 'Roboto',
+                fontFamily: 'Roboto-Regular',
                 fontSize: 24
             }));
-            text.y = idx * text.height;
-            _this.addChild(text);
+            orderTxt.x = (32 - orderTxt.width);
+            orderTxt.y = (32 - orderTxt.height) / 2;
+            var scoreTxt = new pixi_js_1.Text(score.score + " ", new pixi_js_1.TextStyle({
+                fill: constants_1.colors.primary,
+                fontFamily: 'Roboto-Regular',
+                fontSize: 24
+            }));
+            scoreTxt.x = (32 - scoreTxt.width) / 2 + 64;
+            scoreTxt.y = (32 - scoreTxt.height) / 2;
+            tableEntry.addChild(orderTxt);
+            tableEntry.addChild(scoreTxt);
+            tableEntry.y = idx * 32 + 8;
+            if (idx < _this.scores.length - 1) {
+                var lineWidth = 256;
+                var line = new pixi_js_1.Graphics()
+                    .beginFill(constants_1.colors.secondary_dark)
+                    .drawRoundedRect((tableEntry.width - lineWidth) / 2, 30, lineWidth, 2, 24)
+                    .endFill();
+                // tableEntry.addChild(line);
+            }
+            _this.addChild(tableEntry);
         });
     };
     LeaderboardDisplay.prototype._getOrderSuffix = function (n) {
@@ -2112,22 +2361,33 @@ var LeaderboardDisplay = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = LeaderboardDisplay;
 
-},{"../../constants":4,"pixi.js":89}],37:[function(require,module,exports){
+},{"../../constants":4,"pixi.js":92}],39:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.SceneManager = exports.Scene = void 0;
 var pixi_js_1 = require("pixi.js");
 var Scene = /** @class */ (function () {
     function Scene(options) {
+        this.elapsedTime = 0;
         this.stage = new pixi_js_1.Container();
         this.sceneManager = options.sceneManager;
         this.beforeInitStage(options.args);
-        this.initStage();
-        this.afterInitStage();
+        // this.initStage();
+        // this.afterInitStage();
+        this._lastTime = new Date().valueOf() / 1000;
     }
     Scene.prototype.beforeInitStage = function (args) { };
     Scene.prototype.initStage = function () { };
-    Scene.prototype.afterInitStage = function () { };
+    Scene.prototype.afterInitStage = function () {
+    };
+    Scene.prototype.update = function () {
+        var t = new Date().valueOf() / 1000;
+        var t0 = this._lastTime;
+        var dt = t - t0;
+        this.elapsedTime += dt;
+        this.dt = dt;
+        this._lastTime = t;
+    };
     return Scene;
 }());
 exports.Scene = Scene;
@@ -2142,15 +2402,17 @@ var SceneManager = /** @class */ (function () {
             args: options,
             sceneManager: this
         });
+        nextScene.initStage();
         this._currentScene = nextScene;
         this.stage.removeChildren();
         this.stage.addChild(nextScene.stage);
+        nextScene.afterInitStage();
     };
     return SceneManager;
 }());
 exports.SceneManager = SceneManager;
 
-},{"pixi.js":89}],38:[function(require,module,exports){
+},{"pixi.js":92}],40:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2176,10 +2438,15 @@ var pixi_js_1 = require("pixi.js");
 var constants_1 = require("../constants");
 var audio_1 = require("../service/audio");
 var leaderboard_1 = require("../config/leaderboard");
+var util_1 = require("../math/util");
 var StartMenuScene = /** @class */ (function (_super) {
     __extends(StartMenuScene, _super);
     function StartMenuScene() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.transitionTime = 0.25;
+        _this.sceneToTransition = null;
+        _this.sceneToTransitionOptions = null;
+        return _this;
     }
     StartMenuScene.prototype.initStage = function () {
         var _this = this;
@@ -2190,8 +2457,10 @@ var StartMenuScene = /** @class */ (function (_super) {
         });
         var startButton = new button_1["default"](triangle, null, { padding: 16, backgroundColor: constants_1.colors.primary });
         startButton.onClick = function () {
-            audio_1.initAudioService();
-            _this.sceneManager.changeScene(game_scene_1["default"]);
+            if (_this.state == 'running') {
+                audio_1.initAudioService();
+                _this.requestTransition(game_scene_1["default"], null);
+            }
         };
         buttonsContainer.addChild(startButton);
         var leaderboard = new pixi_js_1.Graphics();
@@ -2202,34 +2471,73 @@ var StartMenuScene = /** @class */ (function (_super) {
         leaderboard.endFill();
         var leaderboardButton = new button_1["default"](leaderboard, null, { padding: 16, backgroundColor: constants_1.colors.primary });
         leaderboardButton.onClick = function () {
-            leaderboard_1.getScores().then(function (scores) { return _this.sceneManager.changeScene(leaderboard_scene_1["default"], {
-                scores: scores
-            }); });
+            if (_this.state == 'running') {
+                leaderboard_1.getScores().then(function (scores) {
+                    _this.requestTransition(leaderboard_scene_1["default"], {
+                        scores: scores
+                    });
+                });
+            }
         };
         leaderboardButton.x = startButton.width + 16;
         buttonsContainer.addChild(leaderboardButton);
         buttonsContainer.position.set((app_1.screenResolution.width - buttonsContainer.width) / 2, 2 * app_1.screenResolution.height / 3);
         var copyright = new pixi_js_1.Text('© 2021 alphanumeric-username', new pixi_js_1.TextStyle({
-            fontFamily: 'Roboto',
+            fontFamily: 'Roboto-Regular',
             fill: constants_1.colors.primary,
             fontSize: 20
         }));
         copyright.x = app_1.screenResolution.width - copyright.width - 4;
         copyright.y = app_1.screenResolution.height - copyright.height - 4;
-        var title = new pixi_js_1.Text('Bar/Ball', new pixi_js_1.TextStyle({
-            fontFamily: 'Roboto',
+        var title = new pixi_js_1.Text('Bar|Ball', new pixi_js_1.TextStyle({
+            fontFamily: 'Roboto-Thin',
             fill: constants_1.colors.primary,
-            fontSize: 96
+            fontSize: 128
         }));
         title.x = (app_1.screenResolution.width - title.width) / 2;
         title.y = app_1.screenResolution.height / 3;
         this.stage.addChild(buttonsContainer, copyright, title);
     };
+    StartMenuScene.prototype.afterInitStage = function () {
+        this.stage.alpha = 0;
+        this.state = 'transition-in';
+        this.update();
+    };
+    StartMenuScene.prototype.update = function () {
+        var _this = this;
+        _super.prototype.update.call(this);
+        switch (this.state) {
+            case 'transition-out':
+                this.stage.alpha = 1 - util_1.clamp(this.elapsedTime / this.transitionTime, 0, 1);
+                if (this.elapsedTime >= this.transitionTime) {
+                    this.sceneManager.changeScene(this.sceneToTransition, this.sceneToTransitionOptions);
+                    break;
+                }
+                requestAnimationFrame(function () { return _this.update(); });
+                break;
+            case 'transition-in':
+                this.stage.alpha = util_1.clamp(this.elapsedTime / this.transitionTime, 0, 1);
+                if (this.elapsedTime >= this.transitionTime) {
+                    this.state = 'running';
+                }
+                requestAnimationFrame(function () { return _this.update(); });
+                break;
+            case 'running':
+                requestAnimationFrame(function () { return _this.update(); });
+                break;
+        }
+    };
+    StartMenuScene.prototype.requestTransition = function (scene, options) {
+        this.state = 'transition-out';
+        this.sceneToTransition = scene;
+        this.sceneToTransitionOptions = options;
+        this.elapsedTime = 0;
+    };
     return StartMenuScene;
 }(scene_1.Scene));
 exports["default"] = StartMenuScene;
 
-},{"../app":1,"../config/leaderboard":3,"../constants":4,"../service/audio":39,"../ui/button":44,"../ui/geometry":45,"./game-scene":19,"./leaderboard-scene":35,"./scene":37,"pixi.js":89}],39:[function(require,module,exports){
+},{"../app":1,"../config/leaderboard":3,"../constants":4,"../math/util":9,"../service/audio":41,"../ui/button":46,"../ui/geometry":47,"./game-scene":20,"./leaderboard-scene":37,"./scene":39,"pixi.js":92}],41:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.initAudioService = exports.playNote = void 0;
@@ -2247,7 +2555,7 @@ function initAudioService() {
 }
 exports.initAudioService = initAudioService;
 
-},{"./audio/instruments":40}],40:[function(require,module,exports){
+},{"./audio/instruments":42}],42:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.playNote = exports.initInstruments = exports.provideContext = exports.instruments = void 0;
@@ -2281,7 +2589,7 @@ function playNote(instrumentName, frequency, duration, args) {
 }
 exports.playNote = playNote;
 
-},{"./instruments/basic-wave":41}],41:[function(require,module,exports){
+},{"./instruments/basic-wave":43}],43:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var BasicWave = /** @class */ (function () {
@@ -2302,7 +2610,7 @@ var BasicWave = /** @class */ (function () {
 }());
 exports["default"] = BasicWave;
 
-},{}],42:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.removeAll = exports.remove = exports.writeAll = exports.write = exports.readAll = exports.read = exports.openDatabase = void 0;
@@ -2418,7 +2726,7 @@ function removeAll(store, keys) {
 }
 exports.removeAll = removeAll;
 
-},{}],43:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var app_1 = require("../app");
@@ -2438,7 +2746,7 @@ var mouse = {
 };
 exports["default"] = mouse;
 
-},{"../app":1}],44:[function(require,module,exports){
+},{"../app":1}],46:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2492,14 +2800,14 @@ var Button = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = Button;
 
-},{"../constants":4,"pixi.js":89}],45:[function(require,module,exports){
+},{"../constants":4,"pixi.js":92}],47:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.Triangle = void 0;
 var triangle_1 = require("./geometry/triangle");
 exports.Triangle = triangle_1["default"];
 
-},{"./geometry/triangle":46}],46:[function(require,module,exports){
+},{"./geometry/triangle":48}],48:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2540,7 +2848,7 @@ var Triangle = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = Triangle;
 
-},{"pixi.js":89}],47:[function(require,module,exports){
+},{"pixi.js":92}],49:[function(require,module,exports){
 /*!
  * @pixi/accessibility - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -3135,7 +3443,7 @@ exports.AccessibilityManager = AccessibilityManager;
 exports.accessibleTarget = accessibleTarget;
 
 
-},{"@pixi/display":51,"@pixi/utils":80}],48:[function(require,module,exports){
+},{"@pixi/display":53,"@pixi/utils":83}],50:[function(require,module,exports){
 /*!
  * @pixi/app - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -3416,7 +3724,7 @@ Application.registerPlugin(ResizePlugin);
 exports.Application = Application;
 
 
-},{"@pixi/core":50,"@pixi/display":51}],49:[function(require,module,exports){
+},{"@pixi/core":52,"@pixi/display":53}],51:[function(require,module,exports){
 /*!
  * @pixi/constants - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -3580,7 +3888,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 })(exports.MSAA_QUALITY || (exports.MSAA_QUALITY = {}));
 
 
-},{}],50:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 /*!
  * @pixi/core - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -14601,7 +14909,7 @@ exports.systems = systems;
 exports.uniformParsers = uniformParsers;
 
 
-},{"@pixi/constants":49,"@pixi/math":62,"@pixi/runner":71,"@pixi/settings":72,"@pixi/ticker":79,"@pixi/utils":80}],51:[function(require,module,exports){
+},{"@pixi/constants":51,"@pixi/math":65,"@pixi/runner":74,"@pixi/settings":75,"@pixi/ticker":82,"@pixi/utils":83}],53:[function(require,module,exports){
 /*!
  * @pixi/display - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -16282,7 +16590,7 @@ exports.DisplayObject = DisplayObject;
 exports.TemporaryDisplayObject = TemporaryDisplayObject;
 
 
-},{"@pixi/math":62,"@pixi/settings":72,"@pixi/utils":80}],52:[function(require,module,exports){
+},{"@pixi/math":65,"@pixi/settings":75,"@pixi/utils":83}],54:[function(require,module,exports){
 /*!
  * @pixi/extract - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -16510,7 +16818,7 @@ var Extract = /** @class */ (function () {
 exports.Extract = Extract;
 
 
-},{"@pixi/core":50,"@pixi/math":62,"@pixi/utils":80}],53:[function(require,module,exports){
+},{"@pixi/core":52,"@pixi/math":65,"@pixi/utils":83}],55:[function(require,module,exports){
 /*!
  * @pixi/filter-alpha - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -16605,7 +16913,7 @@ var AlphaFilter = /** @class */ (function (_super) {
 exports.AlphaFilter = AlphaFilter;
 
 
-},{"@pixi/core":50}],54:[function(require,module,exports){
+},{"@pixi/core":52}],56:[function(require,module,exports){
 /*!
  * @pixi/filter-blur - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -17440,7 +17748,7 @@ exports.BlurFilter = BlurFilter;
 exports.BlurFilterPass = BlurFilterPass;
 
 
-},{"@pixi/core":50,"@pixi/settings":72}],55:[function(require,module,exports){
+},{"@pixi/core":52,"@pixi/settings":75}],57:[function(require,module,exports){
 /*!
  * @pixi/filter-color-matrix - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -17978,7 +18286,7 @@ ColorMatrixFilter.prototype.grayscale = ColorMatrixFilter.prototype.greyscale;
 exports.ColorMatrixFilter = ColorMatrixFilter;
 
 
-},{"@pixi/core":50}],56:[function(require,module,exports){
+},{"@pixi/core":52}],58:[function(require,module,exports){
 /*!
  * @pixi/filter-displacement - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -18119,7 +18427,7 @@ var DisplacementFilter = /** @class */ (function (_super) {
 exports.DisplacementFilter = DisplacementFilter;
 
 
-},{"@pixi/core":50,"@pixi/math":62}],57:[function(require,module,exports){
+},{"@pixi/core":52,"@pixi/math":65}],59:[function(require,module,exports){
 /*!
  * @pixi/filter-fxaa - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -18189,7 +18497,7 @@ var FXAAFilter = /** @class */ (function (_super) {
 exports.FXAAFilter = FXAAFilter;
 
 
-},{"@pixi/core":50}],58:[function(require,module,exports){
+},{"@pixi/core":52}],60:[function(require,module,exports){
 /*!
  * @pixi/filter-noise - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -18299,7 +18607,159 @@ var NoiseFilter = /** @class */ (function (_super) {
 exports.NoiseFilter = NoiseFilter;
 
 
-},{"@pixi/core":50}],59:[function(require,module,exports){
+},{"@pixi/core":52}],61:[function(require,module,exports){
+/*!
+ * @pixi/graphics-extras - v5.3.7
+ * Compiled Tue, 29 Dec 2020 19:30:11 UTC
+ *
+ * @pixi/graphics-extras is licensed under the MIT License.
+ * http://www.opensource.org/licenses/mit-license
+ */
+'use strict';
+
+var graphics = require('@pixi/graphics');
+
+/**
+ * Draw a torus shape, like a donut. Can be used for something like a circle loader.
+ *
+ * _Note: Only available with **@pixi/graphics-extras**._
+ *
+ * @method PIXI.Graphics#drawTorus
+ * @param {number} x - X position
+ * @param {number} y - Y position
+ * @param {number} innerRadius - Inner circle radius
+ * @param {number} outerRadius - Outer circle radius
+ * @param {number} [startArc=0] - Where to begin sweep, in radians, 0.0 = to the right
+ * @param {number} [endArc=Math.PI*2] - Where to end sweep, in radians
+ * @return {PIXI.Graphics}
+ */
+function drawTorus(x, y, innerRadius, outerRadius, startArc, endArc) {
+    if (startArc === void 0) { startArc = 0; }
+    if (endArc === void 0) { endArc = Math.PI * 2; }
+    if (Math.abs(endArc - startArc) >= Math.PI * 2) {
+        return this
+            .drawCircle(x, y, outerRadius)
+            .beginHole()
+            .drawCircle(x, y, innerRadius)
+            .endHole();
+    }
+    this.finishPoly();
+    this
+        .arc(x, y, innerRadius, endArc, startArc, true)
+        .arc(x, y, outerRadius, startArc, endArc, false)
+        .finishPoly();
+    return this;
+}
+
+/**
+ * Draw Rectangle with chamfer corners.
+ *
+ * _Note: Only available with **@pixi/graphics-extras**._
+ *
+ * @method PIXI.Graphics#drawChamferRect
+ * @param {number} x - Upper left corner of rect
+ * @param {number} y - Upper right corner of rect
+ * @param {number} width - Width of rect
+ * @param {number} height - Height of rect
+ * @param {number} chamfer - accept negative or positive values
+ * @return {PIXI.Graphics} Returns self.
+ */
+function drawChamferRect(x, y, width, height, chamfer) {
+    if (chamfer === 0) {
+        return this.drawRect(x, y, width, height);
+    }
+    var maxChamfer = Math.min(width, height) / 2;
+    var inset = Math.min(maxChamfer, Math.max(-maxChamfer, chamfer));
+    var right = x + width;
+    var bottom = y + height;
+    var dir = inset < 0 ? -inset : 0;
+    var size = Math.abs(inset);
+    return this
+        .moveTo(x, y + size)
+        .arcTo(x + dir, y + dir, x + size, y, size)
+        .lineTo(right - size, y)
+        .arcTo(right - dir, y + dir, right, y + size, size)
+        .lineTo(right, bottom - size)
+        .arcTo(right - dir, bottom - dir, x + width - size, bottom, size)
+        .lineTo(x + size, bottom)
+        .arcTo(x + dir, bottom - dir, x, bottom - size, size)
+        .closePath();
+}
+
+/**
+ * Draw Rectangle with fillet corners.
+ *
+ * _Note: Only available with **@pixi/graphics-extras**._
+ *
+ * @method PIXI.Graphics#drawFilletRect
+ * @param {number} x - Upper left corner of rect
+ * @param {number} y - Upper right corner of rect
+ * @param {number} width - Width of rect
+ * @param {number} height - Height of rect
+ * @param {number} fillet - non-zero real number, size of corner cutout
+ * @return {PIXI.Graphics} Returns self.
+ */
+function drawFilletRect(x, y, width, height, fillet) {
+    if (fillet <= 0) {
+        return this.drawRect(x, y, width, height);
+    }
+    var inset = Math.min(fillet, Math.min(width, height) / 2);
+    var right = x + width;
+    var bottom = y + height;
+    var points = [
+        x + inset, y,
+        right - inset, y,
+        right, y + inset,
+        right, bottom - inset,
+        right - inset, bottom,
+        x + inset, bottom,
+        x, bottom - inset,
+        x, y + inset ];
+    // Remove overlapping points
+    for (var i = points.length - 1; i >= 2; i -= 2) {
+        if (points[i] === points[i - 2] && points[i - 1] === points[i - 3]) {
+            points.splice(i - 1, 2);
+        }
+    }
+    return this.drawPolygon(points);
+}
+
+/**
+ * Draw a regular polygon where all sides are the same length.
+ *
+ * _Note: Only available with **@pixi/graphics-extras**._
+ *
+ * @method PIXI.Graphics#drawRegularPolygon
+ * @param {number} x - X position
+ * @param {number} y - Y position
+ * @param {number} radius - Polygon radius
+ * @param {number} sides - Minimum value is 3
+ * @param {number} rotation - Starting rotation values in radians..
+ * @return {PIXI.Graphics}
+ */
+function drawRegularPolygon(x, y, radius, sides, rotation) {
+    if (rotation === void 0) { rotation = 0; }
+    sides = Math.max(sides | 0, 3);
+    var startAngle = (-1 * Math.PI / 2) + rotation;
+    var delta = (Math.PI * 2) / sides;
+    var polygon = [];
+    for (var i = 0; i < sides; i++) {
+        var angle = (i * delta) + startAngle;
+        polygon.push(x + (radius * Math.cos(angle)), y + (radius * Math.sin(angle)));
+    }
+    return this.drawPolygon(polygon);
+}
+
+// Assign extras to Graphics
+Object.defineProperties(graphics.Graphics.prototype, {
+    drawTorus: { value: drawTorus },
+    drawChamferRect: { value: drawChamferRect },
+    drawFilletRect: { value: drawFilletRect },
+    drawRegularPolygon: { value: drawRegularPolygon },
+});
+
+
+},{"@pixi/graphics":62}],62:[function(require,module,exports){
 /*!
  * @pixi/graphics - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -21557,7 +22017,7 @@ exports.LineStyle = LineStyle;
 exports.graphicsUtils = index;
 
 
-},{"@pixi/constants":49,"@pixi/core":50,"@pixi/display":51,"@pixi/math":62,"@pixi/utils":80}],60:[function(require,module,exports){
+},{"@pixi/constants":51,"@pixi/core":52,"@pixi/display":53,"@pixi/math":65,"@pixi/utils":83}],63:[function(require,module,exports){
 /*!
  * @pixi/interaction - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -23769,7 +24229,7 @@ exports.InteractionTrackingData = InteractionTrackingData;
 exports.interactiveTarget = interactiveTarget;
 
 
-},{"@pixi/display":51,"@pixi/math":62,"@pixi/ticker":79,"@pixi/utils":80}],61:[function(require,module,exports){
+},{"@pixi/display":53,"@pixi/math":65,"@pixi/ticker":82,"@pixi/utils":83}],64:[function(require,module,exports){
 /*!
  * @pixi/loaders - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -24099,7 +24559,7 @@ exports.LoaderResource = LoaderResource;
 exports.TextureLoader = TextureLoader;
 
 
-},{"@pixi/core":50,"resource-loader":95}],62:[function(require,module,exports){
+},{"@pixi/core":52,"resource-loader":98}],65:[function(require,module,exports){
 /*!
  * @pixi/math - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -26033,7 +26493,7 @@ exports.Transform = Transform;
 exports.groupD8 = groupD8;
 
 
-},{}],63:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 /*!
  * @pixi/mesh-extras - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -26773,7 +27233,7 @@ exports.SimplePlane = SimplePlane;
 exports.SimpleRope = SimpleRope;
 
 
-},{"@pixi/constants":49,"@pixi/core":50,"@pixi/mesh":64}],64:[function(require,module,exports){
+},{"@pixi/constants":51,"@pixi/core":52,"@pixi/mesh":67}],67:[function(require,module,exports){
 /*!
  * @pixi/mesh - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -27495,7 +27955,7 @@ exports.MeshGeometry = MeshGeometry;
 exports.MeshMaterial = MeshMaterial;
 
 
-},{"@pixi/constants":49,"@pixi/core":50,"@pixi/display":51,"@pixi/math":62,"@pixi/settings":72,"@pixi/utils":80}],65:[function(require,module,exports){
+},{"@pixi/constants":51,"@pixi/core":52,"@pixi/display":53,"@pixi/math":65,"@pixi/settings":75,"@pixi/utils":83}],68:[function(require,module,exports){
 /*!
  * @pixi/mixin-cache-as-bitmap - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -27825,7 +28285,7 @@ display.DisplayObject.prototype._cacheAsBitmapDestroy = function _cacheAsBitmapD
 exports.CacheData = CacheData;
 
 
-},{"@pixi/core":50,"@pixi/display":51,"@pixi/math":62,"@pixi/settings":72,"@pixi/sprite":75,"@pixi/utils":80}],66:[function(require,module,exports){
+},{"@pixi/core":52,"@pixi/display":53,"@pixi/math":65,"@pixi/settings":75,"@pixi/sprite":78,"@pixi/utils":83}],69:[function(require,module,exports){
 /*!
  * @pixi/mixin-get-child-by-name - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -27877,7 +28337,7 @@ display.Container.prototype.getChildByName = function getChildByName(name, deep)
 };
 
 
-},{"@pixi/display":51}],67:[function(require,module,exports){
+},{"@pixi/display":53}],70:[function(require,module,exports){
 /*!
  * @pixi/mixin-get-global-position - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -27915,7 +28375,7 @@ display.DisplayObject.prototype.getGlobalPosition = function getGlobalPosition(p
 };
 
 
-},{"@pixi/display":51,"@pixi/math":62}],68:[function(require,module,exports){
+},{"@pixi/display":53,"@pixi/math":65}],71:[function(require,module,exports){
 /*!
  * @pixi/particles - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -28732,7 +29192,7 @@ exports.ParticleContainer = ParticleContainer;
 exports.ParticleRenderer = ParticleRenderer;
 
 
-},{"@pixi/constants":49,"@pixi/core":50,"@pixi/display":51,"@pixi/math":62,"@pixi/utils":80}],69:[function(require,module,exports){
+},{"@pixi/constants":51,"@pixi/core":52,"@pixi/display":53,"@pixi/math":65,"@pixi/utils":83}],72:[function(require,module,exports){
 /*!
  * @pixi/polyfill - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -28851,7 +29311,7 @@ if (!window.Int32Array) {
 }
 
 
-},{"es6-promise-polyfill":82,"object-assign":87}],70:[function(require,module,exports){
+},{"es6-promise-polyfill":85,"object-assign":90}],73:[function(require,module,exports){
 /*!
  * @pixi/prepare - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -29494,7 +29954,7 @@ exports.Prepare = Prepare;
 exports.TimeLimiter = TimeLimiter;
 
 
-},{"@pixi/core":50,"@pixi/display":51,"@pixi/graphics":59,"@pixi/settings":72,"@pixi/text":78,"@pixi/ticker":79}],71:[function(require,module,exports){
+},{"@pixi/core":52,"@pixi/display":53,"@pixi/graphics":62,"@pixi/settings":75,"@pixi/text":81,"@pixi/ticker":82}],74:[function(require,module,exports){
 /*!
  * @pixi/runner - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -29698,7 +30158,7 @@ Object.defineProperties(Runner.prototype, {
 exports.Runner = Runner;
 
 
-},{}],72:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 /*!
  * @pixi/settings - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -29988,7 +30448,7 @@ exports.isMobile = isMobile;
 exports.settings = settings;
 
 
-},{"ismobilejs":84}],73:[function(require,module,exports){
+},{"ismobilejs":87}],76:[function(require,module,exports){
 /*!
  * @pixi/sprite-animated - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -30462,7 +30922,7 @@ var AnimatedSprite = /** @class */ (function (_super) {
 exports.AnimatedSprite = AnimatedSprite;
 
 
-},{"@pixi/core":50,"@pixi/sprite":75,"@pixi/ticker":79}],74:[function(require,module,exports){
+},{"@pixi/core":52,"@pixi/sprite":78,"@pixi/ticker":82}],77:[function(require,module,exports){
 /*!
  * @pixi/sprite-tiling - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -30877,7 +31337,7 @@ exports.TilingSprite = TilingSprite;
 exports.TilingSpriteRenderer = TilingSpriteRenderer;
 
 
-},{"@pixi/constants":49,"@pixi/core":50,"@pixi/math":62,"@pixi/sprite":75,"@pixi/utils":80}],75:[function(require,module,exports){
+},{"@pixi/constants":51,"@pixi/core":52,"@pixi/math":65,"@pixi/sprite":78,"@pixi/utils":83}],78:[function(require,module,exports){
 /*!
  * @pixi/sprite - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -31472,7 +31932,7 @@ var Sprite = /** @class */ (function (_super) {
 exports.Sprite = Sprite;
 
 
-},{"@pixi/constants":49,"@pixi/core":50,"@pixi/display":51,"@pixi/math":62,"@pixi/settings":72,"@pixi/utils":80}],76:[function(require,module,exports){
+},{"@pixi/constants":51,"@pixi/core":52,"@pixi/display":53,"@pixi/math":65,"@pixi/settings":75,"@pixi/utils":83}],79:[function(require,module,exports){
 /*!
  * @pixi/spritesheet - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -31816,7 +32276,7 @@ exports.Spritesheet = Spritesheet;
 exports.SpritesheetLoader = SpritesheetLoader;
 
 
-},{"@pixi/core":50,"@pixi/loaders":61,"@pixi/math":62,"@pixi/utils":80}],77:[function(require,module,exports){
+},{"@pixi/core":52,"@pixi/loaders":64,"@pixi/math":65,"@pixi/utils":83}],80:[function(require,module,exports){
 /*!
  * @pixi/text-bitmap - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -33621,7 +34081,7 @@ exports.BitmapFontLoader = BitmapFontLoader;
 exports.BitmapText = BitmapText;
 
 
-},{"@pixi/core":50,"@pixi/display":51,"@pixi/loaders":61,"@pixi/math":62,"@pixi/mesh":64,"@pixi/settings":72,"@pixi/text":78,"@pixi/utils":80}],78:[function(require,module,exports){
+},{"@pixi/core":52,"@pixi/display":53,"@pixi/loaders":64,"@pixi/math":65,"@pixi/mesh":67,"@pixi/settings":75,"@pixi/text":81,"@pixi/utils":83}],81:[function(require,module,exports){
 /*!
  * @pixi/text - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -35682,7 +36142,7 @@ exports.TextMetrics = TextMetrics;
 exports.TextStyle = TextStyle;
 
 
-},{"@pixi/core":50,"@pixi/math":62,"@pixi/settings":72,"@pixi/sprite":75,"@pixi/utils":80}],79:[function(require,module,exports){
+},{"@pixi/core":52,"@pixi/math":65,"@pixi/settings":75,"@pixi/sprite":78,"@pixi/utils":83}],82:[function(require,module,exports){
 /*!
  * @pixi/ticker - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -36534,7 +36994,7 @@ exports.Ticker = Ticker;
 exports.TickerPlugin = TickerPlugin;
 
 
-},{"@pixi/settings":72}],80:[function(require,module,exports){
+},{"@pixi/settings":75}],83:[function(require,module,exports){
 /*!
  * @pixi/utils - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -37471,7 +37931,7 @@ exports.trimCanvas = trimCanvas;
 exports.uid = uid;
 
 
-},{"@pixi/constants":49,"@pixi/settings":72,"earcut":81,"eventemitter3":83,"url":97}],81:[function(require,module,exports){
+},{"@pixi/constants":51,"@pixi/settings":75,"earcut":84,"eventemitter3":86,"url":100}],84:[function(require,module,exports){
 'use strict';
 
 module.exports = earcut;
@@ -38152,7 +38612,7 @@ earcut.flatten = function (data) {
     return result;
 };
 
-},{}],82:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 (function (global,setImmediate){(function (){
 (function(global){
 
@@ -38502,7 +38962,7 @@ Promise.reject = function(reason){
 })(typeof window != 'undefined' ? window : typeof global != 'undefined' ? global : typeof self != 'undefined' ? self : this);
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("timers").setImmediate)
-},{"timers":96}],83:[function(require,module,exports){
+},{"timers":99}],86:[function(require,module,exports){
 'use strict';
 
 var has = Object.prototype.hasOwnProperty
@@ -38840,7 +39300,7 @@ if ('undefined' !== typeof module) {
   module.exports = EventEmitter;
 }
 
-},{}],84:[function(require,module,exports){
+},{}],87:[function(require,module,exports){
 "use strict";
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
@@ -38850,7 +39310,7 @@ __export(require("./isMobile"));
 var isMobile_1 = require("./isMobile");
 exports["default"] = isMobile_1["default"];
 
-},{"./isMobile":85}],85:[function(require,module,exports){
+},{"./isMobile":88}],88:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var appleIphone = /iPhone/i;
@@ -38979,7 +39439,7 @@ function isMobile(param) {
 }
 exports["default"] = isMobile;
 
-},{}],86:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -39146,7 +39606,7 @@ MiniSignal.MiniSignalBinding = MiniSignalBinding;
 exports['default'] = MiniSignal;
 module.exports = exports['default'];
 
-},{}],87:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 /*
 object-assign
 (c) Sindre Sorhus
@@ -39238,7 +39698,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 	return to;
 };
 
-},{}],88:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 'use strict'
 
 function parseURI (str, opts) {
@@ -39289,7 +39749,7 @@ function parseURI (str, opts) {
 
 module.exports = parseURI
 
-},{}],89:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 /*!
  * pixi.js - v5.3.7
  * Compiled Tue, 29 Dec 2020 19:30:11 UTC
@@ -40855,7 +41315,7 @@ exports.filters = filters;
 exports.useDeprecated = useDeprecated;
 
 
-},{"@pixi/accessibility":47,"@pixi/app":48,"@pixi/constants":49,"@pixi/core":50,"@pixi/display":51,"@pixi/extract":52,"@pixi/filter-alpha":53,"@pixi/filter-blur":54,"@pixi/filter-color-matrix":55,"@pixi/filter-displacement":56,"@pixi/filter-fxaa":57,"@pixi/filter-noise":58,"@pixi/graphics":59,"@pixi/interaction":60,"@pixi/loaders":61,"@pixi/math":62,"@pixi/mesh":64,"@pixi/mesh-extras":63,"@pixi/mixin-cache-as-bitmap":65,"@pixi/mixin-get-child-by-name":66,"@pixi/mixin-get-global-position":67,"@pixi/particles":68,"@pixi/polyfill":69,"@pixi/prepare":70,"@pixi/runner":71,"@pixi/settings":72,"@pixi/sprite":75,"@pixi/sprite-animated":73,"@pixi/sprite-tiling":74,"@pixi/spritesheet":76,"@pixi/text":78,"@pixi/text-bitmap":77,"@pixi/ticker":79,"@pixi/utils":80}],90:[function(require,module,exports){
+},{"@pixi/accessibility":49,"@pixi/app":50,"@pixi/constants":51,"@pixi/core":52,"@pixi/display":53,"@pixi/extract":54,"@pixi/filter-alpha":55,"@pixi/filter-blur":56,"@pixi/filter-color-matrix":57,"@pixi/filter-displacement":58,"@pixi/filter-fxaa":59,"@pixi/filter-noise":60,"@pixi/graphics":62,"@pixi/interaction":63,"@pixi/loaders":64,"@pixi/math":65,"@pixi/mesh":67,"@pixi/mesh-extras":66,"@pixi/mixin-cache-as-bitmap":68,"@pixi/mixin-get-child-by-name":69,"@pixi/mixin-get-global-position":70,"@pixi/particles":71,"@pixi/polyfill":72,"@pixi/prepare":73,"@pixi/runner":74,"@pixi/settings":75,"@pixi/sprite":78,"@pixi/sprite-animated":76,"@pixi/sprite-tiling":77,"@pixi/spritesheet":79,"@pixi/text":81,"@pixi/text-bitmap":80,"@pixi/ticker":82,"@pixi/utils":83}],93:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -41041,7 +41501,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],91:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
 (function (global){(function (){
 /*! https://mths.be/punycode v1.3.2 by @mathias */
 ;(function(root) {
@@ -41575,7 +42035,7 @@ process.umask = function() { return 0; };
 }(this));
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],92:[function(require,module,exports){
+},{}],95:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -41661,7 +42121,7 @@ var isArray = Array.isArray || function (xs) {
   return Object.prototype.toString.call(xs) === '[object Array]';
 };
 
-},{}],93:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -41748,13 +42208,13 @@ var objectKeys = Object.keys || function (obj) {
   return res;
 };
 
-},{}],94:[function(require,module,exports){
+},{}],97:[function(require,module,exports){
 'use strict';
 
 exports.decode = exports.parse = require('./decode');
 exports.encode = exports.stringify = require('./encode');
 
-},{"./decode":92,"./encode":93}],95:[function(require,module,exports){
+},{"./decode":95,"./encode":96}],98:[function(require,module,exports){
 /*!
  * resource-loader - v3.0.1
  * https://github.com/pixijs/pixi-sound
@@ -44105,7 +44565,7 @@ exports.encodeBinary = encodeBinary;
 exports.middleware = index;
 
 
-},{"mini-signals":86,"parse-uri":88}],96:[function(require,module,exports){
+},{"mini-signals":89,"parse-uri":91}],99:[function(require,module,exports){
 (function (setImmediate,clearImmediate){(function (){
 var nextTick = require('process/browser.js').nextTick;
 var apply = Function.prototype.apply;
@@ -44184,7 +44644,7 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   delete immediateIds[id];
 };
 }).call(this)}).call(this,require("timers").setImmediate,require("timers").clearImmediate)
-},{"process/browser.js":90,"timers":96}],97:[function(require,module,exports){
+},{"process/browser.js":93,"timers":99}],100:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -44918,7 +45378,7 @@ Url.prototype.parseHost = function() {
   if (host) this.hostname = host;
 };
 
-},{"./util":98,"punycode":91,"querystring":94}],98:[function(require,module,exports){
+},{"./util":101,"punycode":94,"querystring":97}],101:[function(require,module,exports){
 'use strict';
 
 module.exports = {
