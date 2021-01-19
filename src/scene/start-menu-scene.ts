@@ -5,19 +5,18 @@ import { Scene, SceneClass } from './scene';
 import GameScene from './game-scene';
 import LeaderboardScene from './leaderboard-scene';
 import { screenResolution } from '../app';
-import { Container, Graphics, Text, TextStyle, TilingSprite } from 'pixi.js';
+import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { colors } from '../constants';
 
 import { initAudioService } from '../service/audio';
 import { getScores } from '../config/leaderboard';
 import { clamp } from '../math/util';
-import Game from '../game/game';
 
 class StartMenuScene extends Scene {
 
-    state: 'running' | 'transition-out' | 'transition-in' | 'ready-to-transition';
+    state: 'running' | 'transition-out' | 'transition-in';
 
-    readonly transitionTime = 0.25;
+    readonly transitionTime = 0.125;
     sceneToTransition: SceneClass = null;
     sceneToTransitionOptions: any = null;
 
@@ -74,7 +73,7 @@ class StartMenuScene extends Scene {
         copyright.x = screenResolution.width - copyright.width - 4;
         copyright.y = screenResolution.height - copyright.height - 4;
 
-        const title = new Text('Bar|Ball', new TextStyle({
+        const title = new Text('Bar[]Ball', new TextStyle({
             fontFamily: 'Roboto-Thin',
             fill: colors.primary,
             fontSize: 128

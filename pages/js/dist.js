@@ -682,14 +682,19 @@ var HomeButton = /** @class */ (function (_super) {
             .lineTo(0, 20)
             .lineTo(8, 20)
             .lineTo(8, 48)
+            .lineTo(16, 48)
+            .lineTo(16, 28)
+            .lineTo(32, 28)
+            .lineTo(32, 48)
             .lineTo(40, 48)
             .lineTo(40, 20)
             .lineTo(48, 20)
             .lineTo(24, 0)
             .endFill()
-            .beginFill(constants_1.colors.primary)
-            .drawRect(16, 28, 16, 20)
-            .endFill(), null, {
+        // .beginFill(colors.primary)
+        // .drawRect(16, 28, 16, 20)
+        // .endFill()
+        , null, {
             padding: 16,
             backgroundColor: constants_1.colors.primary
         }) || this;
@@ -727,26 +732,29 @@ var constants_1 = require("../constants");
 var geometry_1 = require("../ui/geometry");
 var vec2_1 = require("../math/vec2");
 var game_scene_1 = require("./game-scene");
+var util_1 = require("../math/util");
 var GameOverScene = /** @class */ (function (_super) {
     __extends(GameOverScene, _super);
     function GameOverScene() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.transitionTime = 0.125;
+        return _this;
     }
     GameOverScene.prototype.beforeInitStage = function (args) {
         this._score = args.score;
         this._previousScene = args.previousScene;
     };
     GameOverScene.prototype.initStage = function () {
-        var scoreDisplay = new score_display_1["default"]({ initialScore: this._score, fontSize: 128 });
-        scoreDisplay.x = (app_1.screenResolution.width - scoreDisplay.width) / 2;
-        scoreDisplay.y = 5 * app_1.screenResolution.height / 12;
+        this.scoreDisplay = new score_display_1["default"]({ initialScore: this._score, fontSize: 128 });
+        this.scoreDisplay.x = (app_1.screenResolution.width - this.scoreDisplay.width) / 2;
+        this.scoreDisplay.y = 5 * app_1.screenResolution.height / 12;
         var scoreText = new pixi_js_1.Text('Score:', new pixi_js_1.TextStyle({
             fill: constants_1.colors.secondary_dark,
             fontFamily: 'Roboto-Regular',
             fontSize: 24
         }));
         scoreText.x = (app_1.screenResolution.width - scoreText.width) / 2;
-        scoreText.y = scoreDisplay.y - scoreText.height - 8;
+        scoreText.y = this.scoreDisplay.y - scoreText.height - 8;
         var buttonContainer = new pixi_js_1.Container();
         var playAgainButton = this._createPlayAgainButton();
         var mainMenuButton = this._createMainMenuButton();
@@ -761,7 +769,39 @@ var GameOverScene = /** @class */ (function (_super) {
         }));
         gameOverText.x = (app_1.screenResolution.width - gameOverText.width) / 2;
         gameOverText.y = app_1.screenResolution.height / 6;
-        this.stage.addChild(scoreDisplay, scoreText, gameOverText, buttonContainer);
+        this.stage.addChild(this.scoreDisplay, scoreText, gameOverText, buttonContainer);
+    };
+    GameOverScene.prototype.afterInitStage = function () {
+        this.stage.alpha = 0;
+        this.state = 'transition-in';
+        this.update();
+    };
+    GameOverScene.prototype.update = function () {
+        var _this = this;
+        _super.prototype.update.call(this);
+        switch (this.state) {
+            case 'transition-out':
+                this.stage.alpha = 1 - util_1.clamp(this.elapsedTime / this.transitionTime, 0, 1);
+                if (this.elapsedTime >= this.transitionTime) {
+                    this.sceneManager.changeScene(this.sceneToTransition, this.sceneToTransitionOptions);
+                    break;
+                }
+                requestAnimationFrame(function () { return _this.update(); });
+                break;
+            case 'transition-in':
+                var t = util_1.clamp(this.elapsedTime / this.transitionTime, 0, 1);
+                this.stage.alpha = t;
+                // this.scoreDisplay.score = Math.round(t*this._score);
+                // this.scoreDisplay.updateGraphics();
+                if (this.elapsedTime >= this.transitionTime) {
+                    this.state = 'running';
+                }
+                requestAnimationFrame(function () { return _this.update(); });
+                break;
+            case 'running':
+                requestAnimationFrame(function () { return _this.update(); });
+                break;
+        }
     };
     GameOverScene.prototype._createPlayAgainButton = function () {
         var _this = this;
@@ -781,43 +821,29 @@ var GameOverScene = /** @class */ (function (_super) {
         arc.scale.set(48, 48);
         var playAgainButton = new button_1["default"](arc, null, { padding: 16, backgroundColor: constants_1.colors.primary });
         playAgainButton.onClick = function () {
-            _this.sceneManager.changeScene(game_scene_1["default"]);
+            _this.requestTransition(game_scene_1["default"]);
         };
-        // this.stage.addChild(playAgainButton);
         return playAgainButton;
     };
     GameOverScene.prototype._createMainMenuButton = function () {
-        // const content = new Graphics()
-        // .beginFill(0xFFFFFF)
-        // .moveTo(24, 0)
-        // .lineTo(0, 20)
-        // .lineTo(8, 20)
-        // .lineTo(8, 48)
-        // .lineTo(40, 48)
-        // .lineTo(40, 20)
-        // .lineTo(48, 20)
-        // .lineTo(24, 0)
-        // .endFill()
-        // .beginFill(colors.primary)
-        // .drawRect(16, 28, 16, 20)
-        // .endFill();
         var _this = this;
-        // const mainMenuButton = new Button(content, null, {
-        //     padding: 16,
-        //     backgroundColor: colors.primary
-        // });
         var mainMenuButton = new home_button_1["default"]();
         mainMenuButton.onClick = function () {
-            _this.sceneManager.changeScene(start_menu_scene_1["default"]);
+            _this.requestTransition(start_menu_scene_1["default"]);
         };
-        // this.stage.addChild(mainMenuButton);
         return mainMenuButton;
+    };
+    GameOverScene.prototype.requestTransition = function (scene, options) {
+        this.sceneToTransition = scene;
+        this.sceneToTransitionOptions = options;
+        this.state = 'transition-out';
+        this.elapsedTime = 0;
     };
     return GameOverScene;
 }(scene_1.Scene));
 exports["default"] = GameOverScene;
 
-},{"../app":1,"../constants":4,"../math/vec2":10,"../ui/button":46,"../ui/geometry":47,"./common-elements/home-button":18,"./game-scene":20,"./game-scene/score-display":36,"./scene":39,"./start-menu-scene":40,"@pixi/graphics-extras":61,"pixi.js":92}],20:[function(require,module,exports){
+},{"../app":1,"../constants":4,"../math/util":9,"../math/vec2":10,"../ui/button":46,"../ui/geometry":47,"./common-elements/home-button":18,"./game-scene":20,"./game-scene/score-display":36,"./scene":39,"./start-menu-scene":40,"@pixi/graphics-extras":61,"pixi.js":92}],20:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -851,6 +877,7 @@ var GameScene = /** @class */ (function (_super) {
     function GameScene() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.resumeTime = 3;
+        _this.transitionTime = 0.125;
         return _this;
     }
     GameScene.prototype.initStage = function () {
@@ -869,9 +896,11 @@ var GameScene = /** @class */ (function (_super) {
         this._createBall();
         this._createPauseButton();
         this._createResumeCountdown();
+        this._createPauseMask();
     };
     GameScene.prototype.afterInitStage = function () {
-        this.state = 'running';
+        this.state = 'transition-in';
+        this.stage.alpha = 0;
         this.update();
     };
     GameScene.prototype._createBounds = function () {
@@ -927,6 +956,7 @@ var GameScene = /** @class */ (function (_super) {
         this.pauseButton.onClick = function () {
             if (_this.state == 'running') {
                 _this.pauseButton.pause();
+                _this.stage.addChild(_this.pauseMask);
                 _this.state = 'paused';
             }
             else if (_this.state == 'paused') {
@@ -935,6 +965,7 @@ var GameScene = /** @class */ (function (_super) {
                 _this.state = 'resuming';
                 _this.centerObj(_this.resumeCountdown);
                 _this.resumeCountdown.text = '3';
+                _this.stage.removeChild(_this.pauseMask);
                 _this.stage.addChild(_this.resumeCountdown);
             }
         };
@@ -951,10 +982,23 @@ var GameScene = /** @class */ (function (_super) {
         this.resumeCountdown.alpha = 0.8;
         this.centerObj(this.resumeCountdown);
     };
+    GameScene.prototype._createPauseMask = function () {
+        this.pauseMask = new pixi_js_1.Graphics()
+            .beginFill(constants_1.colors.primary, 0.5)
+            .drawRect(0, 0, app_1.screenResolution.width, app_1.screenResolution.height)
+            .endFill();
+    };
     GameScene.prototype.update = function () {
         var _this = this;
         _super.prototype.update.call(this);
         switch (this.state) {
+            case 'transition-in':
+                this.stage.alpha = util_1.clamp(this.elapsedTime / this.transitionTime, 0, 1);
+                if (this.elapsedTime >= this.transitionTime) {
+                    this.state = 'running';
+                }
+                requestAnimationFrame(function () { return _this.update(); });
+                break;
             case 'running':
                 this.bar.update();
                 this.ball.update();
@@ -975,6 +1019,14 @@ var GameScene = /** @class */ (function (_super) {
             case 'paused':
                 requestAnimationFrame(function () { return _this.update(); });
                 break;
+            case 'transition-out':
+                this.stage.alpha = 1 - util_1.clamp(this.elapsedTime / this.transitionTime, 0, 1);
+                if (this.elapsedTime >= this.transitionTime) {
+                    this.state = 'stopped';
+                    break;
+                }
+                requestAnimationFrame(function () { return _this.update(); });
+                break;
         }
     };
     GameScene.prototype.centerX = function (obj) {
@@ -990,6 +1042,12 @@ var GameScene = /** @class */ (function (_super) {
     GameScene.prototype.centerObj = function (obj) {
         this.centerX(obj);
         this.centerY(obj);
+    };
+    GameScene.prototype.requestTransition = function (scene, options) {
+        this.sceneToTransition = scene;
+        this.sceneToTransitionOptions = options;
+        this.state = 'transition-out';
+        this.elapsedTime = 0;
     };
     return GameScene;
 }(scene_1.Scene));
@@ -1044,12 +1102,15 @@ var Ball = /** @class */ (function (_super) {
         this.removeChildren();
     };
     Ball.prototype.recreate = function (radius, color) {
+        var _this = this;
         if (radius === void 0) { radius = this.radius; }
         if (color === void 0) { color = this.color; }
         this.radius = radius;
         this.color = color;
+        var children = this.children.slice(1);
         this._clearGraphics();
         this._createGraphics();
+        children.forEach(function (c) { return _this.addChild(c); });
     };
     Ball.prototype.update = function () {
         var _a;
@@ -2211,13 +2272,13 @@ var ScoreDisplay = /** @class */ (function (_super) {
     function ScoreDisplay(options) {
         var _this = _super.call(this) || this;
         options = options || { initialScore: 0, fontSize: 72 };
-        _this._score = options.initialScore;
+        _this.score = options.initialScore;
         _this._fontSize = options.fontSize;
         _this._createGraphics();
         return _this;
     }
     ScoreDisplay.prototype._createGraphics = function () {
-        this._text = new pixi_js_1.Text(this._score.toString(), new pixi_js_1.TextStyle({
+        this._text = new pixi_js_1.Text(this.score.toString(), new pixi_js_1.TextStyle({
             fill: constants_1.colors.secondary_dark,
             fontFamily: 'Roboto-Thin',
             fontSize: this._fontSize
@@ -2225,14 +2286,14 @@ var ScoreDisplay = /** @class */ (function (_super) {
         this.addChild(this._text);
     };
     ScoreDisplay.prototype.getScore = function () {
-        return this._score;
+        return this.score;
     };
     ScoreDisplay.prototype.add = function () {
-        this._score += 1000;
+        this.score += 1;
         this.updateGraphics();
     };
     ScoreDisplay.prototype.updateGraphics = function () {
-        this._text.text = this._score.toString();
+        this._text.text = this.score.toString();
     };
     return ScoreDisplay;
 }(pixi_js_1.Container));
@@ -2261,10 +2322,13 @@ var pixi_js_1 = require("pixi.js");
 var constants_1 = require("../constants");
 var start_menu_scene_1 = require("./start-menu-scene");
 var home_button_1 = require("./common-elements/home-button");
+var util_1 = require("../math/util");
 var LeaderboardScene = /** @class */ (function (_super) {
     __extends(LeaderboardScene, _super);
     function LeaderboardScene() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.transitionTime = 0.125;
+        return _this;
     }
     LeaderboardScene.prototype.beforeInitStage = function (args) {
         this.scores = args.scores;
@@ -2286,14 +2350,51 @@ var LeaderboardScene = /** @class */ (function (_super) {
         backButton.x = (app_1.screenResolution.width - backButton.width) / 2;
         // backButton.y = leaderboardDisplay.y + leaderboardDisplay.height + 2*padding;
         backButton.y = app_1.screenResolution.height - backButton.height - 2 * padding;
-        backButton.onClick = function () { return _this.sceneManager.changeScene(start_menu_scene_1["default"]); };
+        backButton.onClick = function () {
+            _this.requestTransition(start_menu_scene_1["default"]);
+        };
         this.stage.addChild(leaderboardDisplay, title, backButton);
+    };
+    LeaderboardScene.prototype.afterInitStage = function () {
+        this.state = 'transition-in';
+        this.stage.alpha = 0;
+        this.update();
+    };
+    LeaderboardScene.prototype.update = function () {
+        var _this = this;
+        _super.prototype.update.call(this);
+        switch (this.state) {
+            case 'transition-in':
+                this.stage.alpha = util_1.clamp(this.elapsedTime / this.transitionTime, 0, 1);
+                if (this.elapsedTime >= this.transitionTime) {
+                    this.state = 'running';
+                }
+                requestAnimationFrame(function () { return _this.update(); });
+                break;
+            case 'running':
+                requestAnimationFrame(function () { return _this.update(); });
+                break;
+            case 'transition-out':
+                this.stage.alpha = 1 - util_1.clamp(this.elapsedTime / this.transitionTime, 0, 1);
+                if (this.elapsedTime >= this.transitionTime) {
+                    this.sceneManager.changeScene(start_menu_scene_1["default"]);
+                    break;
+                }
+                requestAnimationFrame(function () { return _this.update(); });
+                break;
+        }
+    };
+    LeaderboardScene.prototype.requestTransition = function (scene, options) {
+        this.sceneToTransition = scene;
+        this.sceneToTransitionOptions = options;
+        this.state = 'transition-out';
+        this.elapsedTime = 0;
     };
     return LeaderboardScene;
 }(scene_1.Scene));
 exports["default"] = LeaderboardScene;
 
-},{"../app":1,"../constants":4,"./common-elements/home-button":18,"./leaderboard-scene/leaderboard-display":38,"./scene":39,"./start-menu-scene":40,"pixi.js":92}],38:[function(require,module,exports){
+},{"../app":1,"../constants":4,"../math/util":9,"./common-elements/home-button":18,"./leaderboard-scene/leaderboard-display":38,"./scene":39,"./start-menu-scene":40,"pixi.js":92}],38:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2443,7 +2544,7 @@ var StartMenuScene = /** @class */ (function (_super) {
     __extends(StartMenuScene, _super);
     function StartMenuScene() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.transitionTime = 0.25;
+        _this.transitionTime = 0.125;
         _this.sceneToTransition = null;
         _this.sceneToTransitionOptions = null;
         return _this;
@@ -2489,7 +2590,7 @@ var StartMenuScene = /** @class */ (function (_super) {
         }));
         copyright.x = app_1.screenResolution.width - copyright.width - 4;
         copyright.y = app_1.screenResolution.height - copyright.height - 4;
-        var title = new pixi_js_1.Text('Bar|Ball', new pixi_js_1.TextStyle({
+        var title = new pixi_js_1.Text('Bar[]Ball', new pixi_js_1.TextStyle({
             fontFamily: 'Roboto-Thin',
             fill: constants_1.colors.primary,
             fontSize: 128
@@ -2791,8 +2892,18 @@ var Button = /** @class */ (function (_super) {
         _this.addChild(_this._box);
         _this.addChild(_this._content);
         _this.interactive = true;
-        _this.addListener('click', function () {
+        _this.addListener('mousedown', function () {
+            _this._box.alpha = 0.6;
+        });
+        _this.addListener('mouseup', function () {
             _this.onClick();
+            _this._box.alpha = 1;
+        });
+        _this.addListener('mouseover', function () {
+            _this._box.alpha = 0.8;
+        });
+        _this.addListener('mouseout', function () {
+            _this._box.alpha = 1;
         });
         return _this;
     }

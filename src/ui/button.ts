@@ -41,8 +41,18 @@ class Button extends Container{
         this.addChild(this._content);
 
         this.interactive = true;
-        this.addListener('click', () => {
+        this.addListener('mousedown', () => {
+            this._box.alpha = 0.6;
+        });
+        this.addListener('mouseup', () => {
             this.onClick();
+            this._box.alpha = 1;
+        });
+        this.addListener('mouseover', () => {
+            this._box.alpha = 0.8;
+        });
+        this.addListener('mouseout', () => {
+            this._box.alpha = 1;
         });
     }
 }

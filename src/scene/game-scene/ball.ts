@@ -61,8 +61,12 @@ class Ball extends Container {
         this.radius = radius;
         this.color = color;
 
+        const children = this.children.slice(1);
+
         this._clearGraphics();
         this._createGraphics();
+
+        children.forEach(c => this.addChild(c));
     }
 
     update() {

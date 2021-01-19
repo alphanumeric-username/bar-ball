@@ -1,5 +1,6 @@
-- Improve scene transitions;
-- Make a pretty table for leaderboard;
-- Button hovering / clicking indicator;
-- Fix bugs;
-- Tile Logo;
+- [x]Improve scene transitions;
+- [x] Make a pretty table for leaderboard;
+- [x] Button hovering / clicking indicator;
+- [x] Add screenwide pause indicator;
+- [ ] Fix bugs;
+- [ ] Tile Logo;

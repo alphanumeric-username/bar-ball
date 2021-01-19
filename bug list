@@ -1,3 +1,4 @@
-- ball diminish to fast pass screen barrier;
-- rotating arrow disappears when ball diminish is starting/stopping;
-- ball can be stuck in random bar and rain drops;
+- [ ] ball diminish to fast pass screen barrier;
+- [ ] rotating arrow disappears when ball diminish is starting/stopping;
+- [ ] ball can be stuck in random bar (especially if small) and rain drops;
+- [ ] fonts load after first render

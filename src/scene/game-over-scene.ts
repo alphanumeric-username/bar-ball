@@ -10,6 +10,7 @@ import { colors } from '../constants';
 import { Triangle } from '../ui/geometry';
 import Vec2 from '../math/vec2';
 import GameScene from './game-scene';
+import { clamp } from '../math/util';
 
 
 type GameOverArgs = {
@@ -20,16 +21,24 @@ type GameOverArgs = {
 class GameOverScene extends Scene {
     private _score: number;
     private _previousScene: SceneClass;
+    scoreDisplay: ScoreDisplay;
 
+
+    state: 'running' | 'transition-in' | 'transition-out';
+    readonly transitionTime: number = 0.125;
+    sceneToTransition: SceneClass;
+    sceneToTransitionOptions: any;
+    
+    
     beforeInitStage(args: GameOverArgs) {
         this._score = args.score;
         this._previousScene = args.previousScene;
     }
     
     initStage() {
-        const scoreDisplay = new ScoreDisplay({ initialScore: this._score, fontSize: 128 });
-        scoreDisplay.x = (screenResolution.width - scoreDisplay.width)/2;
-        scoreDisplay.y = 5*screenResolution.height/12;
+        this.scoreDisplay = new ScoreDisplay({ initialScore: this._score, fontSize: 128 });
+        this.scoreDisplay.x = (screenResolution.width - this.scoreDisplay.width)/2;
+        this.scoreDisplay.y = 5*screenResolution.height/12;
 
         
 
@@ -40,7 +49,7 @@ class GameOverScene extends Scene {
         }));
 
         scoreText.x = (screenResolution.width - scoreText.width)/2;
-        scoreText.y = scoreDisplay.y - scoreText.height - 8;
+        scoreText.y = this.scoreDisplay.y - scoreText.height - 8;
 
         const buttonContainer = new Container();
 
@@ -64,7 +73,40 @@ class GameOverScene extends Scene {
         gameOverText.x = (screenResolution.width - gameOverText.width)/2;
         gameOverText.y = screenResolution.height/6;
         
-        this.stage.addChild(scoreDisplay, scoreText, gameOverText, buttonContainer);
+        this.stage.addChild(this.scoreDisplay, scoreText, gameOverText, buttonContainer);
+    }
+
+    afterInitStage() {
+        this.stage.alpha = 0;
+        this.state = 'transition-in';
+        this.update();
+    }
+
+    update() {
+        super.update();
+        switch (this.state) {
+            case 'transition-out':
+                this.stage.alpha = 1 - clamp(this.elapsedTime/this.transitionTime, 0, 1);
+                if (this.elapsedTime >= this.transitionTime) {
+                    this.sceneManager.changeScene(this.sceneToTransition, this.sceneToTransitionOptions);
+                    break;
+                }
+                requestAnimationFrame(() => this.update());
+                break;
+            case 'transition-in':
+                const t = clamp(this.elapsedTime/this.transitionTime, 0, 1);
+                this.stage.alpha = t;
+                // this.scoreDisplay.score = Math.round(t*this._score);
+                // this.scoreDisplay.updateGraphics();
+                if (this.elapsedTime >= this.transitionTime) {
+                    this.state = 'running';
+                }
+                requestAnimationFrame(() => this.update());
+                break;
+            case 'running':
+                requestAnimationFrame(() => this.update());
+                break;
+        }
     }
 
     private _createPlayAgainButton() {
@@ -75,7 +117,7 @@ class GameOverScene extends Scene {
         const [x0, y0] = [Math.cos(7*Math.PI/4), Math.sin(7*Math.PI/4)];
         
         const [xn, yn] = Vec2.normal(new Vec2(x0, y0)).toTuple();
-                                  
+
         const p1 = new Vec2(0.1*x0, 0.1*y0);
         const p2 = new Vec2(0.65*x0, 0.65*y0);
         const [tipx, tipy] = Vec2.add(
@@ -96,42 +138,27 @@ class GameOverScene extends Scene {
 
         const playAgainButton = new Button(arc, null, { padding: 16, backgroundColor: colors.primary });
         playAgainButton.onClick = () => {
-            this.sceneManager.changeScene(GameScene);
+            this.requestTransition(GameScene);
         }
 
-        // this.stage.addChild(playAgainButton);
         return playAgainButton;
     }
 
     private _createMainMenuButton() {
-
-        // const content = new Graphics()
-        // .beginFill(0xFFFFFF)
-        // .moveTo(24, 0)
-        // .lineTo(0, 20)
-        // .lineTo(8, 20)
-        // .lineTo(8, 48)
-        // .lineTo(40, 48)
-        // .lineTo(40, 20)
-        // .lineTo(48, 20)
-        // .lineTo(24, 0)
-        // .endFill()
-        // .beginFill(colors.primary)
-        // .drawRect(16, 28, 16, 20)
-        // .endFill();
-
-        // const mainMenuButton = new Button(content, null, {
-        //     padding: 16,
-        //     backgroundColor: colors.primary
-        // });
         const mainMenuButton = new HomeButton();
 
         mainMenuButton.onClick = () => {
-            this.sceneManager.changeScene(StartMenuScene);
+            this.requestTransition(StartMenuScene);
         };
 
-        // this.stage.addChild(mainMenuButton);
         return mainMenuButton;
+    }
+
+    requestTransition(scene: SceneClass, options?: any) {
+        this.sceneToTransition = scene;
+        this.sceneToTransitionOptions = options;
+        this.state = 'transition-out';
+        this.elapsedTime = 0;
     }
 }
 
