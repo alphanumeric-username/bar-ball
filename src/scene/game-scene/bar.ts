@@ -12,11 +12,11 @@ class Bar extends Container {
     constructor() {
         super();
         this._createGraphics();
-        this.hitbox = new Line(this.x + 128, this.y, this.x, this.y);
+        this.hitbox = new Line(this.x + 128 + 8, this.y, this.x - 8, this.y);
         this.hitbox.group.add('bar');
         this.hitbox.group.add('reflective');
         this.hitbox.onCollide = ({ collidedShape }) => {
-            if (collidedShape.group.has('ball')) {
+            if (collidedShape.group.has('ball-velocity')) {
                 this.onCollideBall();
             }
         }
@@ -35,7 +35,7 @@ class Bar extends Container {
     update() {
         const [minX, maxX, x] = [0, screenResolution.width - this.width, Mouse.getX() - this.width/2];
         this.x = clamp(x, minX, maxX);
-        this.hitbox.move(this.x + this.width, this.y, this.x, this.y);
+        this.hitbox.move(this.x + this.width + 8, this.y, this.x - 8, this.y);
     }
 
     onCollideBall() {

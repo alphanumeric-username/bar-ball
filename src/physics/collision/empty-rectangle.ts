@@ -15,9 +15,11 @@ class EmptyRectangle implements IShape {
     sides: ReadonlyArray<EmptyRectangleSide>;
     points: Vec2[];
     position: Vec2;
+    readonly rotation: number;
 
     constructor(x: number, y: number, width: number, height: number, rotation: number) {
         this.position = new Vec2(x, y);
+        this.rotation = rotation;
         const rotationMatrix = new Mat2(
             Math.cos(rotation), - Math.sin(rotation),
             Math.sin(rotation), Math.cos(rotation)
@@ -54,6 +56,23 @@ class EmptyRectangle implements IShape {
 
     onCollide(e: CollideEvent): void {
         
+    }
+
+    pointIsInside(x: number, y: number): boolean {
+        const p = new Vec2(x, y);
+        
+        const rotationMatrix = new Mat2(
+            Math.cos(-this.rotation), - Math.sin(-this.rotation),
+            Math.sin(-this.rotation), Math.cos(-this.rotation)
+        );
+
+        const p_ = Mat2.transform(rotationMatrix, p);
+
+        const points_ = this.points.map(q => Mat2.transform(rotationMatrix, q))
+
+        return points_[0].x <= p_.x &&  p_.x <= points_[3].x
+            && points_[0].y <= p_.y &&  p_.y <= points_[3].y;
+
     }
 }
 

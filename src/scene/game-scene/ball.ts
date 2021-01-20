@@ -3,8 +3,8 @@ import { colors } from '../../constants';
 import { Circle, Line, CollideEvent } from '../../physics/collision';
 import Vec2 from "../../math/vec2";
 import { playNote } from '../../service/audio';
-import { setInfo } from '../../service/debug';
-import { randomElement } from "../../math/util";
+import { clamp, randomElement } from "../../math/util";
+import { screenResolution } from "../../app";
 
 
 type BallState = {
@@ -27,6 +27,8 @@ class Ball extends Container {
     velocity: Vec2;
     acceleration: Vec2;
     readonly hitbox: Circle;
+    readonly velocityLine: Line;
+
     currentCollidingLine: Line;
     colliding: boolean;
     color: number = colors.primary;
@@ -40,6 +42,12 @@ class Ball extends Container {
         this.hitbox = new Circle(this.x, this.y, radius);
         this.hitbox.group.add('ball');
         this.hitbox.onCollide = (e) => {
+            // this._onCollide(e);
+        }
+
+        this.velocityLine = new Line(this.x, this.y, this.x + this.velocity.x, this.y + this.velocity.y);
+        this.velocityLine.group.add('ball-velocity');
+        this.velocityLine.onCollide = (e) => {
             this._onCollide(e);
         }
     }
@@ -75,8 +83,9 @@ class Ball extends Container {
         } else {
             this.currentCollidingLine = null;
         }
+        [this.x, this.y] = Vec2.add(new Vec2(this.x, this.y), this.velocity).toTuple();
         this.velocity = Vec2.add(this.velocity, this.acceleration);
-        [this.x, this.y] = Vec2.add(Vec2.fromTuple([this.x, this.y]), this.velocity).toTuple();
+        this.velocityLine.move(this.x, this.y, this.x + this.velocity.x, this.y + this.velocity.y);
         this.hitbox.move(this.x, this.y);
         this.hitbox.resize(this.radius);
     }
@@ -105,6 +114,7 @@ class Ball extends Container {
 
     private _onCollide({ collidedShape }: CollideEvent) {
         this.colliding = true;
+        console.log(collidedShape);
         if (collidedShape.group.has('lose')) {
             playNote('basic-wave', 440*Math.pow(2, -21/12), 0.1, { type: 'sawtooth' });
             this.onLose();
@@ -112,7 +122,6 @@ class Ball extends Container {
             return;
         } else if (collidedShape instanceof Line && collidedShape.group.has('reflective')) {
             const normal = collidedShape.getNormal();
-            // setInfo('ball-normal', `(${normal.x}, ${normal.y})`);
             this.reflect(normal);
 
             const group = collidedShape.group;

@@ -106,7 +106,8 @@ class GameScene extends Scene {
             });
         }
 
-        this.shapeSpace.add(this.ball.hitbox);
+        // this.shapeSpace.add(this.ball.hitbox);
+        this.shapeSpace.add(this.ball.velocityLine);
         this.stage.addChild(this.ball);
     }
 

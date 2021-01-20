@@ -6,7 +6,7 @@
     "bar-diminish": {
         "likeliness": 0.005,
         "_likeliness": 0,
-        "diminish-factor": 0.4,
+        "diminish-factor": 0.6,
         "transition-time": 0.5
     },
     "bar-lift": {
@@ -29,12 +29,19 @@
     },
     "rain": {
         "likeliness": 0.0005,
-        "_likeliness": 0,
+        "_likeliness": 0.4,
         "drop-generation-period": 0.2
     },
     "random-bar": {
         "likeliness": 0.1,
-        "_likeliness": 0
+        "_likeliness": 0,
+        "bar": {
+            "max-width": 384,
+            "min-width": 128,
+            "height": 32
+        },
+        "start-time": 0.5,
+        "stop-time": 0.5
     },
     "random-throw": {
         "likeliness": 0.03,

@@ -27,7 +27,14 @@ interface EventsConfig {
         "drop-generation-period": number
     },
     "random-bar": {
-        "likeliness": number
+        "likeliness": number,
+        "bar": {
+            "max-width": number,
+            "min-width": number,
+            "height": number
+        },
+        "start-time": number,
+        "stop-time": number
     },
     "random-throw": {
         "likeliness": number

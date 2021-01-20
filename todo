@@ -1,6 +1,10 @@
-- [x]Improve scene transitions;
+- [x] Improve scene transitions;
 - [x] Make a pretty table for leaderboard;
 - [x] Button hovering / clicking indicator;
 - [x] Add screenwide pause indicator;
 - [ ] Fix bugs;
+- [ ] Set events paramenters in event.json;
 - [ ] Tile Logo;
+- [ ] Improve sfx;
+- [ ] Itch.io page;
+- [ ] Upload game;

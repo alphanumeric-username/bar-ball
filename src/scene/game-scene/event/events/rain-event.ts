@@ -102,7 +102,7 @@ class RainEvent extends EventImplementation {
 
     generateDrop() {
         const x = Math.random()*screenResolution.width - 8;
-        const y = 0;
+        const y = -64;
 
         const raindrop = new RainDrop(this.gravity);
         raindrop.position.set(x, y);

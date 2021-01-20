@@ -422,6 +422,7 @@ var EmptyRectangle = /** @class */ (function () {
         this.group = new Set();
         this.name = 'empty-rectangle';
         this.position = new vec2_1["default"](x, y);
+        this.rotation = rotation;
         var rotationMatrix = new mat2_1["default"](Math.cos(rotation), -Math.sin(rotation), Math.sin(rotation), Math.cos(rotation));
         var widthVec = mat2_1["default"].transform(rotationMatrix, new vec2_1["default"](width, 0));
         var heightVec = mat2_1["default"].transform(rotationMatrix, new vec2_1["default"](0, height));
@@ -449,6 +450,14 @@ var EmptyRectangle = /** @class */ (function () {
         this.position = vec2_1["default"].add(this.position, dr);
     };
     EmptyRectangle.prototype.onCollide = function (e) {
+    };
+    EmptyRectangle.prototype.pointIsInside = function (x, y) {
+        var p = new vec2_1["default"](x, y);
+        var rotationMatrix = new mat2_1["default"](Math.cos(-this.rotation), -Math.sin(-this.rotation), Math.sin(-this.rotation), Math.cos(-this.rotation));
+        var p_ = mat2_1["default"].transform(rotationMatrix, p);
+        var points_ = this.points.map(function (q) { return mat2_1["default"].transform(rotationMatrix, q); });
+        return points_[0].x <= p_.x && p_.x <= points_[3].x
+            && points_[0].y <= p_.y && p_.y <= points_[3].y;
     };
     return EmptyRectangle;
 }());
@@ -940,7 +949,8 @@ var GameScene = /** @class */ (function (_super) {
                 _this.sceneManager.changeScene(game_over_scene_1["default"], { score: _this.scoreDisplay.getScore(), previousScene: GameScene });
             });
         };
-        this.shapeSpace.add(this.ball.hitbox);
+        // this.shapeSpace.add(this.ball.hitbox);
+        this.shapeSpace.add(this.ball.velocityLine);
         this.stage.addChild(this.ball);
     };
     GameScene.prototype._createScoreDisplay = function () {
@@ -1086,6 +1096,11 @@ var Ball = /** @class */ (function (_super) {
         _this.hitbox = new collision_1.Circle(_this.x, _this.y, radius);
         _this.hitbox.group.add('ball');
         _this.hitbox.onCollide = function (e) {
+            // this._onCollide(e);
+        };
+        _this.velocityLine = new collision_1.Line(_this.x, _this.y, _this.x + _this.velocity.x, _this.y + _this.velocity.y);
+        _this.velocityLine.group.add('ball-velocity');
+        _this.velocityLine.onCollide = function (e) {
             _this._onCollide(e);
         };
         return _this;
@@ -1119,8 +1134,9 @@ var Ball = /** @class */ (function (_super) {
         else {
             this.currentCollidingLine = null;
         }
+        _a = vec2_1["default"].add(new vec2_1["default"](this.x, this.y), this.velocity).toTuple(), this.x = _a[0], this.y = _a[1];
         this.velocity = vec2_1["default"].add(this.velocity, this.acceleration);
-        _a = vec2_1["default"].add(vec2_1["default"].fromTuple([this.x, this.y]), this.velocity).toTuple(), this.x = _a[0], this.y = _a[1];
+        this.velocityLine.move(this.x, this.y, this.x + this.velocity.x, this.y + this.velocity.y);
         this.hitbox.move(this.x, this.y);
         this.hitbox.resize(this.radius);
     };
@@ -1138,6 +1154,7 @@ var Ball = /** @class */ (function (_super) {
     Ball.prototype._onCollide = function (_a) {
         var collidedShape = _a.collidedShape;
         this.colliding = true;
+        console.log(collidedShape);
         if (collidedShape.group.has('lose')) {
             audio_1.playNote('basic-wave', 440 * Math.pow(2, -21 / 12), 0.1, { type: 'sawtooth' });
             this.onLose();
@@ -1147,7 +1164,6 @@ var Ball = /** @class */ (function (_super) {
         }
         else if (collidedShape instanceof collision_1.Line && collidedShape.group.has('reflective')) {
             var normal = collidedShape.getNormal();
-            // setInfo('ball-normal', `(${normal.x}, ${normal.y})`);
             this.reflect(normal);
             var group = collidedShape.group;
             if (group.has('bar')) {
@@ -1267,12 +1283,12 @@ var Bar = /** @class */ (function (_super) {
     function Bar() {
         var _this = _super.call(this) || this;
         _this._createGraphics();
-        _this.hitbox = new collision_1.Line(_this.x + 128, _this.y, _this.x, _this.y);
+        _this.hitbox = new collision_1.Line(_this.x + 128 + 8, _this.y, _this.x - 8, _this.y);
         _this.hitbox.group.add('bar');
         _this.hitbox.group.add('reflective');
         _this.hitbox.onCollide = function (_a) {
             var collidedShape = _a.collidedShape;
-            if (collidedShape.group.has('ball')) {
+            if (collidedShape.group.has('ball-velocity')) {
                 _this.onCollideBall();
             }
         };
@@ -1288,7 +1304,7 @@ var Bar = /** @class */ (function (_super) {
     Bar.prototype.update = function () {
         var _a = [0, app_1.screenResolution.width - this.width, mouse_1["default"].getX() - this.width / 2], minX = _a[0], maxX = _a[1], x = _a[2];
         this.x = util_1.clamp(x, minX, maxX);
-        this.hitbox.move(this.x + this.width, this.y, this.x, this.y);
+        this.hitbox.move(this.x + this.width + 8, this.y, this.x - 8, this.y);
     };
     Bar.prototype.onCollideBall = function () {
     };
@@ -1884,7 +1900,7 @@ var RainEvent = /** @class */ (function (_super) {
     RainEvent.prototype.generateDrop = function () {
         var _this = this;
         var x = Math.random() * app_1.screenResolution.width - 8;
-        var y = 0;
+        var y = -64;
         var raindrop = new RainDrop(this.gravity);
         raindrop.position.set(x, y);
         this.currentScene.stage.addChild(raindrop);
@@ -1924,12 +1940,13 @@ var RandomBarEvent = /** @class */ (function (_super) {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.name = 'random-bar';
         _this.likeliness = event_1.getEventConfig()['random-bar'].likeliness;
-        _this.minWidth = 128;
-        _this.maxWidth = 384;
-        _this.height = 32;
+        _this.minWidth = event_1.getEventConfig()['random-bar'].bar['min-width'];
+        _this.maxWidth = event_1.getEventConfig()['random-bar'].bar['max-width'];
+        _this.height = event_1.getEventConfig()['random-bar'].bar.height; //32;
         _this.state = 'stopped';
-        _this.startTime = 0.5;
-        _this.stopTime = 0.5;
+        _this.startTime = event_1.getEventConfig()['random-bar']['start-time'];
+        _this.stopTime = event_1.getEventConfig()['random-bar']['stop-time'];
+        _this.lastCollidedShape = null;
         return _this;
     }
     RandomBarEvent.prototype.start = function (scene, duration) {
@@ -1938,17 +1955,20 @@ var RandomBarEvent = /** @class */ (function (_super) {
         this._createShape();
         this._createGraphics();
         this.state = 'starting';
+        this.lastCollidedShape = null;
     };
     RandomBarEvent.prototype.update = function (dt) {
         _super.prototype.update.call(this, dt);
         switch (this.state) {
             case 'starting':
                 this.barGraphics.alpha = util_1.clamp(this.elapsedTime / this.startTime, 0, 1);
-                if (this.elapsedTime >= this.startTime) {
-                    this._attachShape();
+                if (this.elapsedTime >= this.startTime && !this._isTouchingBall()) {
+                    this._initShapeGroup();
                     this.state = 'started';
                     this.elapsedTime = 0;
+                    break;
                 }
+                this.lastCollidedShape = null;
                 break;
             case 'started':
                 if (this.elapsedTime >= this.duration) {
@@ -1971,16 +1991,26 @@ var RandomBarEvent = /** @class */ (function (_super) {
         this.barGraphics.parent.removeChild(this.barGraphics);
     };
     RandomBarEvent.prototype._createShape = function () {
+        var _this = this;
         var x = Math.random() * app_1.screenResolution.width;
         var y = Math.random() * app_1.screenResolution.height / 2 + app_1.screenResolution.height / 4;
         var width = Math.random() * (this.maxWidth - this.minWidth) + this.minWidth;
         var rotation = Math.random() * Math.PI / 2 - Math.PI / 4;
         this.barShape = new collision_1.EmptyRectangle(x, y, width, this.height, rotation);
+        // this.barShape.sides.forEach(s => s.group.add('reflective'));
+        this.barShape.sides.forEach(function (s) {
+            _this.currentScene.shapeSpace.add(s);
+            s.onCollide = function (_a) {
+                var collidedShape = _a.collidedShape;
+                _this.lastCollidedShape = collidedShape;
+            };
+        });
+    };
+    RandomBarEvent.prototype._initShapeGroup = function () {
         this.barShape.sides.forEach(function (s) { return s.group.add('reflective'); });
     };
-    RandomBarEvent.prototype._attachShape = function () {
-        var _this = this;
-        this.barShape.sides.forEach(function (s) { return _this.currentScene.shapeSpace.add(s); });
+    RandomBarEvent.prototype._isTouchingBall = function () {
+        return this.lastCollidedShape != null && this.lastCollidedShape.group.has('ball') || this.barShape.pointIsInside(this.currentScene.ball.x, this.currentScene.ball.y);
     };
     RandomBarEvent.prototype._createGraphics = function () {
         var _a;
