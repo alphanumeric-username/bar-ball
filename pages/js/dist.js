@@ -4,6 +4,10 @@ exports.__esModule = true;
 exports.screenResolution = void 0;
 var pixi_js_1 = require("pixi.js");
 var constants_1 = require("./constants");
+function isWebGLSupported() {
+    var ctx = document.createElement('canvas').getContext('webgl2');
+    return ctx != null && ctx != undefined;
+}
 var screenResolution = {
     width: 800,
     height: 600
@@ -13,7 +17,8 @@ var app = new pixi_js_1.Application({
     width: screenResolution.width,
     height: screenResolution.height,
     backgroundColor: constants_1.colors.secondary,
-    antialias: true
+    antialias: true,
+    forceCanvas: !isWebGLSupported()
 });
 document.body.appendChild(app.view);
 exports["default"] = app;
@@ -214,16 +219,14 @@ var event_1 = require("./config/event");
 var leaderboard_1 = require("./config/leaderboard");
 var app_1 = require("./app");
 var game_1 = require("./game/game");
-window.onload = function () {
-    Promise.all([
-        event_1.loadEventConfig(),
-        leaderboard_1.initDatabase()
-    ]).then(function () {
-        new game_1["default"]({
-            app: app_1["default"]
-        });
-    })["catch"](function (err) { return console.error('Could not init:\n', err); });
-};
+Promise.all([
+    event_1.loadEventConfig(),
+    leaderboard_1.initDatabase(),
+]).then(function () {
+    new game_1["default"]({
+        app: app_1["default"]
+    });
+})["catch"](function (err) { return console.error('Could not init:\n', err); });
 
 },{"./app":1,"./config/event":2,"./config/leaderboard":3,"./game/game":5}],7:[function(require,module,exports){
 "use strict";
@@ -690,11 +693,7 @@ var HomeButton = /** @class */ (function (_super) {
             .lineTo(40, 20)
             .lineTo(48, 20)
             .lineTo(24, 0)
-            .endFill()
-        // .beginFill(colors.primary)
-        // .drawRect(16, 28, 16, 20)
-        // .endFill()
-        , null, {
+            .endFill(), null, {
             padding: 16,
             backgroundColor: constants_1.colors.primary
         }) || this;

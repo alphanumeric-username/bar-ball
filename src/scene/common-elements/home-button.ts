@@ -20,9 +20,6 @@ class HomeButton extends Button {
         .lineTo(48, 20)
         .lineTo(24, 0)
         .endFill()
-        // .beginFill(colors.primary)
-        // .drawRect(16, 28, 16, 20)
-        // .endFill()
         , null, {
             padding: 16,
             backgroundColor: colors.primary

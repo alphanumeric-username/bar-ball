@@ -3,13 +3,12 @@ import { initDatabase } from './config/leaderboard';
 import app from './app';
 import Game from './game/game'
 
-window.onload = () => {
-    Promise.all([
-        loadEventConfig(),
-        initDatabase()
-    ]).then(() => {
-        new Game({
-            app: app
-        });
-    }).catch(err => console.error('Could not init:\n', err));
-}
+Promise.all([
+    loadEventConfig(),
+    initDatabase(),
+
+]).then(() => {
+    new Game({
+        app: app
+    });
+}).catch(err => console.error('Could not init:\n', err));
