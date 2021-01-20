@@ -33,6 +33,8 @@ class Ball extends Container {
     colliding: boolean;
     color: number = colors.primary;
 
+    justReflected: boolean = false;
+
     constructor(radius: number) {
         super();
         this.radius = radius;
@@ -83,14 +85,20 @@ class Ball extends Container {
         } else {
             this.currentCollidingLine = null;
         }
-        [this.x, this.y] = Vec2.add(new Vec2(this.x, this.y), this.velocity).toTuple();
-        this.velocity = Vec2.add(this.velocity, this.acceleration);
-        this.velocityLine.move(this.x, this.y, this.x + this.velocity.x, this.y + this.velocity.y);
+        if (this.justReflected) {
+            this.justReflected = false;
+        } else {
+            [this.x, this.y] = Vec2.add(new Vec2(this.x, this.y), this.velocity).toTuple();
+            this.velocity = Vec2.add(this.velocity, this.acceleration);
+        }
+        const tip = Vec2.scale(this.radius, Vec2.normalize(this.velocity));
+        this.velocityLine.move(this.x, this.y, this.x + this.velocity.x + tip.x, this.y + this.velocity.y + tip.y);
         this.hitbox.move(this.x, this.y);
         this.hitbox.resize(this.radius);
     }
 
     reflect(normal: Vec2, bounciness: number = 1) {
+        this.justReflected = true;
         const newVel = Vec2.scale(
             bounciness,
             Vec2.sub(

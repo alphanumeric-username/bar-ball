@@ -1089,6 +1089,7 @@ var Ball = /** @class */ (function (_super) {
     function Ball(radius) {
         var _this = _super.call(this) || this;
         _this.color = constants_1.colors.primary;
+        _this.justReflected = false;
         _this.radius = radius;
         _this.velocity = new vec2_1["default"](-6 * Math.random() + 3, 0);
         _this.acceleration = new vec2_1["default"](0, 0.25);
@@ -1134,14 +1135,21 @@ var Ball = /** @class */ (function (_super) {
         else {
             this.currentCollidingLine = null;
         }
-        _a = vec2_1["default"].add(new vec2_1["default"](this.x, this.y), this.velocity).toTuple(), this.x = _a[0], this.y = _a[1];
-        this.velocity = vec2_1["default"].add(this.velocity, this.acceleration);
-        this.velocityLine.move(this.x, this.y, this.x + this.velocity.x, this.y + this.velocity.y);
+        if (this.justReflected) {
+            this.justReflected = false;
+        }
+        else {
+            _a = vec2_1["default"].add(new vec2_1["default"](this.x, this.y), this.velocity).toTuple(), this.x = _a[0], this.y = _a[1];
+            this.velocity = vec2_1["default"].add(this.velocity, this.acceleration);
+        }
+        var tip = vec2_1["default"].scale(this.radius, vec2_1["default"].normalize(this.velocity));
+        this.velocityLine.move(this.x, this.y, this.x + this.velocity.x + tip.x, this.y + this.velocity.y + tip.y);
         this.hitbox.move(this.x, this.y);
         this.hitbox.resize(this.radius);
     };
     Ball.prototype.reflect = function (normal, bounciness) {
         if (bounciness === void 0) { bounciness = 1; }
+        this.justReflected = true;
         var newVel = vec2_1["default"].scale(bounciness, vec2_1["default"].sub(this.velocity, vec2_1["default"].scale(2 * vec2_1["default"].dot(this.velocity, normal), normal)));
         this.velocity = newVel;
     };

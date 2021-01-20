@@ -2,9 +2,9 @@
 - [x] Make a pretty table for leaderboard;
 - [x] Button hovering / clicking indicator;
 - [x] Add screenwide pause indicator;
-- [ ] Fix bugs;
-- [ ] Set events paramenters in event.json;
+- [x] Fix bugs;
 - [ ] Tile Logo;
 - [ ] Improve sfx;
+- [ ] Set events paramenters in event.json;
 - [ ] Itch.io page;
 - [ ] Upload game;
