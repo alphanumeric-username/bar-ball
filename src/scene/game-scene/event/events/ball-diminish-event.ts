@@ -11,16 +11,18 @@ class BallDiminishEvent extends EventImplementation {
     lastRadius: number;
     targetRadius: number;
 
+    diminishFactor: number = getEventConfig()["bar-diminish"]["diminish-factor"];
+
     state: 'stopped' | 'starting' | 'started' | 'stopping' = 'stopped';
 
-    readonly transitionTime = 0.5;
+    readonly transitionTime = getEventConfig()["ball-diminish"]["transition-time"];
 
     start(scene: Scene, duration: number) {
         console.log('BALL_DIMINISH: start');
         super.start(scene, duration);
         this.lastRadius = this.currentScene.ball.radius;
         this.state = 'starting';
-        this.targetRadius = 0.5*this.lastRadius;
+        this.targetRadius = this.diminishFactor*this.lastRadius;
     }
 
     update(dt: number) {

@@ -1,6 +1,8 @@
 interface EventsConfig {
     "ball-diminish": {
-        "likeliness": number
+        "likeliness": number,
+        "transition-time": number,
+        "diminish-factor": number,
     },
     "bar-diminish": {
         "likeliness": number,

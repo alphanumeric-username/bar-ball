@@ -5,6 +5,9 @@
 - [x] Fix bugs;
 - [ ] Tile Logo;
 - [ ] Improve sfx;
-- [ ] Set events paramenters in event.json;
+- [ ] Put events parameters in event.json;
+- [ ] Adjust dificult curve;
 - [ ] Itch.io page;
 - [ ] Upload game;
+- [ ] Clear/Refactor code;
+- [ ] Change repo visibility to public;

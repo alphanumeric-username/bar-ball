@@ -1,7 +1,9 @@
 {
     "ball-diminish": {
         "likeliness": 0.015,
-        "_likeliness": 0
+        "_likeliness": 0,
+        "diminish-factor": 0.5,
+        "transition-time": 0.5
     },
     "bar-diminish": {
         "likeliness": 0.005,
