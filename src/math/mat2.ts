@@ -30,6 +30,10 @@ class Mat2 {
             A.c*u.x + A.d*u.y,
         );
     }
+
+    static scale(k: number, M: Mat2): Mat2 {
+        return new Mat2(k*M.a, k*M.b, k*M.c, k*M.d);
+    }
 }
 
 export default Mat2;

@@ -1,8 +1,18 @@
 import Vec2 from "../../math/vec2";
 import { Line, Circle, Rectangle, EmptyRectangle } from "../collision";
-import { solveQuadEq } from "../../math/quad-eq";
+import { solveQuadEquation } from "../../math/quad-eq";
+import { solve2x2Equation } from "../../math/linear-eq";
 import { between } from "../../math/util";
 import { IShape } from "../collision";
+
+function findLineLineIntersectionPoint(line1: Line, line2: Line): [boolean, Vec2] {
+    const F = line1.getEquation();
+    const G = line2.getEquation();
+
+    const solution = solve2x2Equation(F.a, F.b, -F.c, G.a, G.b, -G.c)[1];
+
+    return [isNaN(solution.x), solution];
+}
 
 function testLineCircleIntersection(shape1: IShape, shape2: IShape) {
 
@@ -27,7 +37,7 @@ function testLineCircleIntersection(shape1: IShape, shape2: IShape) {
     const b = - 2*Vec2.dot(D, C)*k;
     const c = Vec2.dot(C, C) - circle.r*circle.r;
 
-    const values: [number, number] | null = solveQuadEq(a, b, c);
+    const values: [number, number] | null = solveQuadEquation(a, b, c);
     if (values ==  null) {
         return false;
     }
@@ -90,6 +100,7 @@ function testIntersection(shape1: IShape, shape2: IShape): boolean{
 }
 
 export {
+    findLineLineIntersectionPoint,
     testLineCircleIntersection,
     testIntersection
 };

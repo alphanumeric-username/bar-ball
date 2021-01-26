@@ -44,6 +44,10 @@ class Vec2 {
     }
 
     static normalize(u: Vec2): Vec2 {
+        const norm = Vec2.norm(u);
+        if (norm == 0) {
+            return new Vec2(0, 0);
+        }
         return Vec2.scale(1 / Vec2.norm(u), u);
     }
 

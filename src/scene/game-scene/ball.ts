@@ -44,13 +44,13 @@ class Ball extends Container {
         this.hitbox = new Circle(this.x, this.y, radius);
         this.hitbox.group.add('ball');
         this.hitbox.onCollide = (e) => {
-            // this._onCollide(e);
+            this._onCollide(e);
         }
 
         this.velocityLine = new Line(this.x, this.y, this.x + this.velocity.x, this.y + this.velocity.y);
         this.velocityLine.group.add('ball-velocity');
         this.velocityLine.onCollide = (e) => {
-            this._onCollide(e);
+            // this._onCollide(e);
         }
     }
 
@@ -93,6 +93,7 @@ class Ball extends Container {
         }
         const tip = Vec2.scale(this.radius, Vec2.normalize(this.velocity));
         this.velocityLine.move(this.x, this.y, this.x + this.velocity.x + tip.x, this.y + this.velocity.y + tip.y);
+        console.log(this.velocityLine.startPos, this.velocityLine.endPos);
         this.hitbox.move(this.x, this.y);
         this.hitbox.resize(this.radius);
     }

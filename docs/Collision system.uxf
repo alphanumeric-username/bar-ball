@@ -1,0 +1,14 @@
+<diagram program="umletino" version="14.4.0-SNAPSHOT"><zoom_level>10</zoom_level><element><id>UMLClass</id><coordinates><x>120</x><y>220</y><w>240</w><h>140</h></coordinates><panel_attributes>IShape
+--
++ tags: Set&lt;String&gt;
++ shapeSpace: ShapeSpace
++ position: Vec2
++ velocity: Vec2
++ acceleration: Vec2
++ supportFunction (direction: Vec2): Vec2
++ onCollide (CollisionEvent): Void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>390</x><y>220</y><w>100</w><h>30</h></coordinates><panel_attributes>GJK</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>270</x><y>70</y><w>120</w><h>60</h></coordinates><panel_attributes>ShapeSpace
+--
+- shapes: IShape[]
++ update(): Void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>190</x><y>440</y><w>170</w><h>60</h></coordinates><panel_attributes>CollisionEvent
+--
++ collidedShape: IShape</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>260</x><y>350</y><w>30</w><h>110</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>10;90;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>210</x><y>120</y><w>100</w><h>120</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>10;100;80;10</additional_attributes></element><element><id>Relation</id><coordinates><x>350</x><y>120</y><w>100</w><h>120</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>80;100;10;10</additional_attributes></element></diagram>

@@ -330,6 +330,10 @@ var Vec2 = /** @class */ (function () {
         return new Vec2(u.x * k, u.y * k);
     };
     Vec2.normalize = function (u) {
+        var norm = Vec2.norm(u);
+        if (norm == 0) {
+            return new Vec2(0, 0);
+        }
         return Vec2.scale(1 / Vec2.norm(u), u);
     };
     Vec2.normal = function (u) {
@@ -1144,6 +1148,7 @@ var Ball = /** @class */ (function (_super) {
         }
         var tip = vec2_1["default"].scale(this.radius, vec2_1["default"].normalize(this.velocity));
         this.velocityLine.move(this.x, this.y, this.x + this.velocity.x + tip.x, this.y + this.velocity.y + tip.y);
+        console.log(this.velocityLine.startPos, this.velocityLine.endPos);
         this.hitbox.move(this.x, this.y);
         this.hitbox.resize(this.radius);
     };
@@ -1422,8 +1427,9 @@ var BallDiminishEvent = /** @class */ (function (_super) {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.name = 'ball-diminish';
         _this.likeliness = event_1.getEventConfig()["ball-diminish"].likeliness;
+        _this.diminishFactor = event_1.getEventConfig()["bar-diminish"]["diminish-factor"];
         _this.state = 'stopped';
-        _this.transitionTime = 0.5;
+        _this.transitionTime = event_1.getEventConfig()["ball-diminish"]["transition-time"];
         return _this;
     }
     BallDiminishEvent.prototype.start = function (scene, duration) {
@@ -1431,7 +1437,7 @@ var BallDiminishEvent = /** @class */ (function (_super) {
         _super.prototype.start.call(this, scene, duration);
         this.lastRadius = this.currentScene.ball.radius;
         this.state = 'starting';
-        this.targetRadius = 0.5 * this.lastRadius;
+        this.targetRadius = this.diminishFactor * this.lastRadius;
     };
     BallDiminishEvent.prototype.update = function (dt) {
         _super.prototype.update.call(this, dt);

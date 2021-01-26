@@ -3,11 +3,12 @@
 - [x] Button hovering / clicking indicator;
 - [x] Add screenwide pause indicator;
 - [x] Fix bugs;
+- [ ] Improve collision system;
 - [ ] Tile Logo;
 - [ ] Improve sfx;
 - [ ] Put events parameters in event.json;
 - [ ] Adjust dificult curve;
 - [ ] Itch.io page;
 - [ ] Upload game;
-- [ ] Clear/Refactor code;
+- [ ] Clean/Refactor code;
 - [ ] Change repo visibility to public;

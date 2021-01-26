@@ -1,13 +1,14 @@
 import Vec2 from '../../math/vec2'
 import { IShape, IShapeSpace, CollideEvent } from './shape';
 
+type LineEquation = { a: number, b: number, c: number } & ((x: number, y: number) => number);
+
 class Line implements IShape {
     startPos: Vec2;
     endPos: Vec2;
     private _normal: Vec2;
     readonly name: string = 'line';
-    group?: Set<string> = new Set()
-    // bounciness?: number;
+    group?: Set<string> = new Set();
     shapeSpace: IShapeSpace = null;
 
     constructor(x_start: number, y_start: number, x_end: number, y_end: number) {
@@ -18,7 +19,7 @@ class Line implements IShape {
         return this._normal;
     }
 
-    getEquation(): (x: number, y: number) => number {
+    getEquation(): LineEquation {
         var a: number;
         var b: number;
         var c: number;
@@ -31,7 +32,7 @@ class Line implements IShape {
             b = -1;
             c = this.startPos.y - a*this.startPos.x;
         }
-        return (x: number, y: number) => a*x + b*y + c;
+        return Object.assign(((x: number, y: number) => a*x + b*y + c), {a, b, c });
     }
 
     getMiddlePoint(): Vec2 {

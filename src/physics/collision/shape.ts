@@ -1,11 +1,19 @@
+import Vec2 from "../../math/vec2";
+
 type OnCollideEvent = {
     collidedShape: IShape
 }
 
 interface IShape {
-    group?: Set<string>;
-    readonly name: string;
+
+    position: Vec2;
+    velocity: Vec2;
+    // acceleration: Vec2;
+    tags?: Set<string>;
     shapeSpace: IShapeSpace;
+    
+    supportFunction(direction: Vec2): Vec2;
+    update(): void;
     onCollide(e: OnCollideEvent): void;
 }
 
