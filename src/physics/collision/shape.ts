@@ -4,10 +4,17 @@ type OnCollideEvent = {
     collidedShape: IShape
 }
 
-interface IShape {
-
+type Particle = {
     position: Vec2;
     velocity: Vec2;
+    acceleration: Vec2;
+}
+
+interface IShape {
+
+    center: Particle;
+    // position: Vec2;
+    // velocity: Vec2;
     // acceleration: Vec2;
     tags?: Set<string>;
     shapeSpace: IShapeSpace;

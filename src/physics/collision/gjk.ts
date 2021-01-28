@@ -1,7 +1,7 @@
 import Vec2 from '../../math/vec2';
 import Mat2 from '../../math/mat2';
-import { lineEquation } from '../../math/util';
 import { IShape } from './shape';
+import { ObjectSet } from '../../object-set';
 
 function minkowiskDifferenceSupportFunction(shape1: IShape, shape2: IShape): (direction: Vec2) => Vec2 {
     return (direction: Vec2) => Vec2.sub(
@@ -10,21 +10,34 @@ function minkowiskDifferenceSupportFunction(shape1: IShape, shape2: IShape): (di
     );
 }
 
+function linearFuncMinimun(a: number, b: number, intervalStart: number = 0, intervalEnd: number = 1): number {
+    return a >= 0 ? intervalStart : intervalEnd;
+}
+
 function quadFuncMinimun(a: number, b: number, c: number, intervalStart: number = 0, intervalEnd: number = 1): number {
 
-    const f = (t: number) => a*t*t + b*t + c;
+    if (a == 0) {
+        return linearFuncMinimun(a, b, intervalStart, intervalEnd);
+    }
 
+    const f = (t: number) => a*t*t + b*t + c;
     const criticalPoint = -b / (2*a);
+
+    const globalMinMax = f(criticalPoint);
     const startVal = f(intervalStart);
     const endVal = f(intervalEnd);
 
     if (criticalPoint >= intervalStart && criticalPoint <= intervalEnd) {
-        return criticalPoint
+        const minimum = Math.min(startVal, endVal, globalMinMax);
+        
+        return startVal == minimum ? intervalStart : 
+               endVal == minimum ? intervalEnd : globalMinMax;
+    } else {
+        const minimum = Math.min(startVal, endVal);
+        
+        return startVal == minimum ? intervalStart : intervalEnd;
     }
 
-    const minimum = Math.min(startVal, endVal);
-    
-    return startVal == minimum ? intervalStart : intervalEnd;
 }
 
 function pointLineIntersectionTest(q: Vec2, p1: Vec2, p2: Vec2): boolean {
@@ -47,52 +60,139 @@ function pointTriangleIntersectionTest(q: Vec2, p1: Vec2, p2: Vec2, p3: Vec2): b
     return false;
 }
 
-function nearestTrianglePoint(p1: Vec2, p2: Vec2, p3: Vec2) {
-    const l1 = lineEquation(...p1.toTuple(), ...p2.toTuple());
-    const l2 = lineEquation(...p2.toTuple(), ...p3.toTuple());
-    const l3 = lineEquation(...p3.toTuple(), ...p1.toTuple());
+function nearestLinePoint(p1: Vec2, p2: Vec2): Vec2 {
 
-    // if (origin is in triangle):
-    //     return origin
-    // else:
-    //     return min(
-    //         quadFuncMinimun(|p1(1 - t) + p2(t)|^2),
-    //         quadFuncMinimun(|p2(1 - t) + p3(t)|^2),
-    //         quadFuncMinimun(|p3(1 - t) + p1(t)|^2)
-    //     )
+    const ax = (p2.x - p1.x)*(p2.x - p1.x);
+    const bx = 2*p1.x*(p2.x - p1.x);
+    const cx = (p1.x)*(p1.x);
+    
+    const ay = (p2.y - p1.y)*(p2.y - p1.y);
+    const by = 2*p1.y*(p2.y - p1.y);
+    const cy = (p1.y)*(p1.y);
+
+    const tmin = quadFuncMinimun(ax + ay, bx + by, cx + cy);
+
+    return new Vec2(p1.x*(1 - tmin) + p2.x*(tmin), p1.y*(1 - tmin) + p2.y*(tmin))
 }
 
-function nearestLinePoint(p1:number, p2: number) {
-    return quadFuncMinimun(/** Expand equation here */);
-}
+function nearestTrianglePoint(p1: Vec2, p2: Vec2, p3: Vec2): Vec2 {
 
-function findNearestPointOfUpTo4PointsConvexHull(convexHull:Set<Vec2>) {
-    if (convexHull.size == 2) {
-        return 
+    const origin = new Vec2(0, 0);
+
+    if (pointTriangleIntersectionTest(origin, p1, p2, p3)) {
+        return origin;
+    } else {
+        const candidates = [
+            nearestLinePoint(p1, p2),
+            nearestLinePoint(p2, p3),
+            nearestLinePoint(p3, p1),
+        ];
+        let minimum = candidates[0];
+
+        candidates.forEach(c => {
+            if (Vec2.norm(c) < Vec2.norm(minimum)) {
+                minimum = c;
+            }
+        });
+
+        return minimum;
     }
 }
 
+
+function findNearestPointOfUpTo4PointsConvexHull(convexHull:ObjectSet<Vec2>): Vec2 {
+    const points: Vec2[] = [];
+    convexHull.forEach(p => points.push(p));
+    if (convexHull.size() == 2) {
+        return nearestLinePoint(points[0], points[1]);
+    } else if (convexHull.size() == 3) {
+        return nearestTrianglePoint(points[0], points[1], points[2]);
+    } else if (convexHull.size() == 4) {
+        const candidates = [
+            findNearestPointOfUpTo4PointsConvexHull(new ObjectSet([points[0], points[1], points[2]])),
+            findNearestPointOfUpTo4PointsConvexHull(new ObjectSet([points[0], points[1], points[3]])),
+            findNearestPointOfUpTo4PointsConvexHull(new ObjectSet([points[0], points[2], points[3]])),
+            findNearestPointOfUpTo4PointsConvexHull(new ObjectSet([points[1], points[2], points[3]])),
+        ];
+
+        let minimum = candidates[0];
+        candidates.forEach(c => {
+            if (Vec2.norm(c) < Vec2.norm(minimum)) {
+                minimum = c;
+            }
+        });
+
+        return minimum;
+    }
+}
+
+
+
+function minimumUpTo4PointsConvexHullContainingPoint(convexHull: ObjectSet<Vec2>, point: Vec2): ObjectSet<Vec2> {
+    const points: Vec2[] = [];
+    convexHull.forEach(p => points.push(p));
+    if (convexHull.size() <= 2) {
+        return convexHull;
+    } else if (convexHull.size() == 3) {
+        var nextSet = convexHull;
+        if (pointLineIntersectionTest(point, points[0], points[1])) {
+            nextSet = new ObjectSet<Vec2>([points[0], points[1]]);
+        } else if (pointLineIntersectionTest(point, points[1], points[2])) {
+            nextSet = new ObjectSet<Vec2>([points[1], points[2]]);
+        } else if (pointLineIntersectionTest(point, points[2], points[0])) {
+            nextSet = new ObjectSet<Vec2>([points[2], points[0]]);
+        }
+
+        if (nextSet == convexHull) {
+            return convexHull;
+        }
+        return minimumUpTo4PointsConvexHullContainingPoint(nextSet, point);
+
+    } else if (convexHull.size() == 4) {
+        var nextSet: ObjectSet<Vec2> = convexHull;
+        if (pointTriangleIntersectionTest(point, points[0], points[1], points[2])) {
+            nextSet = new ObjectSet<Vec2>([points[0], points[1], points[2]]);
+        } else if (pointTriangleIntersectionTest(point, points[0], points[1], points[3])) {
+            nextSet = new ObjectSet<Vec2>([points[0], points[1], points[3]]);
+        } else if (pointTriangleIntersectionTest(point, points[0], points[2], points[3])) {
+            nextSet = new ObjectSet<Vec2>([points[0], points[2], points[3]]);
+        } else if (pointTriangleIntersectionTest(point, points[1], points[2], points[3])) {
+            nextSet = new ObjectSet<Vec2>([points[1], points[2], points[3]]);
+        }
+
+        if (nextSet == convexHull) {
+            return convexHull;
+        }
+        return minimumUpTo4PointsConvexHullContainingPoint(nextSet, point);
+    }
+}
+
+const MAX_ITERATIONS = 100;
 //TODO: return nearest points
 function gjk(shape1: IShape, shape2: IShape): [number] {
 
     const supportFunction = minkowiskDifferenceSupportFunction(shape1, shape2);
     const initialPoint = supportFunction(new Vec2(1, 0));
-    var simplexPoints: Set<Vec2> = new Set([initialPoint]);
-
-    for (let point = initialPoint;;) {
+    let simplexPoints: ObjectSet<Vec2> = new ObjectSet([initialPoint]);
+    
+    let point = initialPoint;
+    for (let i = 0; i < MAX_ITERATIONS; i++) {
         const supportPoint = supportFunction(Vec2.negate(point));
         
         const pointDirection = Vec2.normalize(point);
         const negPointDirection = Vec2.negate(pointDirection);
-
-        if (Vec2.dot(point, negPointDirection) >= Vec2.dot(supportPoint, negPointDirection)) {
-            return [Vec2.norm(point)];
+        
+        if (Vec2.dot(point, negPointDirection) >= Vec2.dot(supportPoint, negPointDirection) || Vec2.norm(point) == 0) {
+            // return [Vec2.norm(point)];
+            break;
         }
         
         simplexPoints.add(supportPoint);
-        
-        // update simplex
+        point = findNearestPointOfUpTo4PointsConvexHull(simplexPoints);
+        simplexPoints = minimumUpTo4PointsConvexHullContainingPoint(simplexPoints, point);
+        // console.log(point, supportPoint, simplexPoints);
     }
+    return [Vec2.norm(point)];
 }
 
 export default gjk;

@@ -1,4 +1,7 @@
-class Vec2 {
+import { Comparable } from '../object-set';
+import { fpCmp } from './util';
+
+class Vec2 implements Comparable<Vec2> {
     readonly x: number;
     readonly y: number;
     
@@ -48,7 +51,7 @@ class Vec2 {
         if (norm == 0) {
             return new Vec2(0, 0);
         }
-        return Vec2.scale(1 / Vec2.norm(u), u);
+        return Vec2.scale(1 / norm, u);
     }
 
     static normal(u: Vec2): Vec2 {
@@ -63,6 +66,11 @@ class Vec2 {
 
     toString(): string {
         return `(${this.x}, ${this.y})`;
+    }
+
+    equals(b: Vec2): boolean {
+        return fpCmp(this.x, b.x) && fpCmp(this.y, b.y);
+        // return (Math.abs(this.x - b.x) < Number.EPSILON) && (Math.abs(this.y - b.y) < Number.EPSILON);
     }
 }
 

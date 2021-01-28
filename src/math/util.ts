@@ -39,10 +39,25 @@ function lineEquation(x0: number, y0: number, x1: number, y1: number): (x: numbe
     return (x, y) => a*x + b*y + c;
 }
 
+function fpCmp(a: number, b: number, epsilon: number = Number.EPSILON): boolean {
+    const absA = Math.abs(a);
+    const absB = Math.abs(b);
+    const diff = Math.abs(a - b);
+    
+    if (a == b) {
+        return true;
+    } else if (a == 0 || b == 0 || (absA + absB < Number.MIN_VALUE)) {
+        return diff < epsilon*Number.MIN_VALUE;
+    } else {
+        return diff / Math.min((absA + absB), Number.MAX_VALUE) < epsilon;
+    }
+}
+
 export {
     clamp,
     randomInt,
     randomElement,
     between,
-    lineEquation
+    lineEquation,
+    fpCmp
 };
