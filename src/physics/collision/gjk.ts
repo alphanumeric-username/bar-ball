@@ -41,10 +41,10 @@ function quadFuncMinimun(a: number, b: number, c: number, intervalStart: number 
 
 }
 
-function pointLineIntersectionTest(q: Vec2, p1: Vec2, p2: Vec2): boolean {
-    const [tx, ty] = [(q.x - p1.x)/(p2.x - p1.x), (q.y - p1.y)/(p2.y - p1.y)];
-    return fpCmp(tx, ty) && tx >= 0 && tx <= 1;
-}
+// function pointLineIntersectionTest(q: Vec2, p1: Vec2, p2: Vec2): boolean {
+//     const [tx, ty] = [(q.x - p1.x)/(p2.x - p1.x), (q.y - p1.y)/(p2.y - p1.y)];
+//     return fpCmp(tx, ty) && tx >= 0 && tx <= 1;
+// }
 
 function pointTriangleIntersectionTest(q: Vec2, p1: Vec2, p2: Vec2, p3: Vec2): boolean {
     const basis = [Vec2.sub(p2, p1), Vec2.sub(p3, p1)];
@@ -130,44 +130,44 @@ function findNearestPointSetOfUpTo4PointsConvexHull(convexHull:ObjectSet<Vec2>):
     }
 }
 
-function minimumUpTo4PointsConvexHullContainingPoint(convexHull: ObjectSet<Vec2>, point: Vec2): ObjectSet<Vec2> {
-    const points: Vec2[] = [];
-    convexHull.forEach(p => points.push(p));
-    if (convexHull.size() <= 2) {
-        return convexHull;
-    } else if (convexHull.size() == 3) {
-        var nextSet = convexHull;
-        if (pointLineIntersectionTest(point, points[0], points[1])) {
-            nextSet = new ObjectSet<Vec2>([points[0], points[1]]);
-        } else if (pointLineIntersectionTest(point, points[1], points[2])) {
-            nextSet = new ObjectSet<Vec2>([points[1], points[2]]);
-        } else if (pointLineIntersectionTest(point, points[2], points[0])) {
-            nextSet = new ObjectSet<Vec2>([points[2], points[0]]);
-        }
+// function minimumUpTo4PointsConvexHullContainingPoint(convexHull: ObjectSet<Vec2>, point: Vec2): ObjectSet<Vec2> {
+//     const points: Vec2[] = [];
+//     convexHull.forEach(p => points.push(p));
+//     if (convexHull.size() <= 2) {
+//         return convexHull;
+//     } else if (convexHull.size() == 3) {
+//         var nextSet = convexHull;
+//         if (pointLineIntersectionTest(point, points[0], points[1])) {
+//             nextSet = new ObjectSet<Vec2>([points[0], points[1]]);
+//         } else if (pointLineIntersectionTest(point, points[1], points[2])) {
+//             nextSet = new ObjectSet<Vec2>([points[1], points[2]]);
+//         } else if (pointLineIntersectionTest(point, points[2], points[0])) {
+//             nextSet = new ObjectSet<Vec2>([points[2], points[0]]);
+//         }
 
-        if (nextSet == convexHull) {
-            return convexHull;
-        }
-        return minimumUpTo4PointsConvexHullContainingPoint(nextSet, point);
+//         if (nextSet == convexHull) {
+//             return convexHull;
+//         }
+//         return minimumUpTo4PointsConvexHullContainingPoint(nextSet, point);
 
-    } else if (convexHull.size() == 4) {
-        var nextSet: ObjectSet<Vec2> = convexHull;
-        if (pointTriangleIntersectionTest(point, points[0], points[1], points[2])) {
-            nextSet = new ObjectSet<Vec2>([points[0], points[1], points[2]]);
-        } else if (pointTriangleIntersectionTest(point, points[0], points[1], points[3])) {
-            nextSet = new ObjectSet<Vec2>([points[0], points[1], points[3]]);
-        } else if (pointTriangleIntersectionTest(point, points[0], points[2], points[3])) {
-            nextSet = new ObjectSet<Vec2>([points[0], points[2], points[3]]);
-        } else if (pointTriangleIntersectionTest(point, points[1], points[2], points[3])) {
-            nextSet = new ObjectSet<Vec2>([points[1], points[2], points[3]]);
-        }
+//     } else if (convexHull.size() == 4) {
+//         var nextSet: ObjectSet<Vec2> = convexHull;
+//         if (pointTriangleIntersectionTest(point, points[0], points[1], points[2])) {
+//             nextSet = new ObjectSet<Vec2>([points[0], points[1], points[2]]);
+//         } else if (pointTriangleIntersectionTest(point, points[0], points[1], points[3])) {
+//             nextSet = new ObjectSet<Vec2>([points[0], points[1], points[3]]);
+//         } else if (pointTriangleIntersectionTest(point, points[0], points[2], points[3])) {
+//             nextSet = new ObjectSet<Vec2>([points[0], points[2], points[3]]);
+//         } else if (pointTriangleIntersectionTest(point, points[1], points[2], points[3])) {
+//             nextSet = new ObjectSet<Vec2>([points[1], points[2], points[3]]);
+//         }
 
-        if (nextSet == convexHull) {
-            return convexHull;
-        }
-        return minimumUpTo4PointsConvexHullContainingPoint(nextSet, point);
-    }
-}
+//         if (nextSet == convexHull) {
+//             return convexHull;
+//         }
+//         return minimumUpTo4PointsConvexHullContainingPoint(nextSet, point);
+//     }
+// }
 
 const MAX_ITERATIONS = 100;
 //TODO: return nearest points
@@ -194,10 +194,8 @@ function gjk(shape1: IShape, shape2: IShape): [number] {
         
         simplexPoints.add(supportPoint);
         [point, simplexPoints] = findNearestPointSetOfUpTo4PointsConvexHull(simplexPoints);
-        // simplexPoints = minimumUpTo4PointsConvexHullContainingPoint(simplexPoints, point);
-        // console.log(point, supportPoint, simplexPoints);
     }
-    console.log('Finished in', iterations, 'iterations');
+    // console.log('Finished in', iterations, 'iterations');
     return [Vec2.norm(point)];
 }
 
