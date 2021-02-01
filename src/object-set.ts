@@ -8,40 +8,41 @@ class ObjectSet<T> {
     private _set: Set<T & Comparable<T>>;
 
     constructor(values: (T & Comparable<T>)[]) {
-        this._set = new Set(values);
+        // console.log(values);
+        this._set = new Set();
+        values.forEach(v => this.add(v));
     }
 
     add(value: T & Comparable<T>) {
-        this._set.forEach(obj => {
-            if (obj.equals(value)) {
-                return this;
-            }
-        });
-
-        this._set.add(value);
+        if (!this.has(value)) {
+            this._set.add(value);
+        }
         return this;
     }
 
     delete(value: T & Comparable<T>) {
-
+        let found = false;
         this._set.forEach(obj => {
             if (obj.equals(value)) {
                 this._set.delete(obj);
-                return true;
+                found = true;
+                return;
             }
         })
         
-        return false;
+        return found;
     }
     
     has(value: T & Comparable<T>) {
+        let found = false;
         this._set.forEach(obj => {
             if (obj.equals(value)) {
-                return true;
+                found = true;
+                return;
             }
         });
 
-        return false;
+        return found;
     }
 
     size() {

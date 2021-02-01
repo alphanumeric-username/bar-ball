@@ -70,7 +70,6 @@ class Vec2 implements Comparable<Vec2> {
 
     equals(b: Vec2): boolean {
         return fpCmp(this.x, b.x) && fpCmp(this.y, b.y);
-        // return (Math.abs(this.x - b.x) < Number.EPSILON) && (Math.abs(this.y - b.y) < Number.EPSILON);
     }
 }
 

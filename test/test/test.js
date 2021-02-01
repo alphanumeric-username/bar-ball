@@ -5,7 +5,7 @@ function test(caseName, testingFunction, input, expectedOutput) {
     var output = testingFunction.apply(void 0, input);
     console.log('CASE:', caseName);
     console.log('expected:', expectedOutput);
-    console.log('but got:', output);
+    console.log('but got:', output, '\n');
     return output == expectedOutput;
 }
 exports.test = test;

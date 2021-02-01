@@ -53,6 +53,12 @@ function fpCmp(a: number, b: number, epsilon: number = Number.EPSILON): boolean 
     }
 }
 
+function fpCmp2(a: number, b: number, epsilon: number = Number.EPSILON): number {
+    return a > b ? 1 :
+           a < b ? -1:
+           0;
+}
+
 export {
     clamp,
     randomInt,

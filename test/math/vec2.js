@@ -51,7 +51,6 @@ var Vec2 = /** @class */ (function () {
     };
     Vec2.prototype.equals = function (b) {
         return util_1.fpCmp(this.x, b.x) && util_1.fpCmp(this.y, b.y);
-        // return (Math.abs(this.x - b.x) < Number.EPSILON) && (Math.abs(this.y - b.y) < Number.EPSILON);
     };
     return Vec2;
 }());

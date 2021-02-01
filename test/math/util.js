@@ -56,3 +56,9 @@ function fpCmp(a, b, epsilon) {
     }
 }
 exports.fpCmp = fpCmp;
+function fpCmp2(a, b, epsilon) {
+    if (epsilon === void 0) { epsilon = Number.EPSILON; }
+    return a > b ? 1 :
+        a < b ? -1 :
+            0;
+}

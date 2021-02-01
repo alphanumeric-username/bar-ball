@@ -13,9 +13,6 @@ type Particle = {
 interface IShape {
 
     center: Particle;
-    // position: Vec2;
-    // velocity: Vec2;
-    // acceleration: Vec2;
     tags?: Set<string>;
     shapeSpace: IShapeSpace;
     
@@ -31,4 +28,4 @@ interface IShapeSpace {
     update(): void;
 }
 
-export { IShape, IShapeSpace , OnCollideEvent as CollideEvent};
+export { IShape, IShapeSpace , OnCollideEvent };

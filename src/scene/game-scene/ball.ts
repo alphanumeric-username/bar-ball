@@ -1,6 +1,6 @@
 import { Container, Graphics } from "pixi.js";
 import { colors } from '../../constants';
-import { Circle, Line, CollideEvent } from '../../physics/collision';
+import { Circle, Line, OnCollideEvent } from '../../physics/collision';
 import Vec2 from "../../math/vec2";
 import { playNote } from '../../service/audio';
 import { clamp, randomElement } from "../../math/util";
@@ -121,7 +121,7 @@ class Ball extends Container {
         return Vec2.norm(this.velocity);
     }
 
-    private _onCollide({ collidedShape }: CollideEvent) {
+    private _onCollide({ collidedShape }: OnCollideEvent) {
         this.colliding = true;
         console.log(collidedShape);
         if (collidedShape.group.has('lose')) {

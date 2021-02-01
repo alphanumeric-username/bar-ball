@@ -1,5 +1,5 @@
 import Vec2 from "../../math/vec2";
-import { IShape, IShapeSpace, CollideEvent } from './shape';
+import { IShape, IShapeSpace, OnCollideEvent } from './shape';
 import ShapeImplementation from './shape-implementation';
 
 // class Circle implements IShape{
@@ -46,7 +46,7 @@ class Circle extends ShapeImplementation {
     update(): void {
         super.update();
     }
-    onCollide(e: CollideEvent): void {
+    onCollide(e: OnCollideEvent): void {
         
     }
 

@@ -1,5 +1,5 @@
 import Vec2 from '../../math/vec2'
-import { IShape, IShapeSpace, CollideEvent } from './shape';
+import { IShape, IShapeSpace, OnCollideEvent } from './shape';
 
 type LineEquation = { a: number, b: number, c: number } & ((x: number, y: number) => number);
 
@@ -50,7 +50,7 @@ class Line implements IShape {
         this._normal = Vec2.normal(tangent);
     }
 
-    onCollide(e: CollideEvent): void {
+    onCollide(e: OnCollideEvent): void {
 
     }
 }

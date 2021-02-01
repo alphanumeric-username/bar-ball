@@ -10,7 +10,8 @@ var ShapeImplementation = /** @class */ (function () {
         };
     }
     ShapeImplementation.prototype.supportFunction = function (direction) {
-        return vec2_1["default"].normalize(vec2_1["default"].sub(direction, this.center.position));
+        return vec2_1["default"].normalize(direction);
+        // return Vec2.normalize(Vec2.sub(direction, this.center.position));
     };
     ShapeImplementation.prototype.update = function () {
         this.center.position = vec2_1["default"].add(this.center.position, this.center.velocity);

@@ -3,35 +3,38 @@ exports.__esModule = true;
 exports.ObjectSet = void 0;
 var ObjectSet = /** @class */ (function () {
     function ObjectSet(values) {
-        this._set = new Set(values);
+        var _this = this;
+        // console.log(values);
+        this._set = new Set();
+        values.forEach(function (v) { return _this.add(v); });
     }
     ObjectSet.prototype.add = function (value) {
-        var _this = this;
-        this._set.forEach(function (obj) {
-            if (obj.equals(value)) {
-                return _this;
-            }
-        });
-        this._set.add(value);
+        if (!this.has(value)) {
+            this._set.add(value);
+        }
         return this;
     };
     ObjectSet.prototype["delete"] = function (value) {
         var _this = this;
+        var found = false;
         this._set.forEach(function (obj) {
             if (obj.equals(value)) {
                 _this._set["delete"](obj);
-                return true;
+                found = true;
+                return;
             }
         });
-        return false;
+        return found;
     };
     ObjectSet.prototype.has = function (value) {
+        var found = false;
         this._set.forEach(function (obj) {
             if (obj.equals(value)) {
-                return true;
+                found = true;
+                return;
             }
         });
-        return false;
+        return found;
     };
     ObjectSet.prototype.size = function () {
         return this._set.size;

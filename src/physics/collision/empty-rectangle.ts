@@ -1,7 +1,7 @@
 import Mat2 from "../../math/mat2";
 import Vec2 from "../../math/vec2";
 import Line from "./line";
-import { CollideEvent, IShape, IShapeSpace } from "./shape";
+import { OnCollideEvent, IShape, IShapeSpace } from "./shape";
 
 class EmptyRectangleSide extends Line {
     parentRectangle: EmptyRectangle
@@ -54,7 +54,7 @@ class EmptyRectangle implements IShape {
         this.position = Vec2.add(this.position, dr);
     }
 
-    onCollide(e: CollideEvent): void {
+    onCollide(e: OnCollideEvent): void {
         
     }
 
