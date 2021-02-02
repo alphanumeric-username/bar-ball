@@ -12,7 +12,7 @@ type Particle = {
 
 interface IShape {
 
-    center: Particle;
+    pivot: Particle;
     tags?: Set<string>;
     shapeSpace: IShapeSpace;
     

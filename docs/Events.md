@@ -41,7 +41,7 @@ The ball size diminishes.
 ## [x] Bar diminishing
 
 The bar size diminishes.
-
+<!-- 
 ## [ ] Double bar
 
 The bar duplicates. Then, one of the bar disappears.
@@ -52,4 +52,4 @@ The ball suddenly becomes heavier until touch the bar.
 
 ## [ ] Hurry
 
-The ball becomes faster.
+The ball becomes faster. -->

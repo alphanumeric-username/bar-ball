@@ -171,7 +171,7 @@ function findNearestPointSetOfUpTo4PointsConvexHull(convexHull:ObjectSet<Vec2>):
 
 const MAX_ITERATIONS = 100;
 //TODO: return nearest points
-function gjk(shape1: IShape, shape2: IShape): [number] {
+function gjk(shape1: IShape, shape2: IShape): [distance: number, direction: Vec2] {
 
     const supportFunction = minkowiskDifferenceSupportFunction(shape1, shape2);
     const initialPoint = supportFunction(new Vec2(1, 0));
@@ -196,7 +196,7 @@ function gjk(shape1: IShape, shape2: IShape): [number] {
         [point, simplexPoints] = findNearestPointSetOfUpTo4PointsConvexHull(simplexPoints);
     }
     // console.log('Finished in', iterations, 'iterations');
-    return [Vec2.norm(point)];
+    return [Vec2.norm(point), Vec2.normalize(point)];
 }
 
 export default gjk;

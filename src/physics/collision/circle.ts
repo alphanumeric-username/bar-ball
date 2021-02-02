@@ -35,13 +35,13 @@ class Circle extends ShapeImplementation {
 
     constructor(x: number, y: number, radius: number) {
         super();
-        this.center.position = new Vec2(x, y);
+        this.pivot.position = new Vec2(x, y);
         this.radius = radius;
     }
 
     supportFunction(direction: Vec2): Vec2 {
         const normalizedDirection = super.supportFunction(direction);
-        return Vec2.add(this.center.position, Vec2.scale(this.radius, normalizedDirection));
+        return Vec2.add(this.pivot.position, Vec2.scale(this.radius, normalizedDirection));
     }
     update(): void {
         super.update();

@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "npx tsc ./src/test/testGJK.ts --outDir ./test/ --lib es2015,dom",
+    "test": "npx tsc ./src/test/testGJK.ts --outDir ./test/ --lib es2015,dom && node test/test/testGJK.js",
     "start": "node server.js",
     "build": "mkdir build && tsc && browserify build/main.js -o pages/js/dist.js &&  rm build -rf || rm build -rf"
   },
