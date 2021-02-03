@@ -3,7 +3,7 @@
 - [x] Button hovering / clicking indicator;
 - [x] Add screenwide pause indicator;
 - [x] Fix bugs;
-- [ ] Improve collision system;
+- [ ] Redesign collision system;
 - [ ] Tile Logo;
 - [ ] Improve sfx;
 - [ ] Put events parameters in event.json;

@@ -3,6 +3,18 @@
 Pseudocode for the ShapeSpace update method.
 
 ```js
+shapeSpace.add(shape) {
+    shape.shapeSpace = this;
+    this.shapes.push(shape);
+    shape.onAddToSpace();
+}
+
+shapeSpace.remove(shape) {
+    shape.shapeSpace = null;
+    this.shapes.remove(shape);
+    shape.onRemoveFromSpace();
+}
+
 shapeSpace.update() {
     let dt = 1;
     for (i = 0...shapes.length) {
@@ -18,8 +30,10 @@ shapeSpace.update() {
         }
     }
     for (i = 0...shapes.length) {
-        shapes[i].pivot.position += shapes[i].pivot.velocity * dt;
-        shapes[i].pivot.velocity += shapes[i].pivot.acceleration * dt;
+        shapes[i].update(dt) {
+            shapes[i].pivot.position += shapes[i].pivot.velocity * dt;
+            shapes[i].pivot.velocity += shapes[i].pivot.acceleration * dt;
+        }
     }
 }
 ```

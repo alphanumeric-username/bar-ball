@@ -111,8 +111,8 @@ class RandomThrowEvent extends EventImplementation {
     private _updateGraphics() {
         this.arrow.rotation = this._currentAngle;
         this.arrow.position.set(
-            (this.currentScene.ball.radius + 4)*Math.cos(this._currentAngle),
-            (this.currentScene.ball.radius + 4)*Math.sin(this._currentAngle),
+            (this.currentScene.ball.hitbox.radius + 4)*Math.cos(this._currentAngle),
+            (this.currentScene.ball.hitbox.radius + 4)*Math.sin(this._currentAngle),
         );
     }
 }

@@ -248,32 +248,17 @@ var Mat2 = /** @class */ (function () {
     Mat2.transform = function (A, u) {
         return new vec2_1["default"](A.a * u.x + A.b * u.y, A.c * u.x + A.d * u.y);
     };
+    Mat2.scale = function (k, M) {
+        return new Mat2(k * M.a, k * M.b, k * M.c, k * M.d);
+    };
     return Mat2;
 }());
 exports["default"] = Mat2;
 
-},{"./vec2":10}],8:[function(require,module,exports){
+},{"./vec2":9}],8:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
-exports.solveQuadEq = exports.quadEqDelta = void 0;
-var quadEqDelta = function (a, b, c) { return b * b - 4 * a * c; };
-exports.quadEqDelta = quadEqDelta;
-function solveQuadEq(a, b, c) {
-    var delta = quadEqDelta(a, b, c);
-    if (delta < 0) {
-        return null;
-    }
-    return [
-        (-b - Math.sqrt(delta)) / (2 * a),
-        (-b + Math.sqrt(delta)) / (2 * a)
-    ];
-}
-exports.solveQuadEq = solveQuadEq;
-
-},{}],9:[function(require,module,exports){
-"use strict";
-exports.__esModule = true;
-exports.between = exports.randomElement = exports.randomInt = exports.clamp = void 0;
+exports.fpCmp = exports.lineEquation = exports.between = exports.randomElement = exports.randomInt = exports.clamp = void 0;
 function clamp(t, min, max) {
     return t > max ? max :
         t < min ? min :
@@ -293,10 +278,53 @@ function randomElement(set) {
     return set[randomInt(0, set.length)];
 }
 exports.randomElement = randomElement;
+function lineEquation(x0, y0, x1, y1) {
+    var a;
+    var b;
+    var c;
+    if (x0 == x1 && y0 == y1) {
+        return function (x, y) { return 0; };
+    }
+    if (x0 == x1) {
+        a = -1;
+        b = 0;
+        c = x0;
+    }
+    else {
+        a = (y1 - y0) / (x1 - x0);
+        b = -1;
+        c = y0 - a * x0;
+    }
+    return function (x, y) { return a * x + b * y + c; };
+}
+exports.lineEquation = lineEquation;
+function fpCmp(a, b, epsilon) {
+    if (epsilon === void 0) { epsilon = Number.EPSILON; }
+    var absA = Math.abs(a);
+    var absB = Math.abs(b);
+    var diff = Math.abs(a - b);
+    if (a == b) {
+        return true;
+    }
+    else if (a == 0 || b == 0 || (absA + absB < Number.MIN_VALUE)) {
+        return diff < epsilon * Number.MIN_VALUE;
+    }
+    else {
+        return diff / Math.min((absA + absB), Number.MAX_VALUE) < epsilon;
+    }
+}
+exports.fpCmp = fpCmp;
+function fpCmp2(a, b, epsilon) {
+    if (epsilon === void 0) { epsilon = Number.EPSILON; }
+    return a > b ? 1 :
+        a < b ? -1 :
+            0;
+}
 
-},{}],10:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
+var util_1 = require("./util");
 var Vec2 = /** @class */ (function () {
     function Vec2(x, y) {
         this.x = x;
@@ -334,7 +362,7 @@ var Vec2 = /** @class */ (function () {
         if (norm == 0) {
             return new Vec2(0, 0);
         }
-        return Vec2.scale(1 / Vec2.norm(u), u);
+        return Vec2.scale(1 / norm, u);
     };
     Vec2.normal = function (u) {
         return Vec2.normalize(new Vec2(-u.y, u.x));
@@ -345,50 +373,349 @@ var Vec2 = /** @class */ (function () {
     Vec2.prototype.toString = function () {
         return "(" + this.x + ", " + this.y + ")";
     };
+    Vec2.prototype.equals = function (b) {
+        return util_1.fpCmp(this.x, b.x) && util_1.fpCmp(this.y, b.y);
+    };
     return Vec2;
 }());
 exports["default"] = Vec2;
 
+},{"./util":8}],10:[function(require,module,exports){
+"use strict";
+exports.__esModule = true;
+exports.ObjectSet = void 0;
+var ObjectSet = /** @class */ (function () {
+    function ObjectSet(values) {
+        var _this = this;
+        // console.log(values);
+        this._set = new Set();
+        values.forEach(function (v) { return _this.add(v); });
+    }
+    ObjectSet.prototype.add = function (value) {
+        if (!this.has(value)) {
+            this._set.add(value);
+        }
+        return this;
+    };
+    ObjectSet.prototype["delete"] = function (value) {
+        var _this = this;
+        var found = false;
+        this._set.forEach(function (obj) {
+            if (obj.equals(value)) {
+                _this._set["delete"](obj);
+                found = true;
+                return;
+            }
+        });
+        return found;
+    };
+    ObjectSet.prototype.has = function (value) {
+        var found = false;
+        this._set.forEach(function (obj) {
+            if (obj.equals(value)) {
+                found = true;
+                return;
+            }
+        });
+        return found;
+    };
+    ObjectSet.prototype.size = function () {
+        return this._set.size;
+    };
+    ObjectSet.prototype.forEach = function (callback) {
+        this._set.forEach(callback);
+    };
+    ObjectSet.prototype.clear = function () {
+        this._set.clear();
+    };
+    return ObjectSet;
+}());
+exports.ObjectSet = ObjectSet;
+
 },{}],11:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
-exports.ShapeSpace = exports.EmptyRectangle = exports.Rectangle = exports.Line = exports.Circle = void 0;
+exports.ShapeSpace = exports.Rectangle = exports.Line = exports.Circle = void 0;
 var circle_1 = require("./collision/circle");
 exports.Circle = circle_1["default"];
 var line_1 = require("./collision/line");
 exports.Line = line_1["default"];
 var rectangle_1 = require("./collision/rectangle");
 exports.Rectangle = rectangle_1["default"];
-var empty_rectangle_1 = require("./collision/empty-rectangle");
-exports.EmptyRectangle = empty_rectangle_1["default"];
 var shape_space_1 = require("./collision/shape-space");
 exports.ShapeSpace = shape_space_1["default"];
 
-},{"./collision/circle":12,"./collision/empty-rectangle":13,"./collision/line":15,"./collision/rectangle":16,"./collision/shape-space":17}],12:[function(require,module,exports){
+},{"./collision/circle":12,"./collision/line":14,"./collision/rectangle":15,"./collision/shape-space":17}],12:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+exports.__esModule = true;
+var vec2_1 = require("../../math/vec2");
+var shape_implementation_1 = require("./shape-implementation");
+var Circle = /** @class */ (function (_super) {
+    __extends(Circle, _super);
+    function Circle(x, y, radius) {
+        var _this = _super.call(this) || this;
+        _this.pivot.position = new vec2_1["default"](x, y);
+        _this.radius = radius;
+        return _this;
+    }
+    Circle.prototype.supportFunction = function (direction) {
+        var normalizedDirection = _super.prototype.supportFunction.call(this, direction);
+        return vec2_1["default"].add(this.pivot.position, vec2_1["default"].scale(this.radius, normalizedDirection));
+    };
+    return Circle;
+}(shape_implementation_1["default"]));
+exports["default"] = Circle;
+
+},{"../../math/vec2":9,"./shape-implementation":16}],13:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var vec2_1 = require("../../math/vec2");
-var Circle = /** @class */ (function () {
-    function Circle(x, y, r) {
-        this.name = 'circle';
-        this.group = new Set();
-        this.shapeSpace = null;
-        this.move(x, y);
-        this.r = r;
+var mat2_1 = require("../../math/mat2");
+var object_set_1 = require("../../object-set");
+var util_1 = require("../../math/util");
+function minkowiskDifferenceSupportFunction(shape1, shape2) {
+    return function (direction) { return vec2_1["default"].sub(shape1.supportFunction(direction), shape2.supportFunction(vec2_1["default"].negate(direction))); };
+}
+function linearFuncMinimun(a, b, intervalStart, intervalEnd) {
+    if (intervalStart === void 0) { intervalStart = 0; }
+    if (intervalEnd === void 0) { intervalEnd = 1; }
+    return a >= 0 ? intervalStart : intervalEnd;
+}
+function quadFuncMinimun(a, b, c, intervalStart, intervalEnd) {
+    if (intervalStart === void 0) { intervalStart = 0; }
+    if (intervalEnd === void 0) { intervalEnd = 1; }
+    if (util_1.fpCmp(a, 0)) {
+        return linearFuncMinimun(a, b, intervalStart, intervalEnd);
     }
-    Circle.prototype.move = function (x, y) {
-        this.pos = new vec2_1["default"](x, y);
-    };
-    Circle.prototype.resize = function (r) {
-        this.r = r;
-    };
-    Circle.prototype.onCollide = function (e) {
-    };
-    return Circle;
-}());
-exports["default"] = Circle;
+    var f = function (t) { return a * t * t + b * t + c; };
+    var criticalPoint = -b / (2 * a);
+    var globalMinMax = f(criticalPoint);
+    var startVal = f(intervalStart);
+    var endVal = f(intervalEnd);
+    if (criticalPoint >= intervalStart && criticalPoint <= intervalEnd) {
+        var minimum = Math.min(startVal, endVal, globalMinMax);
+        return util_1.fpCmp(startVal, minimum) ? intervalStart :
+            util_1.fpCmp(endVal, minimum) ? intervalEnd : criticalPoint;
+    }
+    else {
+        var minimum = Math.min(startVal, endVal);
+        return util_1.fpCmp(startVal, minimum) ? intervalStart : intervalEnd;
+    }
+}
+// function pointLineIntersectionTest(q: Vec2, p1: Vec2, p2: Vec2): boolean {
+//     const [tx, ty] = [(q.x - p1.x)/(p2.x - p1.x), (q.y - p1.y)/(p2.y - p1.y)];
+//     return fpCmp(tx, ty) && tx >= 0 && tx <= 1;
+// }
+function pointTriangleIntersectionTest(q, p1, p2, p3) {
+    var basis = [vec2_1["default"].sub(p2, p1), vec2_1["default"].sub(p3, p1)];
+    var basisChangeMatrix = mat2_1["default"].scale(1 / (basis[0].x * basis[1].y - basis[1].x * basis[0].y), new mat2_1["default"](basis[1].y, -basis[1].x, -basis[0].y, basis[0].x));
+    var q_ = mat2_1["default"].transform(basisChangeMatrix, vec2_1["default"].sub(q, p1));
+    if (q_.x >= 0 && q_.y >= 0 && Math.abs(q_.x) + Math.abs(q_.y) <= 1) {
+        return true;
+    }
+    return false;
+}
+function nearestLinePointSet(p1, p2) {
+    var ax = (p2.x - p1.x) * (p2.x - p1.x);
+    var bx = 2 * p1.x * (p2.x - p1.x);
+    var cx = (p1.x) * (p1.x);
+    var ay = (p2.y - p1.y) * (p2.y - p1.y);
+    var by = 2 * p1.y * (p2.y - p1.y);
+    var cy = (p1.y) * (p1.y);
+    var tmin = quadFuncMinimun(ax + ay, bx + by, cx + cy);
+    return [new vec2_1["default"](p1.x * (1 - tmin) + p2.x * (tmin), p1.y * (1 - tmin) + p2.y * (tmin)), new object_set_1.ObjectSet([p1, p2])];
+}
+function nearestTrianglePointSet(p1, p2, p3) {
+    var origin = new vec2_1["default"](0, 0);
+    if (pointTriangleIntersectionTest(origin, p1, p2, p3)) {
+        return [origin, new object_set_1.ObjectSet([p1, p2, p3])];
+    }
+    else {
+        var candidates = [
+            nearestLinePointSet(p1, p2),
+            nearestLinePointSet(p2, p3),
+            nearestLinePointSet(p3, p1),
+        ];
+        var minimum_1 = candidates[0];
+        candidates.forEach(function (c) {
+            if (vec2_1["default"].norm(c[0]) < vec2_1["default"].norm(minimum_1[0])) {
+                minimum_1 = c;
+            }
+        });
+        return minimum_1;
+    }
+}
+function findNearestPointSetOfUpTo4PointsConvexHull(convexHull) {
+    var points = [];
+    convexHull.forEach(function (p) { return points.push(p); });
+    if (convexHull.size() == 1) {
+        return [points[0], convexHull];
+    }
+    else if (convexHull.size() == 2) {
+        return nearestLinePointSet(points[0], points[1]);
+    }
+    else if (convexHull.size() == 3) {
+        return nearestTrianglePointSet(points[0], points[1], points[2]);
+    }
+    else if (convexHull.size() == 4) {
+        var candidates = [
+            findNearestPointSetOfUpTo4PointsConvexHull(new object_set_1.ObjectSet([points[0], points[1], points[2]])),
+            findNearestPointSetOfUpTo4PointsConvexHull(new object_set_1.ObjectSet([points[0], points[1], points[3]])),
+            findNearestPointSetOfUpTo4PointsConvexHull(new object_set_1.ObjectSet([points[0], points[2], points[3]])),
+            findNearestPointSetOfUpTo4PointsConvexHull(new object_set_1.ObjectSet([points[1], points[2], points[3]])),
+        ];
+        var minimum_2 = candidates[0];
+        candidates.forEach(function (c) {
+            if (vec2_1["default"].norm(c[0]) < vec2_1["default"].norm(minimum_2[0])) {
+                minimum_2 = c;
+            }
+        });
+        return minimum_2;
+    }
+}
+// function minimumUpTo4PointsConvexHullContainingPoint(convexHull: ObjectSet<Vec2>, point: Vec2): ObjectSet<Vec2> {
+//     const points: Vec2[] = [];
+//     convexHull.forEach(p => points.push(p));
+//     if (convexHull.size() <= 2) {
+//         return convexHull;
+//     } else if (convexHull.size() == 3) {
+//         var nextSet = convexHull;
+//         if (pointLineIntersectionTest(point, points[0], points[1])) {
+//             nextSet = new ObjectSet<Vec2>([points[0], points[1]]);
+//         } else if (pointLineIntersectionTest(point, points[1], points[2])) {
+//             nextSet = new ObjectSet<Vec2>([points[1], points[2]]);
+//         } else if (pointLineIntersectionTest(point, points[2], points[0])) {
+//             nextSet = new ObjectSet<Vec2>([points[2], points[0]]);
+//         }
+//         if (nextSet == convexHull) {
+//             return convexHull;
+//         }
+//         return minimumUpTo4PointsConvexHullContainingPoint(nextSet, point);
+//     } else if (convexHull.size() == 4) {
+//         var nextSet: ObjectSet<Vec2> = convexHull;
+//         if (pointTriangleIntersectionTest(point, points[0], points[1], points[2])) {
+//             nextSet = new ObjectSet<Vec2>([points[0], points[1], points[2]]);
+//         } else if (pointTriangleIntersectionTest(point, points[0], points[1], points[3])) {
+//             nextSet = new ObjectSet<Vec2>([points[0], points[1], points[3]]);
+//         } else if (pointTriangleIntersectionTest(point, points[0], points[2], points[3])) {
+//             nextSet = new ObjectSet<Vec2>([points[0], points[2], points[3]]);
+//         } else if (pointTriangleIntersectionTest(point, points[1], points[2], points[3])) {
+//             nextSet = new ObjectSet<Vec2>([points[1], points[2], points[3]]);
+//         }
+//         if (nextSet == convexHull) {
+//             return convexHull;
+//         }
+//         return minimumUpTo4PointsConvexHullContainingPoint(nextSet, point);
+//     }
+// }
+var MAX_ITERATIONS = 100;
+//TODO: return nearest points
+function gjk(shape1, shape2) {
+    var _a;
+    var supportFunction = minkowiskDifferenceSupportFunction(shape1, shape2);
+    var initialPoint = supportFunction(new vec2_1["default"](1, 0));
+    var simplexPoints = new object_set_1.ObjectSet([initialPoint]);
+    var point = initialPoint;
+    var iterations = MAX_ITERATIONS;
+    for (var i = 0; i < MAX_ITERATIONS; i++) {
+        var supportPoint = supportFunction(vec2_1["default"].negate(point));
+        var pointDirection = vec2_1["default"].normalize(point);
+        var negPointDirection = vec2_1["default"].negate(pointDirection);
+        var pointDotNegDir = vec2_1["default"].dot(point, negPointDirection);
+        var supportPointDotNegDir = vec2_1["default"].dot(supportPoint, negPointDirection);
+        if (pointDotNegDir > supportPointDotNegDir || util_1.fpCmp(pointDotNegDir, supportPointDotNegDir) || vec2_1["default"].norm(point) == 0) {
+            iterations = i + 1;
+            break;
+        }
+        simplexPoints.add(supportPoint);
+        _a = findNearestPointSetOfUpTo4PointsConvexHull(simplexPoints), point = _a[0], simplexPoints = _a[1];
+    }
+    // console.log('Finished in', iterations, 'iterations');
+    return [vec2_1["default"].norm(point), vec2_1["default"].normalize(point)];
+}
+exports["default"] = gjk;
 
-},{"../../math/vec2":10}],13:[function(require,module,exports){
+},{"../../math/mat2":7,"../../math/util":8,"../../math/vec2":9,"../../object-set":10}],14:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+exports.__esModule = true;
+var util_1 = require("../../math/util");
+var vec2_1 = require("../../math/vec2");
+var shape_implementation_1 = require("./shape-implementation");
+var Line = /** @class */ (function (_super) {
+    __extends(Line, _super);
+    function Line(x_start, y_start, x_end, y_end) {
+        var _this = _super.call(this) || this;
+        _this.move(x_start, y_start, x_end, y_end);
+        return _this;
+    }
+    Line.prototype.getNormal = function () {
+        var tangent = vec2_1["default"].sub(this.endPos, this.pivot.position);
+        return vec2_1["default"].normal(tangent);
+    };
+    Line.prototype.getEquation = function () {
+        var a;
+        var b;
+        var c;
+        if (this.pivot.position.x == this.endPos.x) {
+            a = -1;
+            b = (this.endPos.x - this.pivot.position.x) / (this.endPos.y - this.pivot.position.y);
+            c = this.pivot.position.x - b * this.pivot.position.y;
+        }
+        else {
+            a = (this.endPos.y - this.pivot.position.y) / (this.endPos.x - this.pivot.position.x);
+            b = -1;
+            c = this.pivot.position.y - a * this.pivot.position.x;
+        }
+        return Object.assign((function (x, y) { return a * x + b * y + c; }), { a: a, b: b, c: c });
+    };
+    Line.prototype.getEndPoints = function () {
+        return [this.pivot.position, this.endPos];
+    };
+    Line.prototype.getMiddlePoint = function () {
+        return new vec2_1["default"]((this.pivot.position.x + this.endPos.x) / 2, (this.pivot.position.y + this.endPos.y) / 2);
+    };
+    Line.prototype.move = function (x_start, y_start, x_end, y_end) {
+        this.pivot.position = new vec2_1["default"](x_start, y_start);
+        this.endPos = new vec2_1["default"](x_end, y_end);
+    };
+    Line.prototype.supportFunction = function (direction) {
+        var normalizedDirection = _super.prototype.supportFunction.call(this, direction);
+        var lineVector = vec2_1["default"].sub(this.endPos, this.pivot.position);
+        var dirDotLine = vec2_1["default"].dot(normalizedDirection, lineVector);
+        var localVector = vec2_1["default"].scale(util_1.clamp(dirDotLine, 0, vec2_1["default"].norm(lineVector)), normalizedDirection);
+        return vec2_1["default"].add(localVector, this.pivot.position);
+    };
+    return Line;
+}(shape_implementation_1["default"]));
+exports["default"] = Line;
+
+},{"../../math/util":8,"../../math/vec2":9,"./shape-implementation":16}],15:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -412,50 +739,62 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
 };
 exports.__esModule = true;
 var mat2_1 = require("../../math/mat2");
+var util_1 = require("../../math/util");
 var vec2_1 = require("../../math/vec2");
 var line_1 = require("./line");
-var EmptyRectangleSide = /** @class */ (function (_super) {
-    __extends(EmptyRectangleSide, _super);
-    function EmptyRectangleSide() {
+var shape_implementation_1 = require("./shape-implementation");
+var RectangleSide = /** @class */ (function (_super) {
+    __extends(RectangleSide, _super);
+    function RectangleSide() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    return EmptyRectangleSide;
+    return RectangleSide;
 }(line_1["default"]));
-var EmptyRectangle = /** @class */ (function () {
-    function EmptyRectangle(x, y, width, height, rotation) {
-        this.group = new Set();
-        this.name = 'empty-rectangle';
-        this.position = new vec2_1["default"](x, y);
-        this.rotation = rotation;
+var Rectangle = /** @class */ (function (_super) {
+    __extends(Rectangle, _super);
+    function Rectangle(x, y, width, height, rotation) {
+        var _this = _super.call(this) || this;
+        _this.pivot.position = new vec2_1["default"](x, y);
+        _this.rotation = rotation;
         var rotationMatrix = new mat2_1["default"](Math.cos(rotation), -Math.sin(rotation), Math.sin(rotation), Math.cos(rotation));
-        var widthVec = mat2_1["default"].transform(rotationMatrix, new vec2_1["default"](width, 0));
-        var heightVec = mat2_1["default"].transform(rotationMatrix, new vec2_1["default"](0, height));
-        var p1 = this.position;
-        var p2 = vec2_1["default"].add(this.position, widthVec);
-        var p3 = vec2_1["default"].add(this.position, heightVec);
-        var p4 = vec2_1["default"].add(p2, heightVec);
-        this.sides = [
-            new EmptyRectangleSide(p1.x, p1.y, p3.x, p3.y),
-            new EmptyRectangleSide(p2.x, p2.y, p1.x, p1.y),
-            new EmptyRectangleSide(p4.x, p4.y, p2.x, p2.y),
-            new EmptyRectangleSide(p3.x, p3.y, p4.x, p4.y),
+        _this.widthVec = mat2_1["default"].transform(rotationMatrix, new vec2_1["default"](width, 0));
+        _this.heightVec = mat2_1["default"].transform(rotationMatrix, new vec2_1["default"](0, height));
+        var p1 = _this.pivot.position;
+        var p2 = vec2_1["default"].add(_this.pivot.position, _this.widthVec);
+        var p3 = vec2_1["default"].add(_this.pivot.position, _this.heightVec);
+        var p4 = vec2_1["default"].add(p2, _this.heightVec);
+        _this.sides = [
+            new RectangleSide(p1.x, p1.y, p3.x, p3.y),
+            new RectangleSide(p2.x, p2.y, p1.x, p1.y),
+            new RectangleSide(p4.x, p4.y, p2.x, p2.y),
+            new RectangleSide(p3.x, p3.y, p4.x, p4.y),
         ];
-        this.points = [p1, p2, p4, p3];
+        _this.points = [p1, p2, p4, p3];
+        return _this;
     }
-    EmptyRectangle.prototype.move = function (x, y) {
-        var dr = vec2_1["default"].sub(new vec2_1["default"](x, y), this.position);
+    Rectangle.prototype.update = function (dt) {
+        _super.prototype.update.call(this, dt);
+        this.move(this.pivot.position.x, this.pivot.position.y);
+    };
+    Rectangle.prototype.move = function (x, y) {
+        var dr = vec2_1["default"].sub(new vec2_1["default"](x, y), this.pivot.position);
         this.sides.forEach(function (s) {
-            s.move.apply(s, __spreadArrays(vec2_1["default"].add(s.startPos, dr).toTuple(), vec2_1["default"].add(s.endPos, dr).toTuple()));
+            s.move.apply(s, __spreadArrays(vec2_1["default"].add(s.pivot.position, dr).toTuple(), vec2_1["default"].add(s.endPos, dr).toTuple()));
         });
         for (var i = 0; i < this.points.length; i++) {
             var p = this.points[i];
             this.points[i] = vec2_1["default"].add(p, dr);
         }
-        this.position = vec2_1["default"].add(this.position, dr);
+        this.pivot.position = vec2_1["default"].add(this.pivot.position, dr);
     };
-    EmptyRectangle.prototype.onCollide = function (e) {
+    Rectangle.prototype.onAddToSpace = function () {
+        var _this = this;
+        this.sides.forEach(function (s) { return _this.shapeSpace.add(s); });
     };
-    EmptyRectangle.prototype.pointIsInside = function (x, y) {
+    Rectangle.prototype.onRemoveFromSpace = function () {
+        this.sides.forEach(function (s) { return s.shapeSpace.remove(s); });
+    };
+    Rectangle.prototype.pointIsInside = function (x, y) {
         var p = new vec2_1["default"](x, y);
         var rotationMatrix = new mat2_1["default"](Math.cos(-this.rotation), -Math.sin(-this.rotation), Math.sin(-this.rotation), Math.cos(-this.rotation));
         var p_ = mat2_1["default"].transform(rotationMatrix, p);
@@ -463,175 +802,58 @@ var EmptyRectangle = /** @class */ (function () {
         return points_[0].x <= p_.x && p_.x <= points_[3].x
             && points_[0].y <= p_.y && p_.y <= points_[3].y;
     };
-    return EmptyRectangle;
-}());
-exports["default"] = EmptyRectangle;
-
-},{"../../math/mat2":7,"../../math/vec2":10,"./line":15}],14:[function(require,module,exports){
-"use strict";
-exports.__esModule = true;
-exports.testIntersection = exports.testLineCircleIntersection = void 0;
-var vec2_1 = require("../../math/vec2");
-var collision_1 = require("../collision");
-var quad_eq_1 = require("../../math/quad-eq");
-var util_1 = require("../../math/util");
-function testLineCircleIntersection(shape1, shape2) {
-    var line;
-    var circle;
-    if (shape1 instanceof collision_1.Line && shape2 instanceof collision_1.Circle) {
-        line = shape1;
-        circle = shape2;
-    }
-    else if (shape2 instanceof collision_1.Line && shape1 instanceof collision_1.Circle) {
-        line = shape2;
-        circle = shape1;
-    }
-    else {
-        throw 'Illegal parameters at "testLineCircleIntersection"';
-    }
-    var k = vec2_1["default"].distance(line.endPos, line.startPos);
-    var D = vec2_1["default"].normalize(vec2_1["default"].sub(line.endPos, line.startPos));
-    var C = vec2_1["default"].sub(circle.pos, line.startPos);
-    var a = vec2_1["default"].dot(D, D) * k * k;
-    var b = -2 * vec2_1["default"].dot(D, C) * k;
-    var c = vec2_1["default"].dot(C, C) - circle.r * circle.r;
-    var values = quad_eq_1.solveQuadEq(a, b, c);
-    if (values == null) {
-        return false;
-    }
-    var t1 = values[0], t2 = values[1];
-    return util_1.between(t1, 0, 1) || util_1.between(t2, 0, 1);
-}
-exports.testLineCircleIntersection = testLineCircleIntersection;
-function testLineLineIntersection(shape1, shape2) {
-    var line1 = shape1;
-    var line2 = shape2;
-    var F = line1.getEquation();
-    var G = line2.getEquation();
-    var r3 = F(line2.startPos.x, line2.startPos.y);
-    var r4 = F(line2.endPos.x, line2.endPos.y);
-    if (r3 != 0 && r4 != 0 && Math.sign(r3) == Math.sign(r4)) {
-        return false;
-    }
-    var r1 = G(line1.startPos.x, line1.startPos.y);
-    var r2 = G(line1.endPos.x, line1.endPos.y);
-    if (r1 != 0 && r2 != 0 && Math.sign(r1) == Math.sign(r2)) {
-        return false;
-    }
-    return true;
-}
-function testCircleEmptyRectangleIntersection(shape1, shape2) {
-    var circle = shape1 instanceof collision_1.Circle ? shape1 : shape2;
-    var rect = shape1 instanceof collision_1.EmptyRectangle ? shape1 : shape2;
-    for (var _i = 0, _a = rect.sides; _i < _a.length; _i++) {
-        var side = _a[_i];
-        if (testLineCircleIntersection(circle, side)) {
-            return true;
-        }
-    }
-    return false;
-}
-function getIntersectionTestFunctionFor(shape1, shape2) {
-    var shapeNames = new Set([shape1, shape2]);
-    if (shapeNames.has('circle') && shapeNames.has('line')) {
-        return testLineCircleIntersection;
-    }
-    if (shapeNames.size == 1 && shapeNames.has('line')) {
-        return testLineLineIntersection;
-    }
-    if (shapeNames.has('circle') && shapeNames.has('empty-rectangle')) {
-        return testCircleEmptyRectangleIntersection;
-    }
-}
-function testIntersection(shape1, shape2) {
-    return getIntersectionTestFunctionFor(shape1.name, shape2.name)(shape1, shape2);
-}
-exports.testIntersection = testIntersection;
-
-},{"../../math/quad-eq":8,"../../math/util":9,"../../math/vec2":10,"../collision":11}],15:[function(require,module,exports){
-"use strict";
-exports.__esModule = true;
-var vec2_1 = require("../../math/vec2");
-var Line = /** @class */ (function () {
-    function Line(x_start, y_start, x_end, y_end) {
-        this.name = 'line';
-        this.group = new Set();
-        // bounciness?: number;
-        this.shapeSpace = null;
-        this.move(x_start, y_start, x_end, y_end);
-    }
-    Line.prototype.getNormal = function () {
-        return this._normal;
-    };
-    Line.prototype.getEquation = function () {
-        var a;
-        var b;
-        var c;
-        if (this.startPos.x == this.endPos.x) {
-            a = -1;
-            b = (this.endPos.x - this.startPos.x) / (this.endPos.y - this.startPos.y);
-            c = this.startPos.x - b * this.startPos.y;
-        }
-        else {
-            a = (this.endPos.y - this.startPos.y) / (this.endPos.x - this.startPos.x);
-            b = -1;
-            c = this.startPos.y - a * this.startPos.x;
-        }
-        return function (x, y) { return a * x + b * y + c; };
-    };
-    Line.prototype.getMiddlePoint = function () {
-        return new vec2_1["default"]((this.startPos.x + this.endPos.x) / 2, (this.startPos.y + this.endPos.y) / 2);
-    };
-    Line.prototype.move = function (x_start, y_start, x_end, y_end) {
-        this.startPos = new vec2_1["default"](x_start, y_start);
-        this.endPos = new vec2_1["default"](x_end, y_end);
-        var tangent = vec2_1["default"].sub(this.endPos, this.startPos);
-        this._normal = vec2_1["default"].normal(tangent);
-    };
-    Line.prototype.onCollide = function (e) {
-    };
-    return Line;
-}());
-exports["default"] = Line;
-
-},{"../../math/vec2":10}],16:[function(require,module,exports){
-"use strict";
-exports.__esModule = true;
-var util_1 = require("../../math/util");
-var vec2_1 = require("../../math/vec2");
-var Rectangle = /** @class */ (function () {
-    function Rectangle(x, y, w, h) {
-        this.name = 'rectangle';
-        this.group = new Set();
-        this.shapeSpace = null;
-        this.pos = new vec2_1["default"](x, y);
-        this.size = new vec2_1["default"](w, h);
-    }
-    Rectangle.prototype.getPoints = function () {
-        return [
-            vec2_1["default"].copy(this.pos),
-            vec2_1["default"].add(this.pos, new vec2_1["default"](this.size.x, 0)),
-            vec2_1["default"].add(this.pos, new vec2_1["default"](0, this.size.y)),
-            vec2_1["default"].add(this.pos, new vec2_1["default"](this.size.x, this.size.y)),
-        ];
-    };
-    Rectangle.prototype.getCenter = function () {
-        return vec2_1["default"].add(this.pos, vec2_1["default"].scale(0.5, this.size));
-    };
-    Rectangle.prototype.contains = function (p) {
-        return util_1.between(p.x, this.pos.x, this.pos.x + this.size.x) &&
-            util_1.between(p.y, this.pos.y, this.pos.y + this.size.y);
-    };
-    Rectangle.prototype.onCollide = function (e) {
+    Rectangle.prototype.supportFunction = function (direction) {
+        var normalizedDirection = _super.prototype.supportFunction.call(this, direction);
+        var diagonalLength = vec2_1["default"].norm(vec2_1["default"].add(this.widthVec, this.heightVec));
+        var scaledDirection = vec2_1["default"].scale(diagonalLength, normalizedDirection);
+        var normalizedWVec = vec2_1["default"].normalize(this.widthVec);
+        var normalizedHVec = vec2_1["default"].normalize(this.heightVec);
+        var wCoordinate = util_1.clamp(vec2_1["default"].dot(scaledDirection, normalizedWVec), 0, vec2_1["default"].norm(this.widthVec));
+        var hCoordinate = util_1.clamp(vec2_1["default"].dot(scaledDirection, normalizedHVec), 0, vec2_1["default"].norm(this.heightVec));
+        var supportVector = vec2_1["default"].add(vec2_1["default"].scale(wCoordinate, normalizedWVec), vec2_1["default"].scale(hCoordinate, normalizedHVec));
+        return vec2_1["default"].add(supportVector, this.pivot.position);
     };
     return Rectangle;
-}());
+}(shape_implementation_1["default"]));
 exports["default"] = Rectangle;
 
-},{"../../math/util":9,"../../math/vec2":10}],17:[function(require,module,exports){
+},{"../../math/mat2":7,"../../math/util":8,"../../math/vec2":9,"./line":14,"./shape-implementation":16}],16:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
-var intersection_test_1 = require("./intersection-test");
+var vec2_1 = require("../../math/vec2");
+var ShapeImplementation = /** @class */ (function () {
+    function ShapeImplementation() {
+        this.pivot = {
+            position: new vec2_1["default"](0, 0),
+            velocity: new vec2_1["default"](0, 0),
+            acceleration: new vec2_1["default"](0, 0)
+        };
+        this.tags = new Set();
+    }
+    ShapeImplementation.prototype.supportFunction = function (direction) {
+        return vec2_1["default"].normalize(direction);
+    };
+    ShapeImplementation.prototype.update = function (dt) {
+        var dPosition = vec2_1["default"].scale(dt, this.pivot.velocity);
+        this.pivot.position = vec2_1["default"].add(this.pivot.position, dPosition);
+        var dVelocity = vec2_1["default"].scale(dt, this.pivot.acceleration);
+        this.pivot.velocity = vec2_1["default"].add(this.pivot.velocity, dVelocity);
+    };
+    ShapeImplementation.prototype.onCollide = function (e) {
+    };
+    ShapeImplementation.prototype.onAddToSpace = function () {
+    };
+    ShapeImplementation.prototype.onRemoveFromSpace = function () {
+    };
+    return ShapeImplementation;
+}());
+exports["default"] = ShapeImplementation;
+
+},{"../../math/vec2":9}],17:[function(require,module,exports){
+"use strict";
+exports.__esModule = true;
+var gjk_1 = require("./gjk");
+var vec2_1 = require("../../math/vec2");
 var ShapeSpace = /** @class */ (function () {
     function ShapeSpace() {
         this.shapes = [];
@@ -639,6 +861,7 @@ var ShapeSpace = /** @class */ (function () {
     ShapeSpace.prototype.add = function (s) {
         s.shapeSpace = this;
         this.shapes.push(s);
+        s.onAddToSpace();
     };
     ShapeSpace.prototype.remove = function (s) {
         var idx = this.shapes.indexOf(s);
@@ -646,6 +869,7 @@ var ShapeSpace = /** @class */ (function () {
             this._removeFromArray(idx);
             s.shapeSpace = null;
         }
+        s.onRemoveFromSpace();
     };
     ShapeSpace.prototype._removeFromArray = function (idx) {
         for (var i = idx; i < this.shapes.length - 1; i++) {
@@ -653,24 +877,36 @@ var ShapeSpace = /** @class */ (function () {
         }
         this.shapes.pop();
     };
-    ShapeSpace.prototype.update = function () {
+    ShapeSpace.prototype.update = function (dt) {
+        if (dt === void 0) { dt = 1; }
         for (var i = 0; i < this.shapes.length; i++) {
-            for (var j = i; j < this.shapes.length; j++) {
-                if (i == j) {
-                    continue;
-                }
-                if (intersection_test_1.testIntersection(this.shapes[i], this.shapes[j])) {
+            for (var j = i + 1; j < this.shapes.length; j++) {
+                var _a = gjk_1["default"](this.shapes[i], this.shapes[j]), distance = _a[0], direction = _a[1];
+                // console.log(this.shapes[i], this.shapes[j], distance, direction);
+                if (distance == 0) {
                     this.shapes[i].onCollide({ collidedShape: this.shapes[j] });
                     this.shapes[j].onCollide({ collidedShape: this.shapes[i] });
+                    continue;
+                }
+                var velocity = vec2_1["default"].sub(this.shapes[i].pivot.velocity, this.shapes[j].pivot.velocity);
+                var velocityDotDirection = vec2_1["default"].dot(velocity, direction);
+                if (velocityDotDirection > distance) {
+                    dt = Math.min(dt, distance / velocityDotDirection);
                 }
             }
         }
+        this.shapes.forEach(function (shape) {
+            shape.update(dt);
+        });
+        // if (dt < 1) {
+        //     this.update(1 - dt);
+        // }
     };
     return ShapeSpace;
 }());
 exports["default"] = ShapeSpace;
 
-},{"./intersection-test":14}],18:[function(require,module,exports){
+},{"../../math/vec2":9,"./gjk":13}],18:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -855,7 +1091,7 @@ var GameOverScene = /** @class */ (function (_super) {
 }(scene_1.Scene));
 exports["default"] = GameOverScene;
 
-},{"../app":1,"../constants":4,"../math/util":9,"../math/vec2":10,"../ui/button":46,"../ui/geometry":47,"./common-elements/home-button":18,"./game-scene":20,"./game-scene/score-display":36,"./scene":39,"./start-menu-scene":40,"@pixi/graphics-extras":61,"pixi.js":92}],20:[function(require,module,exports){
+},{"../app":1,"../constants":4,"../math/util":8,"../math/vec2":9,"../ui/button":46,"../ui/geometry":47,"./common-elements/home-button":18,"./game-scene":20,"./game-scene/score-display":36,"./scene":39,"./start-menu-scene":40,"@pixi/graphics-extras":61,"pixi.js":92}],20:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -884,6 +1120,7 @@ var event_1 = require("./game-scene/event");
 var leaderboard_1 = require("../config/leaderboard");
 var constants_1 = require("../constants");
 var util_1 = require("../math/util");
+var vec2_1 = require("../math/vec2");
 var GameScene = /** @class */ (function (_super) {
     __extends(GameScene, _super);
     function GameScene() {
@@ -920,19 +1157,20 @@ var GameScene = /** @class */ (function (_super) {
         this.topBound = new collision_1.Line(0, 0, app_1.screenResolution.width, 0);
         this.rightBound = new collision_1.Line(app_1.screenResolution.width, 0, app_1.screenResolution.width, app_1.screenResolution.height);
         this.bottomBound = new collision_1.Line(app_1.screenResolution.width, app_1.screenResolution.height, 0, app_1.screenResolution.height);
-        this.leftBound.group.add('reflective');
-        this.topBound.group.add('reflective');
-        this.rightBound.group.add('reflective');
-        this.bottomBound.group.add('lose');
-        this.shapeSpace.add(this.leftBound);
-        this.shapeSpace.add(this.topBound);
-        this.shapeSpace.add(this.rightBound);
-        this.shapeSpace.add(this.bottomBound);
+        this.leftBound.tags.add('reflective');
+        this.topBound.tags.add('reflective');
+        this.rightBound.tags.add('reflective');
+        this.bottomBound.tags.add('lose');
+        // this.shapeSpace.add(this.leftBound);
+        // this.shapeSpace.add(this.topBound);
+        // this.shapeSpace.add(this.rightBound);
+        // this.shapeSpace.add(this.bottomBound);
     };
     GameScene.prototype._createBar = function () {
         var _this = this;
         this.bar = new bar_1["default"]();
         this.bar.y = app_1.screenResolution.height - this.bar.height - 10;
+        this.bar.hitbox.pivot.position = new vec2_1["default"](0, app_1.screenResolution.height - this.bar.height - 10);
         this.bar.onCollideBall = function () {
             _this.scoreDisplay.add();
             _this.eventManager.onScoreChange({ score: _this.scoreDisplay.getScore() });
@@ -946,6 +1184,7 @@ var GameScene = /** @class */ (function (_super) {
         this.ball = new ball_1["default"](16);
         this.ball.x = (app_1.screenResolution.width - this.ball.x) / 2;
         this.ball.y = (app_1.screenResolution.height - this.ball.y) / 2;
+        this.ball.hitbox.pivot.position = new vec2_1["default"](this.ball.x, this.ball.y);
         this.ball.onLose = function () {
             _this.eventManager.gameOver();
             _this.cleanup();
@@ -953,8 +1192,7 @@ var GameScene = /** @class */ (function (_super) {
                 _this.sceneManager.changeScene(game_over_scene_1["default"], { score: _this.scoreDisplay.getScore(), previousScene: GameScene });
             });
         };
-        // this.shapeSpace.add(this.ball.hitbox);
-        this.shapeSpace.add(this.ball.velocityLine);
+        this.shapeSpace.add(this.ball.hitbox);
         this.stage.addChild(this.ball);
     };
     GameScene.prototype._createScoreDisplay = function () {
@@ -1066,7 +1304,7 @@ var GameScene = /** @class */ (function (_super) {
 }(scene_1.Scene));
 exports["default"] = GameScene;
 
-},{"../app":1,"../config/leaderboard":3,"../constants":4,"../math/util":9,"../physics/collision":11,"./game-over-scene":19,"./game-scene/ball":21,"./game-scene/bar":22,"./game-scene/event":23,"./game-scene/pause-button":35,"./game-scene/score-display":36,"./scene":39,"pixi.js":92}],21:[function(require,module,exports){
+},{"../app":1,"../config/leaderboard":3,"../constants":4,"../math/util":8,"../math/vec2":9,"../physics/collision":11,"./game-over-scene":19,"./game-scene/ball":21,"./game-scene/bar":22,"./game-scene/event":23,"./game-scene/pause-button":35,"./game-scene/score-display":36,"./scene":39,"pixi.js":92}],21:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1094,26 +1332,20 @@ var Ball = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this.color = constants_1.colors.primary;
         _this.justReflected = false;
-        _this.radius = radius;
-        _this.velocity = new vec2_1["default"](-6 * Math.random() + 3, 0);
-        _this.acceleration = new vec2_1["default"](0, 0.25);
-        _this._createGraphics();
         _this.hitbox = new collision_1.Circle(_this.x, _this.y, radius);
-        _this.hitbox.group.add('ball');
+        _this.hitbox.tags.add('ball');
         _this.hitbox.onCollide = function (e) {
-            // this._onCollide(e);
-        };
-        _this.velocityLine = new collision_1.Line(_this.x, _this.y, _this.x + _this.velocity.x, _this.y + _this.velocity.y);
-        _this.velocityLine.group.add('ball-velocity');
-        _this.velocityLine.onCollide = function (e) {
             _this._onCollide(e);
         };
+        _this.hitbox.pivot.velocity = new vec2_1["default"](-6 * Math.random() + 3, 0);
+        _this.hitbox.pivot.acceleration = new vec2_1["default"](0, 0.25);
+        _this._createGraphics();
         return _this;
     }
     Ball.prototype._createGraphics = function () {
         var circle = new pixi_js_1.Graphics();
         circle.beginFill(this.color);
-        circle.drawCircle(0, 0, this.radius);
+        circle.drawCircle(0, 0, this.hitbox.radius);
         circle.endFill();
         this.addChild(circle);
     };
@@ -1122,9 +1354,9 @@ var Ball = /** @class */ (function (_super) {
     };
     Ball.prototype.recreate = function (radius, color) {
         var _this = this;
-        if (radius === void 0) { radius = this.radius; }
+        if (radius === void 0) { radius = this.hitbox.radius; }
         if (color === void 0) { color = this.color; }
-        this.radius = radius;
+        this.hitbox.radius = radius;
         this.color = color;
         var children = this.children.slice(1);
         this._clearGraphics();
@@ -1142,44 +1374,35 @@ var Ball = /** @class */ (function (_super) {
         if (this.justReflected) {
             this.justReflected = false;
         }
-        else {
-            _a = vec2_1["default"].add(new vec2_1["default"](this.x, this.y), this.velocity).toTuple(), this.x = _a[0], this.y = _a[1];
-            this.velocity = vec2_1["default"].add(this.velocity, this.acceleration);
-        }
-        var tip = vec2_1["default"].scale(this.radius, vec2_1["default"].normalize(this.velocity));
-        this.velocityLine.move(this.x, this.y, this.x + this.velocity.x + tip.x, this.y + this.velocity.y + tip.y);
-        console.log(this.velocityLine.startPos, this.velocityLine.endPos);
-        this.hitbox.move(this.x, this.y);
-        this.hitbox.resize(this.radius);
+        _a = this.hitbox.pivot.position.toTuple(), this.x = _a[0], this.y = _a[1];
     };
     Ball.prototype.reflect = function (normal, bounciness) {
         if (bounciness === void 0) { bounciness = 1; }
         this.justReflected = true;
-        var newVel = vec2_1["default"].scale(bounciness, vec2_1["default"].sub(this.velocity, vec2_1["default"].scale(2 * vec2_1["default"].dot(this.velocity, normal), normal)));
-        this.velocity = newVel;
+        var newVel = vec2_1["default"].scale(bounciness, vec2_1["default"].sub(this.hitbox.pivot.velocity, vec2_1["default"].scale(2 * vec2_1["default"].dot(this.hitbox.pivot.velocity, normal), normal)));
+        this.hitbox.pivot.velocity = newVel;
     };
     Ball.prototype.setVelocityLength = function (length) {
-        this.velocity = vec2_1["default"].scale(length, vec2_1["default"].normalize(this.velocity));
+        this.hitbox.pivot.velocity = vec2_1["default"].scale(length, vec2_1["default"].normalize(this.hitbox.pivot.velocity));
     };
     Ball.prototype.getVelocityLength = function () {
-        return vec2_1["default"].norm(this.velocity);
+        return vec2_1["default"].norm(this.hitbox.pivot.velocity);
     };
     Ball.prototype._onCollide = function (_a) {
         var collidedShape = _a.collidedShape;
         this.colliding = true;
-        console.log(collidedShape);
-        if (collidedShape.group.has('lose')) {
+        var tags = collidedShape.tags;
+        if (this.currentCollidingLine == collidedShape) {
+            return;
+        }
+        else if (tags.has('lose')) {
             audio_1.playNote('basic-wave', 440 * Math.pow(2, -21 / 12), 0.1, { type: 'sawtooth' });
             this.onLose();
         }
-        else if (this.currentCollidingLine == collidedShape) {
-            return;
-        }
-        else if (collidedShape instanceof collision_1.Line && collidedShape.group.has('reflective')) {
+        else if (collidedShape instanceof collision_1.Line && tags.has('reflective')) {
             var normal = collidedShape.getNormal();
             this.reflect(normal);
-            var group = collidedShape.group;
-            if (group.has('bar')) {
+            if (tags.has('bar')) {
                 this._collidedWithBar(collidedShape);
                 audio_1.playNote('basic-wave', 440 * Math.pow(2, util_1.randomElement([-2, 3]) / 12), 0.1, { type: 'sawtooth' });
             }
@@ -1191,14 +1414,14 @@ var Ball = /** @class */ (function (_super) {
     };
     Ball.prototype._collidedWithBar = function (bar) {
         var maxDeviation = 0.5;
-        var currentVelocityLength = vec2_1["default"].norm(this.velocity);
+        var currentVelocityLength = vec2_1["default"].norm(this.hitbox.pivot.velocity);
         var currentPosition = new vec2_1["default"](this.x, this.y);
         var barOrigin = bar.getMiddlePoint();
         var barCurrentPosition = vec2_1["default"].sub(currentPosition, barOrigin);
         var barTangent = vec2_1["default"].normalize(vec2_1["default"].sub(bar.endPos, barOrigin));
         var deviation = maxDeviation * vec2_1["default"].dot(vec2_1["default"].normalize(barCurrentPosition), barTangent);
         var newVelocity = vec2_1["default"].add(bar.getNormal(), vec2_1["default"].scale(deviation, barTangent));
-        this.velocity = newVelocity;
+        this.hitbox.pivot.velocity = newVelocity;
         this.setVelocityLength(Math.max(currentVelocityLength, 15));
     };
     Ball.prototype.getState = function (filter) {
@@ -1218,16 +1441,16 @@ var Ball = /** @class */ (function (_super) {
             var f = filter_1[_i];
             switch (f) {
                 case 'acceleration.dir':
-                    state.acceleration.dir = vec2_1["default"].normalize(this.acceleration);
+                    state.acceleration.dir = vec2_1["default"].normalize(this.hitbox.pivot.acceleration);
                     break;
                 case 'acceleration.length':
-                    state.acceleration.length = vec2_1["default"].norm(this.acceleration);
+                    state.acceleration.length = vec2_1["default"].norm(this.hitbox.pivot.acceleration);
                     break;
                 case 'velocity.dir':
-                    state.velocity.dir = vec2_1["default"].normalize(this.velocity);
+                    state.velocity.dir = vec2_1["default"].normalize(this.hitbox.pivot.velocity);
                     break;
                 case 'velocity.length':
-                    state.velocity.length = vec2_1["default"].norm(this.velocity);
+                    state.velocity.length = vec2_1["default"].norm(this.hitbox.pivot.velocity);
                     break;
                 case 'position':
                     state.position = new vec2_1["default"](this.x, this.y);
@@ -1238,26 +1461,26 @@ var Ball = /** @class */ (function (_super) {
     Ball.prototype.setState = function (state) {
         var _a;
         if (state.acceleration) {
-            var newAccelerationDir = vec2_1["default"].normalize(this.acceleration);
-            var newAccelerationLength = vec2_1["default"].norm(this.acceleration);
+            var newAccelerationDir = vec2_1["default"].normalize(this.hitbox.pivot.acceleration);
+            var newAccelerationLength = vec2_1["default"].norm(this.hitbox.pivot.acceleration);
             if (state.acceleration.dir != null && state.acceleration.dir != undefined) {
                 newAccelerationDir = state.acceleration.dir;
             }
             if (state.acceleration.length != null && state.acceleration.length != undefined) {
                 newAccelerationLength = state.acceleration.length;
             }
-            this.acceleration = vec2_1["default"].scale(newAccelerationLength, newAccelerationDir);
+            this.hitbox.pivot.acceleration = vec2_1["default"].scale(newAccelerationLength, newAccelerationDir);
         }
         if (state.velocity) {
-            var newVelocityDir = vec2_1["default"].normalize(this.velocity);
-            var newVelocityLength = vec2_1["default"].norm(this.velocity);
+            var newVelocityDir = vec2_1["default"].normalize(this.hitbox.pivot.velocity);
+            var newVelocityLength = vec2_1["default"].norm(this.hitbox.pivot.velocity);
             if (state.velocity.dir != null && state.velocity.dir != undefined) {
                 newVelocityDir = state.velocity.dir;
             }
             if (state.velocity.length != null && state.velocity.length != undefined) {
                 newVelocityLength = state.velocity.length;
             }
-            this.velocity = vec2_1["default"].scale(newVelocityLength, newVelocityDir);
+            this.hitbox.pivot.velocity = vec2_1["default"].scale(newVelocityLength, newVelocityDir);
         }
         if (state.position != null && state.position != undefined) {
             _a = state.position.toTuple(), this.x = _a[0], this.y = _a[1];
@@ -1269,7 +1492,7 @@ var Ball = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = Ball;
 
-},{"../../constants":4,"../../math/util":9,"../../math/vec2":10,"../../physics/collision":11,"../../service/audio":41,"pixi.js":92}],22:[function(require,module,exports){
+},{"../../constants":4,"../../math/util":8,"../../math/vec2":9,"../../physics/collision":11,"../../service/audio":41,"pixi.js":92}],22:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1296,14 +1519,19 @@ var Bar = /** @class */ (function (_super) {
     function Bar() {
         var _this = _super.call(this) || this;
         _this._createGraphics();
-        _this.hitbox = new collision_1.Line(_this.x + 128 + 8, _this.y, _this.x - 8, _this.y);
-        _this.hitbox.group.add('bar');
-        _this.hitbox.group.add('reflective');
+        _this.hitbox = new collision_1.Line(_this.x + 128, _this.y, _this.x, _this.y);
+        _this.hitbox.tags.add('bar');
+        _this.hitbox.tags.add('reflective');
         _this.hitbox.onCollide = function (_a) {
             var collidedShape = _a.collidedShape;
-            if (collidedShape.group.has('ball-velocity')) {
+            if (collidedShape.tags.has('ball')) {
                 _this.onCollideBall();
             }
+        };
+        _this.hitbox.update = function (dt) {
+            var _a = [0, app_1.screenResolution.width - _this.width, mouse_1["default"].getX() - _this.width / 2], minX = _a[0], maxX = _a[1], x = _a[2];
+            var newX = util_1.clamp(x, minX, maxX);
+            _this.hitbox.move(newX + _this.width, _this.hitbox.pivot.position.y, newX, _this.hitbox.pivot.position.y);
         };
         return _this;
     }
@@ -1315,9 +1543,8 @@ var Bar = /** @class */ (function (_super) {
         this.addChild(rect);
     };
     Bar.prototype.update = function () {
-        var _a = [0, app_1.screenResolution.width - this.width, mouse_1["default"].getX() - this.width / 2], minX = _a[0], maxX = _a[1], x = _a[2];
-        this.x = util_1.clamp(x, minX, maxX);
-        this.hitbox.move(this.x + this.width + 8, this.y, this.x - 8, this.y);
+        var _a;
+        _a = this.hitbox.endPos.toTuple(), this.x = _a[0], this.y = _a[1];
     };
     Bar.prototype.onCollideBall = function () {
     };
@@ -1325,7 +1552,7 @@ var Bar = /** @class */ (function (_super) {
 }(pixi_js_1.Container));
 exports["default"] = Bar;
 
-},{"../../app":1,"../../constants":4,"../../math/util":9,"../../physics/collision":11,"../../service/mouse":45,"pixi.js":92}],23:[function(require,module,exports){
+},{"../../app":1,"../../constants":4,"../../math/util":8,"../../physics/collision":11,"../../service/mouse":45,"pixi.js":92}],23:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.createEventManager = void 0;
@@ -1435,7 +1662,7 @@ var BallDiminishEvent = /** @class */ (function (_super) {
     BallDiminishEvent.prototype.start = function (scene, duration) {
         console.log('BALL_DIMINISH: start');
         _super.prototype.start.call(this, scene, duration);
-        this.lastRadius = this.currentScene.ball.radius;
+        this.lastRadius = this.currentScene.ball.hitbox.radius;
         this.state = 'starting';
         this.targetRadius = this.diminishFactor * this.lastRadius;
     };
@@ -1475,7 +1702,7 @@ var BallDiminishEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = BallDiminishEvent;
 
-},{"../../../../config/event":2,"../../../../math/util":9,"./event-implementation":29}],26:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../math/util":8,"./event-implementation":29}],26:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1546,7 +1773,7 @@ var BarDiminishEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = BarDiminishEvent;
 
-},{"../../../../config/event":2,"../../../../math/util":9,"./event-implementation":29}],27:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../math/util":8,"./event-implementation":29}],27:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1564,6 +1791,7 @@ var __extends = (this && this.__extends) || (function () {
 exports.__esModule = true;
 var event_1 = require("../../../../config/event");
 var util_1 = require("../../../../math/util");
+var vec2_1 = require("../../../../math/vec2");
 var event_implementation_1 = require("./event-implementation");
 var BarLiftEvent = /** @class */ (function (_super) {
     __extends(BarLiftEvent, _super);
@@ -1595,7 +1823,7 @@ var BarLiftEvent = /** @class */ (function (_super) {
                 break;
             case 'starting':
                 t = util_1.clamp(this.elapsedTime / this.transitionTime, 0, 1);
-                this.currentScene.bar.y = (1 - t) * this.lastY + t * this.targetY;
+                this.currentScene.bar.hitbox.pivot.position = new vec2_1["default"](this.currentScene.bar.hitbox.pivot.position.x, (1 - t) * this.lastY + t * this.targetY);
                 if (this.elapsedTime >= this.transitionTime) {
                     this.state = 'started';
                     this.elapsedTime = 0;
@@ -1609,7 +1837,7 @@ var BarLiftEvent = /** @class */ (function (_super) {
                 break;
             case 'stopping':
                 t = util_1.clamp(this.elapsedTime / this.transitionTime, 0, 1);
-                this.currentScene.bar.y = (1 - t) * this.targetY + t * this.lastY;
+                this.currentScene.bar.hitbox.pivot.position = new vec2_1["default"](this.currentScene.bar.hitbox.pivot.position.x, (1 - t) * this.targetY + t * this.lastY);
                 if (this.elapsedTime >= this.transitionTime) {
                     this.stop();
                     this.state = 'stopped';
@@ -1624,7 +1852,7 @@ var BarLiftEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = BarLiftEvent;
 
-},{"../../../../config/event":2,"../../../../math/util":9,"./event-implementation":29}],28:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../math/util":8,"../../../../math/vec2":9,"./event-implementation":29}],28:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1713,7 +1941,7 @@ var CurtainEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = CurtainEvent;
 
-},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":9,"./event-implementation":29,"pixi.js":92}],29:[function(require,module,exports){
+},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":8,"./event-implementation":29,"pixi.js":92}],29:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 var EventImplementation = /** @class */ (function () {
@@ -1795,11 +2023,11 @@ var NoGravityEvent = /** @class */ (function (_super) {
                 length: 5
             }
         });
-        this.currentScene.ball.recreate(this.currentScene.ball.radius, constants_1.colors.primary_cold);
+        this.currentScene.ball.recreate(this.currentScene.ball.hitbox.radius, constants_1.colors.primary_cold);
     };
     NoGravityEvent.prototype.stop = function () {
         this.currentScene.ball.setState(this._lastBallState);
-        this.currentScene.ball.recreate(this.currentScene.ball.radius, constants_1.colors.primary);
+        this.currentScene.ball.recreate(this.currentScene.ball.hitbox.radius, constants_1.colors.primary);
         console.log('NO_GRAVITY: stop');
         _super.prototype.stop.call(this);
     };
@@ -1807,7 +2035,7 @@ var NoGravityEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = NoGravityEvent;
 
-},{"../../../../config/event":2,"../../../../constants":4,"../../../../math/vec2":10,"./event-implementation":29}],31:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../constants":4,"../../../../math/vec2":9,"./event-implementation":29}],31:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1834,21 +2062,17 @@ var RainDrop = /** @class */ (function (_super) {
     __extends(RainDrop, _super);
     function RainDrop(acceleration) {
         var _this = _super.call(this) || this;
-        _this.velocity = new vec2_1["default"](0, 0);
         _this.dropWidth = 8;
         _this.dropHeight = 64;
-        _this.acceleration = acceleration;
-        _this.hitbox = new collision_1.EmptyRectangle(0, 0, _this.dropWidth, _this.dropHeight, 0);
-        _this.hitbox.sides.forEach(function (s) { return s.group.add('reflective'); });
+        _this.hitbox = new collision_1.Rectangle(0, 0, _this.dropWidth, _this.dropHeight, 0);
+        _this.hitbox.sides.forEach(function (s) { return s.tags.add('reflective'); });
+        _this.hitbox.pivot.acceleration = acceleration;
         _this.createGraphics();
         return _this;
     }
     RainDrop.prototype.update = function () {
         var _a;
-        this.velocity = vec2_1["default"].add(this.velocity, this.acceleration);
-        var position = new vec2_1["default"](this.x, this.y);
-        _a = vec2_1["default"].add(position, this.velocity).toTuple(), this.x = _a[0], this.y = _a[1];
-        this.hitbox.move(this.x, this.y);
+        _a = this.hitbox.pivot.position.toTuple(), this.x = _a[0], this.y = _a[1];
     };
     RainDrop.prototype.createGraphics = function () {
         var drop = new pixi_js_1.Graphics();
@@ -1908,24 +2132,23 @@ var RainEvent = /** @class */ (function (_super) {
         _super.prototype.stop.call(this);
         this.raindrops.forEach(function (r) {
             r.parent.removeChild(r);
-            r.hitbox.sides.forEach(function (s) { return s.shapeSpace.remove(s); });
+            r.hitbox.shapeSpace.remove(r.hitbox);
         });
     };
     RainEvent.prototype.generateDrop = function () {
-        var _this = this;
         var x = Math.random() * app_1.screenResolution.width - 8;
         var y = -64;
         var raindrop = new RainDrop(this.gravity);
         raindrop.position.set(x, y);
         this.currentScene.stage.addChild(raindrop);
-        raindrop.hitbox.sides.forEach(function (s) { return _this.currentScene.shapeSpace.add(s); });
+        this.currentScene.shapeSpace.add(raindrop.hitbox);
         this.raindrops.push(raindrop);
     };
     return RainEvent;
 }(event_implementation_1["default"]));
 exports["default"] = RainEvent;
 
-},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":4,"../../../../math/vec2":10,"../../../../physics/collision":11,"./event-implementation":29,"pixi.js":92}],32:[function(require,module,exports){
+},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":4,"../../../../math/vec2":9,"../../../../physics/collision":11,"./event-implementation":29,"pixi.js":92}],32:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2001,7 +2224,7 @@ var RandomBarEvent = /** @class */ (function (_super) {
     RandomBarEvent.prototype.stop = function () {
         console.log('RANDOM_BAR: stop');
         _super.prototype.stop.call(this);
-        this.barShape.sides.forEach(function (s) { return s.shapeSpace.remove(s); });
+        this.barShape.shapeSpace.remove(this.barShape);
         this.barGraphics.parent.removeChild(this.barGraphics);
     };
     RandomBarEvent.prototype._createShape = function () {
@@ -2010,10 +2233,10 @@ var RandomBarEvent = /** @class */ (function (_super) {
         var y = Math.random() * app_1.screenResolution.height / 2 + app_1.screenResolution.height / 4;
         var width = Math.random() * (this.maxWidth - this.minWidth) + this.minWidth;
         var rotation = Math.random() * Math.PI / 2 - Math.PI / 4;
-        this.barShape = new collision_1.EmptyRectangle(x, y, width, this.height, rotation);
+        this.barShape = new collision_1.Rectangle(x, y, width, this.height, rotation);
         // this.barShape.sides.forEach(s => s.group.add('reflective'));
+        this.currentScene.shapeSpace.add(this.barShape);
         this.barShape.sides.forEach(function (s) {
-            _this.currentScene.shapeSpace.add(s);
             s.onCollide = function (_a) {
                 var collidedShape = _a.collidedShape;
                 _this.lastCollidedShape = collidedShape;
@@ -2021,10 +2244,10 @@ var RandomBarEvent = /** @class */ (function (_super) {
         });
     };
     RandomBarEvent.prototype._initShapeGroup = function () {
-        this.barShape.sides.forEach(function (s) { return s.group.add('reflective'); });
+        this.barShape.sides.forEach(function (s) { return s.tags.add('reflective'); });
     };
     RandomBarEvent.prototype._isTouchingBall = function () {
-        return this.lastCollidedShape != null && this.lastCollidedShape.group.has('ball') || this.barShape.pointIsInside(this.currentScene.ball.x, this.currentScene.ball.y);
+        return this.lastCollidedShape != null && this.lastCollidedShape.tags.has('ball') || this.barShape.pointIsInside(this.currentScene.ball.x, this.currentScene.ball.y);
     };
     RandomBarEvent.prototype._createGraphics = function () {
         var _a;
@@ -2043,7 +2266,7 @@ var RandomBarEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = RandomBarEvent;
 
-},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":9,"../../../../physics/collision":11,"./event-implementation":29,"pixi.js":92}],33:[function(require,module,exports){
+},{"../../../../app":1,"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":8,"../../../../physics/collision":11,"./event-implementation":29,"pixi.js":92}],33:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2150,13 +2373,13 @@ var RandomThrowEvent = /** @class */ (function (_super) {
     };
     RandomThrowEvent.prototype._updateGraphics = function () {
         this.arrow.rotation = this._currentAngle;
-        this.arrow.position.set((this.currentScene.ball.radius + 4) * Math.cos(this._currentAngle), (this.currentScene.ball.radius + 4) * Math.sin(this._currentAngle));
+        this.arrow.position.set((this.currentScene.ball.hitbox.radius + 4) * Math.cos(this._currentAngle), (this.currentScene.ball.hitbox.radius + 4) * Math.sin(this._currentAngle));
     };
     return RandomThrowEvent;
 }(event_implementation_1["default"]));
 exports["default"] = RandomThrowEvent;
 
-},{"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":9,"../../../../math/vec2":10,"../../../../ui/geometry":47,"./event-implementation":29}],34:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":8,"../../../../math/vec2":9,"../../../../ui/geometry":47,"./event-implementation":29}],34:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2199,14 +2422,14 @@ var WindEvent = /** @class */ (function (_super) {
         else {
             this.bouncyBar = this.currentScene.rightBound;
         }
-        this.bouncyBar.group.add('bouncy');
+        this.bouncyBar.tags.add('bouncy');
         this.lastBallState = this.currentScene.ball.getState([
             "acceleration.dir",
             "acceleration.length",
         ]);
         this._createGraphics(direction);
         this.windForce = 0.25;
-        this.currentScene.ball.acceleration = vec2_1["default"].scale(this.windForce, vec2_1["default"].add(this.lastBallState.acceleration.dir, this.windDirection));
+        this.currentScene.ball.hitbox.pivot.acceleration = vec2_1["default"].scale(this.windForce, vec2_1["default"].add(this.lastBallState.acceleration.dir, this.windDirection));
         // this.bouncyBar.bounciness = 1.1;
     };
     WindEvent.prototype.update = function (dt) {
@@ -2220,7 +2443,7 @@ var WindEvent = /** @class */ (function (_super) {
         this.currentScene.ball.setState(this.lastBallState);
         this.lastBallState = null;
         _super.prototype.stop.call(this);
-        this.bouncyBar.group["delete"]('bouncy');
+        this.bouncyBar.tags["delete"]('bouncy');
         this.bouncyBar = null;
         this.windDirectionIndicator.parent.removeChild(this.windDirectionIndicator);
     };
@@ -2237,7 +2460,7 @@ var WindEvent = /** @class */ (function (_super) {
 }(event_implementation_1["default"]));
 exports["default"] = WindEvent;
 
-},{"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":9,"../../../../math/vec2":10,"../../../../ui/geometry":47,"./event-implementation":29}],35:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":8,"../../../../math/vec2":9,"../../../../ui/geometry":47,"./event-implementation":29}],35:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2437,7 +2660,7 @@ var LeaderboardScene = /** @class */ (function (_super) {
 }(scene_1.Scene));
 exports["default"] = LeaderboardScene;
 
-},{"../app":1,"../constants":4,"../math/util":9,"./common-elements/home-button":18,"./leaderboard-scene/leaderboard-display":38,"./scene":39,"./start-menu-scene":40,"pixi.js":92}],38:[function(require,module,exports){
+},{"../app":1,"../constants":4,"../math/util":8,"./common-elements/home-button":18,"./leaderboard-scene/leaderboard-display":38,"./scene":39,"./start-menu-scene":40,"pixi.js":92}],38:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2681,7 +2904,7 @@ var StartMenuScene = /** @class */ (function (_super) {
 }(scene_1.Scene));
 exports["default"] = StartMenuScene;
 
-},{"../app":1,"../config/leaderboard":3,"../constants":4,"../math/util":9,"../service/audio":41,"../ui/button":46,"../ui/geometry":47,"./game-scene":20,"./leaderboard-scene":37,"./scene":39,"pixi.js":92}],41:[function(require,module,exports){
+},{"../app":1,"../config/leaderboard":3,"../constants":4,"../math/util":8,"../service/audio":41,"../ui/button":46,"../ui/geometry":47,"./game-scene":20,"./leaderboard-scene":37,"./scene":39,"pixi.js":92}],41:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
 exports.initAudioService = exports.playNote = void 0;

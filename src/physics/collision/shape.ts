@@ -1,6 +1,6 @@
 import Vec2 from "../../math/vec2";
 
-type OnCollideEvent = {
+type CollisionEvent = {
     collidedShape: IShape
 }
 
@@ -17,8 +17,10 @@ interface IShape {
     shapeSpace: IShapeSpace;
     
     supportFunction(direction: Vec2): Vec2;
-    update(): void;
-    onCollide(e: OnCollideEvent): void;
+    update(dt: number): void;
+    onCollide(e: CollisionEvent): void;
+    onAddToSpace(): void;
+    onRemoveFromSpace(): void;
 }
 
 interface IShapeSpace {
@@ -28,4 +30,4 @@ interface IShapeSpace {
     update(): void;
 }
 
-export { IShape, IShapeSpace , OnCollideEvent };
+export { IShape, IShapeSpace , CollisionEvent };

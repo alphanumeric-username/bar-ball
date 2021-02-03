@@ -4,31 +4,26 @@ import GameScene from '../../../game-scene';
 import { Scene } from '../../../scene';
 import Vec2 from '../../../../math/vec2';
 import { Container, Graphics } from 'pixi.js';
-import { EmptyRectangle } from '../../../../physics/collision';
+import { Rectangle } from '../../../../physics/collision';
 import { colors } from '../../../../constants';
 import { screenResolution } from '../../../../app';
 
 class RainDrop extends Container {
-    hitbox: EmptyRectangle;
-    velocity: Vec2 = new Vec2(0, 0);
-    acceleration: Vec2;
-
+    hitbox: Rectangle;
+    
     readonly dropWidth: number = 8;
     readonly dropHeight: number = 64;
 
     constructor(acceleration: Vec2) {
         super();
-        this.acceleration = acceleration;
-        this.hitbox = new EmptyRectangle(0, 0, this.dropWidth, this.dropHeight, 0);
-        this.hitbox.sides.forEach(s => s.group.add('reflective'));
+        this.hitbox = new Rectangle(0, 0, this.dropWidth, this.dropHeight, 0);
+        this.hitbox.sides.forEach(s => s.tags.add('reflective'));
+        this.hitbox.pivot.acceleration = acceleration;
         this.createGraphics();
     }
 
     update() {
-        this.velocity = Vec2.add(this.velocity, this.acceleration);
-        const position = new Vec2(this.x, this.y);
-        [this.x, this.y] = Vec2.add(position, this.velocity).toTuple();
-        this.hitbox.move(this.x, this.y);
+        [this.x, this.y] = this.hitbox.pivot.position.toTuple();
         
     }
     
@@ -96,7 +91,7 @@ class RainEvent extends EventImplementation {
         super.stop();
         this.raindrops.forEach(r => {
             r.parent.removeChild(r);
-            r.hitbox.sides.forEach(s => s.shapeSpace.remove(s));
+            r.hitbox.shapeSpace.remove(r.hitbox);
         });
     }
 
@@ -108,7 +103,7 @@ class RainEvent extends EventImplementation {
         raindrop.position.set(x, y);
 
         this.currentScene.stage.addChild(raindrop);
-        raindrop.hitbox.sides.forEach(s => this.currentScene.shapeSpace.add(s));
+        this.currentScene.shapeSpace.add(raindrop.hitbox);
         this.raindrops.push(raindrop);
     }
 }

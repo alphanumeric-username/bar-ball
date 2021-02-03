@@ -1,5 +1,6 @@
 import { getEventConfig } from "../../../../config/event";
 import { clamp } from "../../../../math/util";
+import Vec2 from "../../../../math/vec2";
 import GameScene from "../../../game-scene";
 import { Scene } from "../../../scene";
 import EventImplementation from "./event-implementation";
@@ -16,6 +17,7 @@ class BarLiftEvent extends EventImplementation {
 
     lastY: number;
     targetY: number;
+    velocity: Vec2;
 
     state: 'stopped' | 'delay' | 'starting' | 'started' | 'stopping' = 'stopped';
     
@@ -39,7 +41,7 @@ class BarLiftEvent extends EventImplementation {
                 break;
             case 'starting':
                 t = clamp(this.elapsedTime / this.transitionTime, 0, 1);
-                this.currentScene.bar.y = (1 - t)*this.lastY + t*this.targetY;
+                this.currentScene.bar.hitbox.pivot.position = new Vec2(this.currentScene.bar.hitbox.pivot.position.x, (1 - t)*this.lastY + t*this.targetY);
                 if (this.elapsedTime >= this.transitionTime) {
                     this.state = 'started';
                     this.elapsedTime = 0;
@@ -53,7 +55,7 @@ class BarLiftEvent extends EventImplementation {
                 break;
             case 'stopping':
                 t = clamp(this.elapsedTime / this.transitionTime, 0, 1);
-                this.currentScene.bar.y = (1 - t)*this.targetY + t*this.lastY;
+                this.currentScene.bar.hitbox.pivot.position = new Vec2(this.currentScene.bar.hitbox.pivot.position.x, (1 - t)*this.targetY + t*this.lastY);
                 if (this.elapsedTime >= this.transitionTime) {
                     this.stop();
                     this.state = 'stopped';

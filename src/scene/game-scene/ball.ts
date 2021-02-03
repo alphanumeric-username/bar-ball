@@ -1,10 +1,9 @@
 import { Container, Graphics } from "pixi.js";
 import { colors } from '../../constants';
-import { Circle, Line, OnCollideEvent } from '../../physics/collision';
+import { Circle, Line, CollisionEvent } from '../../physics/collision';
 import Vec2 from "../../math/vec2";
 import { playNote } from '../../service/audio';
-import { clamp, randomElement } from "../../math/util";
-import { screenResolution } from "../../app";
+import { randomElement } from "../../math/util";
 
 
 type BallState = {
@@ -23,11 +22,7 @@ type BallStateFilter = 'acceleration.dir' | 'acceleration.length' | 'velocity.di
 
 class Ball extends Container {
 
-    radius: number;
-    velocity: Vec2;
-    acceleration: Vec2;
     readonly hitbox: Circle;
-    readonly velocityLine: Line;
 
     currentCollidingLine: Line;
     colliding: boolean;
@@ -37,27 +32,21 @@ class Ball extends Container {
 
     constructor(radius: number) {
         super();
-        this.radius = radius;
-        this.velocity = new Vec2(-6*Math.random() + 3, 0);
-        this.acceleration = new Vec2(0, 0.25);
-        this._createGraphics();
         this.hitbox = new Circle(this.x, this.y, radius);
-        this.hitbox.group.add('ball');
+        this.hitbox.tags.add('ball');
         this.hitbox.onCollide = (e) => {
             this._onCollide(e);
         }
-
-        this.velocityLine = new Line(this.x, this.y, this.x + this.velocity.x, this.y + this.velocity.y);
-        this.velocityLine.group.add('ball-velocity');
-        this.velocityLine.onCollide = (e) => {
-            // this._onCollide(e);
-        }
+        
+        this.hitbox.pivot.velocity = new Vec2(-6*Math.random() + 3, 0);
+        this.hitbox.pivot.acceleration = new Vec2(0, 0.25);
+        this._createGraphics();
     }
 
     private _createGraphics() {
         const circle = new Graphics();
         circle.beginFill(this.color);
-        circle.drawCircle(0, 0, this.radius);
+        circle.drawCircle(0, 0, this.hitbox.radius);
         circle.endFill();
         this.addChild(circle);
     }
@@ -66,9 +55,9 @@ class Ball extends Container {
         this.removeChildren();
     }
 
-    recreate(radius: number = this.radius, color: number = this.color) {
+    recreate(radius: number = this.hitbox.radius, color: number = this.color) {
 
-        this.radius = radius;
+        this.hitbox.radius = radius;
         this.color = color;
 
         const children = this.children.slice(1);
@@ -87,15 +76,9 @@ class Ball extends Container {
         }
         if (this.justReflected) {
             this.justReflected = false;
-        } else {
-            [this.x, this.y] = Vec2.add(new Vec2(this.x, this.y), this.velocity).toTuple();
-            this.velocity = Vec2.add(this.velocity, this.acceleration);
         }
-        const tip = Vec2.scale(this.radius, Vec2.normalize(this.velocity));
-        this.velocityLine.move(this.x, this.y, this.x + this.velocity.x + tip.x, this.y + this.velocity.y + tip.y);
-        console.log(this.velocityLine.startPos, this.velocityLine.endPos);
-        this.hitbox.move(this.x, this.y);
-        this.hitbox.resize(this.radius);
+
+        [this.x, this.y] = this.hitbox.pivot.position.toTuple();
     }
 
     reflect(normal: Vec2, bounciness: number = 1) {
@@ -103,38 +86,39 @@ class Ball extends Container {
         const newVel = Vec2.scale(
             bounciness,
             Vec2.sub(
-                this.velocity,
-                Vec2.scale(2*Vec2.dot(this.velocity, normal), normal)
+                this.hitbox.pivot.velocity,
+                Vec2.scale(2*Vec2.dot(this.hitbox.pivot.velocity, normal), normal)
             )
         );
-        this.velocity = newVel;
+        this.hitbox.pivot.velocity = newVel;
     }
 
     setVelocityLength(length: number) {
-        this.velocity = Vec2.scale(
+        this.hitbox.pivot.velocity = Vec2.scale(
             length,
-            Vec2.normalize(this.velocity)
+            Vec2.normalize(this.hitbox.pivot.velocity)
         );
     }
 
     getVelocityLength(): number {
-        return Vec2.norm(this.velocity);
+        return Vec2.norm(this.hitbox.pivot.velocity);
     }
 
-    private _onCollide({ collidedShape }: OnCollideEvent) {
+    private _onCollide({ collidedShape }: CollisionEvent) {
         this.colliding = true;
-        console.log(collidedShape);
-        if (collidedShape.group.has('lose')) {
+        const tags = collidedShape.tags;
+        if (this.currentCollidingLine == collidedShape) {
+            return;
+        }
+        else if (tags.has('lose')) {
             playNote('basic-wave', 440*Math.pow(2, -21/12), 0.1, { type: 'sawtooth' });
             this.onLose();
-        } else if (this.currentCollidingLine == collidedShape) {
-            return;
-        } else if (collidedShape instanceof Line && collidedShape.group.has('reflective')) {
+        }
+        else if (collidedShape instanceof Line && tags.has('reflective')) {
             const normal = collidedShape.getNormal();
             this.reflect(normal);
 
-            const group = collidedShape.group;
-            if (group.has('bar')) {
+            if (tags.has('bar')) {
                 this._collidedWithBar(collidedShape);
                 playNote('basic-wave', 440*Math.pow(2, randomElement([-2, 3])/12), 0.1, { type: 'sawtooth' });
             } else {
@@ -147,7 +131,7 @@ class Ball extends Container {
 
     private _collidedWithBar(bar: Line) {
         const maxDeviation = 0.5;
-        const currentVelocityLength = Vec2.norm(this.velocity);
+        const currentVelocityLength = Vec2.norm(this.hitbox.pivot.velocity);
         const currentPosition = new Vec2(this.x, this.y);
         const barOrigin = bar.getMiddlePoint();
         const barCurrentPosition = Vec2.sub(currentPosition, barOrigin);
@@ -159,7 +143,7 @@ class Ball extends Container {
             Vec2.scale(deviation, barTangent)
         );
 
-        this.velocity = newVelocity;
+        this.hitbox.pivot.velocity = newVelocity;
 
         this.setVelocityLength(Math.max(currentVelocityLength, 15));
     }
@@ -179,16 +163,16 @@ class Ball extends Container {
         for (const f of filter) {
             switch(f) {
                 case 'acceleration.dir':
-                    state.acceleration.dir = Vec2.normalize(this.acceleration);
+                    state.acceleration.dir = Vec2.normalize(this.hitbox.pivot.acceleration);
                     break;
                 case 'acceleration.length':
-                    state.acceleration.length = Vec2.norm(this.acceleration);
+                    state.acceleration.length = Vec2.norm(this.hitbox.pivot.acceleration);
                     break;
                 case 'velocity.dir':
-                    state.velocity.dir = Vec2.normalize(this.velocity);
+                    state.velocity.dir = Vec2.normalize(this.hitbox.pivot.velocity);
                     break;
                 case 'velocity.length':
-                    state.velocity.length = Vec2.norm(this.velocity);
+                    state.velocity.length = Vec2.norm(this.hitbox.pivot.velocity);
                     break;
                 case 'position':
                     state.position = new Vec2(this.x, this.y);
@@ -199,8 +183,8 @@ class Ball extends Container {
 
     setState(state: BallState) {
         if (state.acceleration) {
-            var newAccelerationDir = Vec2.normalize(this.acceleration);
-            var newAccelerationLength = Vec2.norm(this.acceleration);
+            var newAccelerationDir = Vec2.normalize(this.hitbox.pivot.acceleration);
+            var newAccelerationLength = Vec2.norm(this.hitbox.pivot.acceleration);
 
             if (state.acceleration.dir != null && state.acceleration.dir != undefined) {
                 newAccelerationDir = state.acceleration.dir;
@@ -209,14 +193,14 @@ class Ball extends Container {
                 newAccelerationLength = state.acceleration.length;
             }
 
-            this.acceleration = Vec2.scale(
+            this.hitbox.pivot.acceleration = Vec2.scale(
                 newAccelerationLength,
                 newAccelerationDir
             );
         }
         if (state.velocity) {
-            var newVelocityDir = Vec2.normalize(this.velocity);
-            var newVelocityLength = Vec2.norm(this.velocity);
+            var newVelocityDir = Vec2.normalize(this.hitbox.pivot.velocity);
+            var newVelocityLength = Vec2.norm(this.hitbox.pivot.velocity);
 
             if (state.velocity.dir != null && state.velocity.dir != undefined) {
                 newVelocityDir = state.velocity.dir;
@@ -225,7 +209,7 @@ class Ball extends Container {
                 newVelocityLength = state.velocity.length;
             }
 
-            this.velocity = Vec2.scale(
+            this.hitbox.pivot.velocity = Vec2.scale(
                 newVelocityLength,
                 newVelocityDir
             );

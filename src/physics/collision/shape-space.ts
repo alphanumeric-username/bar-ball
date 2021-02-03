@@ -1,11 +1,13 @@
 import { IShape, IShapeSpace } from './shape';
-import { testIntersection } from './intersection-test'
+import gjk from './gjk';
+import Vec2 from '../../math/vec2';
 
 class ShapeSpace implements IShapeSpace {
     readonly shapes: Array<IShape> = [];
     add(s: IShape) {
         s.shapeSpace = this;
         this.shapes.push(s);
+        s.onAddToSpace();
     }
 
     remove(s: IShape) {
@@ -14,6 +16,7 @@ class ShapeSpace implements IShapeSpace {
             this._removeFromArray(idx);
             s.shapeSpace = null;
         }
+        s.onRemoveFromSpace();
     }
 
     private _removeFromArray(idx: number) {
@@ -23,18 +26,36 @@ class ShapeSpace implements IShapeSpace {
         this.shapes.pop();
     }
 
-    update() {
+    update(dt: number = 1) {
         for (let i = 0; i < this.shapes.length; i++) {
-            for (let j = i; j < this.shapes.length; j++) {
-                if (i == j) {
-                    continue;
-                }
-                if (testIntersection(this.shapes[i], this.shapes[j])) {
+            for (let j = i + 1; j < this.shapes.length; j++) {
+                const [distance, direction] = gjk(this.shapes[i], this.shapes[j]);
+                // console.log(this.shapes[i], this.shapes[j], distance, direction);
+                if (distance == 0) {
                     this.shapes[i].onCollide({ collidedShape: this.shapes[j] });
                     this.shapes[j].onCollide({ collidedShape: this.shapes[i] });
+                    continue;
+                } 
+                
+                const velocity = Vec2.sub(
+                    this.shapes[i].pivot.velocity,
+                    this.shapes[j].pivot.velocity
+                );
+                const velocityDotDirection = Vec2.dot(velocity, direction);
+
+                if (velocityDotDirection > distance) {
+                    dt = Math.min(dt, distance / velocityDotDirection);
                 }
             }
         }
+
+        this.shapes.forEach(shape => {
+            shape.update(dt);
+        });
+
+        // if (dt < 1) {
+        //     this.update(1 - dt);
+        // }
     }
 }
 

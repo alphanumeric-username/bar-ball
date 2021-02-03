@@ -12,6 +12,7 @@ import { createEventManager } from './game-scene/event';
 import { saveScore } from '../config/leaderboard';
 import { colors } from '../constants';
 import { clamp } from '../math/util';
+import Vec2 from '../math/vec2';
 
 
 class GameScene extends Scene {
@@ -70,20 +71,21 @@ class GameScene extends Scene {
         this.topBound = new Line(0, 0, screenResolution.width, 0);
         this.rightBound = new Line(screenResolution.width, 0, screenResolution.width, screenResolution.height);
         this.bottomBound = new Line(screenResolution.width, screenResolution.height, 0, screenResolution.height);
-        this.leftBound.group.add('reflective');
-        this.topBound.group.add('reflective');
-        this.rightBound.group.add('reflective');
-        this.bottomBound.group.add('lose');
+        this.leftBound.tags.add('reflective');
+        this.topBound.tags.add('reflective');
+        this.rightBound.tags.add('reflective');
+        this.bottomBound.tags.add('lose');
         
-        this.shapeSpace.add(this.leftBound);
-        this.shapeSpace.add(this.topBound);
-        this.shapeSpace.add(this.rightBound);
-        this.shapeSpace.add(this.bottomBound);
+        // this.shapeSpace.add(this.leftBound);
+        // this.shapeSpace.add(this.topBound);
+        // this.shapeSpace.add(this.rightBound);
+        // this.shapeSpace.add(this.bottomBound);
     }
 
     private _createBar() {
         this.bar = new Bar();
         this.bar.y = screenResolution.height - this.bar.height - 10;
+        this.bar.hitbox.pivot.position = new Vec2 (0, screenResolution.height - this.bar.height - 10);
         this.bar.onCollideBall = () => {
             this.scoreDisplay.add();
             this.eventManager.onScoreChange({ score: this.scoreDisplay.getScore() });
@@ -96,8 +98,9 @@ class GameScene extends Scene {
 
     private _createBall() {
         this.ball = new Ball(16);
-        this.ball.x = (screenResolution.width - this.ball.x)/2
-        this.ball.y = (screenResolution.height - this.ball.y)/2
+        this.ball.x = (screenResolution.width - this.ball.x)/2;
+        this.ball.y = (screenResolution.height - this.ball.y)/2;
+        this.ball.hitbox.pivot.position = new Vec2(this.ball.x, this.ball.y);
         this.ball.onLose = () => {
             this.eventManager.gameOver();
             this.cleanup();
@@ -106,8 +109,7 @@ class GameScene extends Scene {
             });
         }
 
-        // this.shapeSpace.add(this.ball.hitbox);
-        this.shapeSpace.add(this.ball.velocityLine);
+        this.shapeSpace.add(this.ball.hitbox);
         this.stage.addChild(this.ball);
     }
 

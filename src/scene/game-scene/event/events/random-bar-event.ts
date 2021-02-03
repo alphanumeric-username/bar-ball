@@ -1,7 +1,7 @@
 import EventImplementation from './event-implementation';
 import GameScene from '../../../game-scene';
 import { Scene } from '../../../scene';
-import { EmptyRectangle, IShape, Line } from '../../../../physics/collision';
+import { Rectangle, IShape, Line } from '../../../../physics/collision';
 import Vec2 from '../../../../math/vec2';
 import { clamp, randomInt } from '../../../../math/util';
 import { screenResolution } from '../../../../app';
@@ -15,7 +15,7 @@ class RandomBarEvent extends EventImplementation {
     currentScene: GameScene;
 
     barGraphics: Graphics;
-    barShape: EmptyRectangle;
+    barShape: Rectangle;
 
     readonly minWidth = getEventConfig()['random-bar'].bar['min-width'];
     readonly maxWidth = getEventConfig()['random-bar'].bar['max-width'];
@@ -67,7 +67,7 @@ class RandomBarEvent extends EventImplementation {
     stop() {
         console.log('RANDOM_BAR: stop');
         super.stop();
-        this.barShape.sides.forEach(s => s.shapeSpace.remove(s));
+        this.barShape.shapeSpace.remove(this.barShape);
         this.barGraphics.parent.removeChild(this.barGraphics);
     }
 
@@ -79,14 +79,14 @@ class RandomBarEvent extends EventImplementation {
 
         const rotation = Math.random()*Math.PI/2 - Math.PI/4;
 
-        this.barShape = new EmptyRectangle(
+        this.barShape = new Rectangle(
             x, y,
             width, this.height,
             rotation
         );
         // this.barShape.sides.forEach(s => s.group.add('reflective'));
+        this.currentScene.shapeSpace.add(this.barShape);
         this.barShape.sides.forEach(s => {
-            this.currentScene.shapeSpace.add(s);
             s.onCollide = ({ collidedShape }) => {
                 this.lastCollidedShape = collidedShape;
             };
@@ -94,11 +94,11 @@ class RandomBarEvent extends EventImplementation {
     }
     
     private _initShapeGroup() {
-        this.barShape.sides.forEach(s => s.group.add('reflective'));
+        this.barShape.sides.forEach(s => s.tags.add('reflective'));
     }
 
     private _isTouchingBall(): boolean {
-        return this.lastCollidedShape != null && this.lastCollidedShape.group.has('ball') || this.barShape.pointIsInside(this.currentScene.ball.x, this.currentScene.ball.y);
+        return this.lastCollidedShape != null && this.lastCollidedShape.tags.has('ball') || this.barShape.pointIsInside(this.currentScene.ball.x, this.currentScene.ball.y);
     }
 
     private _createGraphics() {

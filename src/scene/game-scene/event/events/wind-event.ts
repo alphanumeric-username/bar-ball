@@ -40,14 +40,14 @@ class WindEvent extends EventImplementation {
         } else {
             this.bouncyBar = this.currentScene.rightBound;
         }
-        this.bouncyBar.group.add('bouncy');
+        this.bouncyBar.tags.add('bouncy');
         this.lastBallState = this.currentScene.ball.getState([
             "acceleration.dir",
             "acceleration.length",
         ]);
         this._createGraphics(direction);
         this.windForce = 0.25;
-        this.currentScene.ball.acceleration = Vec2.scale(this.windForce, Vec2.add(
+        this.currentScene.ball.hitbox.pivot.acceleration = Vec2.scale(this.windForce, Vec2.add(
             this.lastBallState.acceleration.dir,
             this.windDirection
         ));
@@ -66,7 +66,7 @@ class WindEvent extends EventImplementation {
         this.currentScene.ball.setState(this.lastBallState);
         this.lastBallState = null;
         super.stop();
-        this.bouncyBar.group.delete('bouncy');
+        this.bouncyBar.tags.delete('bouncy');
         this.bouncyBar = null;
         this.windDirectionIndicator.parent.removeChild(this.windDirectionIndicator);
     }

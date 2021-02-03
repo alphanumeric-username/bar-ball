@@ -31,7 +31,7 @@ var shape_implementation_1 = require("./shape-implementation");
 //     resize(r: number) {
 //         this.r = r;
 //     }
-//     onCollide(e: CollideEvent): void {
+//     onCollide(e: CollisionEvent): void {
 //     }
 // }
 var Circle = /** @class */ (function (_super) {
