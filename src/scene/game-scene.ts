@@ -76,31 +76,31 @@ class GameScene extends Scene {
         this.rightBound.tags.add('reflective');
         this.bottomBound.tags.add('lose');
         
-        // this.shapeSpace.add(this.leftBound);
-        // this.shapeSpace.add(this.topBound);
-        // this.shapeSpace.add(this.rightBound);
-        // this.shapeSpace.add(this.bottomBound);
+        this.shapeSpace.add(this.leftBound);
+        this.shapeSpace.add(this.topBound);
+        this.shapeSpace.add(this.rightBound);
+        this.shapeSpace.add(this.bottomBound);
     }
 
     private _createBar() {
-        this.bar = new Bar();
-        this.bar.y = screenResolution.height - this.bar.height - 10;
-        this.bar.hitbox.pivot.position = new Vec2 (0, screenResolution.height - this.bar.height - 10);
+        this.bar = new Bar(screenResolution.height - 32 - 10);
+        this.bar.pivot.position = new Vec2 (0, screenResolution.height - this.bar.height - 10);
         this.bar.onCollideBall = () => {
             this.scoreDisplay.add();
             this.eventManager.onScoreChange({ score: this.scoreDisplay.getScore() });
             this.centerX(this.scoreDisplay);
         }
 
-        this.shapeSpace.add(this.bar.hitbox);
-        this.stage.addChild(this.bar);
+        this.shapeSpace.add(this.bar);
+        this.stage.addChild(this.bar.stage);
     }
 
     private _createBall() {
         this.ball = new Ball(16);
-        this.ball.x = (screenResolution.width - this.ball.x)/2;
-        this.ball.y = (screenResolution.height - this.ball.y)/2;
-        this.ball.hitbox.pivot.position = new Vec2(this.ball.x, this.ball.y);
+        this.ball.pivot.position = new Vec2(
+            (screenResolution.width - this.ball.pivot.position.x)/2,
+            (screenResolution.height - this.ball.pivot.position.y)/2
+        );
         this.ball.onLose = () => {
             this.eventManager.gameOver();
             this.cleanup();
@@ -109,8 +109,8 @@ class GameScene extends Scene {
             });
         }
 
-        this.shapeSpace.add(this.ball.hitbox);
-        this.stage.addChild(this.ball);
+        this.shapeSpace.add(this.ball);
+        this.stage.addChild(this.ball.stage);
     }
 
     private _createScoreDisplay() {
@@ -174,8 +174,6 @@ class GameScene extends Scene {
                 requestAnimationFrame(() => this.update());
                 break;
             case 'running':
-                this.bar.update();
-                this.ball.update();
                 this.shapeSpace.update();
                 this.eventManager.update(this.dt);
                 requestAnimationFrame(() => this.update());

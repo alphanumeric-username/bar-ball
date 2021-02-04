@@ -26,14 +26,15 @@ class ShapeSpace implements IShapeSpace {
         this.shapes.pop();
     }
 
-    update(dt: number = 1) {
+    update(dt: number = 1, lastDt: number = 1) {
         for (let i = 0; i < this.shapes.length; i++) {
             for (let j = i + 1; j < this.shapes.length; j++) {
                 const [distance, direction] = gjk(this.shapes[i], this.shapes[j]);
-                // console.log(this.shapes[i], this.shapes[j], distance, direction);
                 if (distance == 0) {
-                    this.shapes[i].onCollide({ collidedShape: this.shapes[j] });
-                    this.shapes[j].onCollide({ collidedShape: this.shapes[i] });
+                    if (!this.shapes[i].collidingShapes.has(this.shapes[j])) {
+                        this.shapes[i].onCollide({ collidedShape: this.shapes[j] });
+                        this.shapes[j].onCollide({ collidedShape: this.shapes[i] });
+                    }
                     continue;
                 } 
                 
@@ -46,6 +47,8 @@ class ShapeSpace implements IShapeSpace {
                 if (velocityDotDirection > distance) {
                     dt = Math.min(dt, distance / velocityDotDirection);
                 }
+                this.shapes[i].collidingShapes.delete(this.shapes[j]);
+                this.shapes[j].collidingShapes.delete(this.shapes[i]);
             }
         }
 
@@ -53,9 +56,9 @@ class ShapeSpace implements IShapeSpace {
             shape.update(dt);
         });
 
-        // if (dt < 1) {
-        //     this.update(1 - dt);
-        // }
+        if (dt > 0 && dt < lastDt) {
+            this.update(1 - dt, 1 - dt);
+        }
     }
 }
 

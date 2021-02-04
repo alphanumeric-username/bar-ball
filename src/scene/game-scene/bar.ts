@@ -5,40 +5,49 @@ import Mouse from '../../service/mouse';
 import { Line } from '../../physics/collision';
 import { clamp } from "../../math/util";
 
-class Bar extends Container {
+class Bar extends Line {
 
-    readonly hitbox: Line;
+    readonly stage: Container;
+    width: number;
+    height: number;
 
-    constructor() {
-        super();
+
+    constructor(y: number) {
+        super(128, y, 0, y);
+        this.width = 128;
+        this.height = 16;
+
+        this.stage = new Container();
         this._createGraphics();
-        this.hitbox = new Line(this.x + 128, this.y, this.x, this.y);
-        this.hitbox.tags.add('bar');
-        this.hitbox.tags.add('reflective');
-        this.hitbox.onCollide = ({ collidedShape }) => {
-            if (collidedShape.tags.has('ball')) {
-                this.onCollideBall();
-            }
-        }
-        this.hitbox.update = (dt) => {
-            const [minX, maxX, x] = [0, screenResolution.width - this.width, Mouse.getX() - this.width/2];
-            const newX = clamp(x, minX, maxX);
-            this.hitbox.move(newX + this.width, this.hitbox.pivot.position.y, newX, this.hitbox.pivot.position.y);
-        }
         
+        this.tags.add('bar');
+        this.tags.add('reflective');
     }
 
     private _createGraphics() {
         const rect = new Graphics();
         rect.beginFill(colors.primary);
-        rect.drawRect(0, 0, 128, 32);
+        rect.drawRect(0, 0, this.width, this.height);
         rect.endFill();
         
-        this.addChild(rect);
+        this.stage.addChild(rect);
     }
 
-    update() {
-        [this.x, this.y] = this.hitbox.endPos.toTuple();
+    update(dt: number) {
+        super.update(dt);
+        const [minX, maxX, x] = [0, screenResolution.width - this.width, Mouse.getX() - this.width/2];
+        const newX = clamp(x, minX, maxX);
+        this.move(newX + this.width, this.pivot.position.y, newX, this.pivot.position.y);
+
+        [this.stage.x, this.stage.y] = this.endPos.toTuple();
+        this.stage.width = this.width;
+    }
+
+    onCollide = ({ collidedShape }) => {
+        super.onCollide({ collidedShape });
+        if (collidedShape.tags.has('ball')) {
+            this.onCollideBall();
+        }
     }
 
     onCollideBall() {

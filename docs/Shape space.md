@@ -1,6 +1,6 @@
-# Shape space update method
+# Shape space methods
 
-Pseudocode for the ShapeSpace update method.
+Pseudocode for the ShapeSpace public methods.
 
 ```js
 shapeSpace.add(shape) {
@@ -21,12 +21,20 @@ shapeSpace.update() {
         for (j = (i+1)...shapes.length) {
             const distance, direction = gjk(shapes[i], shapes[j]);
             if (distance == 0) {
-                shapes[i].onCollide(shapes[j]);
+                if (!shapes[i].collidingShapes.has(shapes[j])) {
+                    shapes[i].onCollide(shapes[j]) {
+                        shapes[i].collidingShapes.add(shapes[j]);
+                        ...
+                    };
+                }
                 shapes[j].onCollide(shapes[i]);
+                continue;
             } else if ((shapes[i].pivot.velocity - shapes[j].velocity) * direction > distance) {
                 const p = distance / ((shapes[i].pivot.velocity - shapes[j].velocity)*direction);
                 dt = Math.min(dt, p);
             }
+            shapes[i].collidingShapes.remove(shapes[j]);
+            shapes[j].collidingShapes.remove(shapes[i]);
         }
     }
     for (i = 0...shapes.length) {

@@ -5,6 +5,7 @@ abstract class ShapeImplementation implements IShape {
     pivot: { position: Vec2; velocity: Vec2; acceleration: Vec2; };
     tags: Set<string>;
     shapeSpace: IShapeSpace;
+    collidingShapes: Set<IShape>;
 
     constructor() {
         this.pivot = {
@@ -13,6 +14,7 @@ abstract class ShapeImplementation implements IShape {
             acceleration: new Vec2(0, 0)
         }
         this.tags = new Set<string>();
+        this.collidingShapes = new Set();
     }
 
     supportFunction(direction: Vec2): Vec2 {
@@ -26,7 +28,7 @@ abstract class ShapeImplementation implements IShape {
     }
 
     onCollide(e: CollisionEvent): void {
-        
+        this.collidingShapes.add(e.collidedShape);
     }
 
     onAddToSpace() {

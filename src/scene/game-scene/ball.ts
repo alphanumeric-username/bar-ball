@@ -20,65 +20,56 @@ type BallState = {
 
 type BallStateFilter = 'acceleration.dir' | 'acceleration.length' | 'velocity.dir' | 'velocity.length' | 'position';
 
-class Ball extends Container {
+class Ball extends Circle {
 
-    readonly hitbox: Circle;
-
-    currentCollidingLine: Line;
-    colliding: boolean;
+    readonly stage: Container;
     color: number = colors.primary;
 
     justReflected: boolean = false;
 
     constructor(radius: number) {
-        super();
-        this.hitbox = new Circle(this.x, this.y, radius);
-        this.hitbox.tags.add('ball');
-        this.hitbox.onCollide = (e) => {
-            this._onCollide(e);
-        }
+        super(0, 0, radius);
         
-        this.hitbox.pivot.velocity = new Vec2(-6*Math.random() + 3, 0);
-        this.hitbox.pivot.acceleration = new Vec2(0, 0.25);
+        this.tags.add('ball');
+        this.pivot.velocity = new Vec2(-6*Math.random() + 3, 0);
+        this.pivot.acceleration = new Vec2(0, 0.25);
+        
+        this.stage = new Container();
         this._createGraphics();
     }
 
     private _createGraphics() {
         const circle = new Graphics();
         circle.beginFill(this.color);
-        circle.drawCircle(0, 0, this.hitbox.radius);
+        circle.drawCircle(0, 0, this.radius);
         circle.endFill();
-        this.addChild(circle);
+        this.stage.addChild(circle);
     }
 
     private _clearGraphics() {
-        this.removeChildren();
+        this.stage.removeChildren();
     }
 
-    recreate(radius: number = this.hitbox.radius, color: number = this.color) {
+    recreate(radius: number = this.radius, color: number = this.color) {
 
-        this.hitbox.radius = radius;
+        this.radius = radius;
         this.color = color;
 
-        const children = this.children.slice(1);
+        const children = this.stage.children.slice(1);
 
         this._clearGraphics();
         this._createGraphics();
 
-        children.forEach(c => this.addChild(c));
+        children.forEach(c => this.stage.addChild(c));
     }
 
-    update() {
-        if (this.colliding) {
-            this.colliding = false;
-        } else {
-            this.currentCollidingLine = null;
-        }
+    update(dt: number) {
         if (this.justReflected) {
             this.justReflected = false;
+        } else {
+            super.update(dt);
         }
-
-        [this.x, this.y] = this.hitbox.pivot.position.toTuple();
+        [this.stage.x, this.stage.y] = this.pivot.position.toTuple();
     }
 
     reflect(normal: Vec2, bounciness: number = 1) {
@@ -86,31 +77,29 @@ class Ball extends Container {
         const newVel = Vec2.scale(
             bounciness,
             Vec2.sub(
-                this.hitbox.pivot.velocity,
-                Vec2.scale(2*Vec2.dot(this.hitbox.pivot.velocity, normal), normal)
+                this.pivot.velocity,
+                Vec2.scale(2*Vec2.dot(this.pivot.velocity, normal), normal)
             )
         );
-        this.hitbox.pivot.velocity = newVel;
+        this.pivot.velocity = newVel;
     }
 
     setVelocityLength(length: number) {
-        this.hitbox.pivot.velocity = Vec2.scale(
+        this.pivot.velocity = Vec2.scale(
             length,
-            Vec2.normalize(this.hitbox.pivot.velocity)
+            Vec2.normalize(this.pivot.velocity)
         );
     }
 
     getVelocityLength(): number {
-        return Vec2.norm(this.hitbox.pivot.velocity);
+        return Vec2.norm(this.pivot.velocity);
     }
 
-    private _onCollide({ collidedShape }: CollisionEvent) {
-        this.colliding = true;
+    onCollide({ collidedShape }: CollisionEvent) {
+        super.onCollide({ collidedShape });
         const tags = collidedShape.tags;
-        if (this.currentCollidingLine == collidedShape) {
-            return;
-        }
-        else if (tags.has('lose')) {
+
+        if (tags.has('lose')) {
             playNote('basic-wave', 440*Math.pow(2, -21/12), 0.1, { type: 'sawtooth' });
             this.onLose();
         }
@@ -124,15 +113,13 @@ class Ball extends Container {
             } else {
                 playNote('basic-wave', 440*Math.pow(2, randomElement([-9, -5])/12), 0.1, { type: 'sawtooth' });
             }
-
-            this.currentCollidingLine = collidedShape;
         }
     }
 
     private _collidedWithBar(bar: Line) {
         const maxDeviation = 0.5;
-        const currentVelocityLength = Vec2.norm(this.hitbox.pivot.velocity);
-        const currentPosition = new Vec2(this.x, this.y);
+        const currentVelocityLength = Vec2.norm(this.pivot.velocity);
+        const currentPosition = this.pivot.position;
         const barOrigin = bar.getMiddlePoint();
         const barCurrentPosition = Vec2.sub(currentPosition, barOrigin);
         const barTangent = Vec2.normalize(Vec2.sub(bar.endPos, barOrigin));
@@ -143,7 +130,7 @@ class Ball extends Container {
             Vec2.scale(deviation, barTangent)
         );
 
-        this.hitbox.pivot.velocity = newVelocity;
+        this.pivot.velocity = newVelocity;
 
         this.setVelocityLength(Math.max(currentVelocityLength, 15));
     }
@@ -163,19 +150,19 @@ class Ball extends Container {
         for (const f of filter) {
             switch(f) {
                 case 'acceleration.dir':
-                    state.acceleration.dir = Vec2.normalize(this.hitbox.pivot.acceleration);
+                    state.acceleration.dir = Vec2.normalize(this.pivot.acceleration);
                     break;
                 case 'acceleration.length':
-                    state.acceleration.length = Vec2.norm(this.hitbox.pivot.acceleration);
+                    state.acceleration.length = Vec2.norm(this.pivot.acceleration);
                     break;
                 case 'velocity.dir':
-                    state.velocity.dir = Vec2.normalize(this.hitbox.pivot.velocity);
+                    state.velocity.dir = Vec2.normalize(this.pivot.velocity);
                     break;
                 case 'velocity.length':
-                    state.velocity.length = Vec2.norm(this.hitbox.pivot.velocity);
+                    state.velocity.length = Vec2.norm(this.pivot.velocity);
                     break;
                 case 'position':
-                    state.position = new Vec2(this.x, this.y);
+                    state.position = new Vec2(this.pivot.position.x, this.pivot.position.y);
             }
         }
         return state;
@@ -183,8 +170,8 @@ class Ball extends Container {
 
     setState(state: BallState) {
         if (state.acceleration) {
-            var newAccelerationDir = Vec2.normalize(this.hitbox.pivot.acceleration);
-            var newAccelerationLength = Vec2.norm(this.hitbox.pivot.acceleration);
+            var newAccelerationDir = Vec2.normalize(this.pivot.acceleration);
+            var newAccelerationLength = Vec2.norm(this.pivot.acceleration);
 
             if (state.acceleration.dir != null && state.acceleration.dir != undefined) {
                 newAccelerationDir = state.acceleration.dir;
@@ -193,14 +180,14 @@ class Ball extends Container {
                 newAccelerationLength = state.acceleration.length;
             }
 
-            this.hitbox.pivot.acceleration = Vec2.scale(
+            this.pivot.acceleration = Vec2.scale(
                 newAccelerationLength,
                 newAccelerationDir
             );
         }
         if (state.velocity) {
-            var newVelocityDir = Vec2.normalize(this.hitbox.pivot.velocity);
-            var newVelocityLength = Vec2.norm(this.hitbox.pivot.velocity);
+            var newVelocityDir = Vec2.normalize(this.pivot.velocity);
+            var newVelocityLength = Vec2.norm(this.pivot.velocity);
 
             if (state.velocity.dir != null && state.velocity.dir != undefined) {
                 newVelocityDir = state.velocity.dir;
@@ -209,13 +196,13 @@ class Ball extends Container {
                 newVelocityLength = state.velocity.length;
             }
 
-            this.hitbox.pivot.velocity = Vec2.scale(
+            this.pivot.velocity = Vec2.scale(
                 newVelocityLength,
                 newVelocityDir
             );
         }
         if (state.position != null && state.position != undefined) {
-            [this.x, this.y] = state.position.toTuple();
+            this.pivot.position = state.position;
         }
     }
 

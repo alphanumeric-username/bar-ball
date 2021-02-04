@@ -41,7 +41,7 @@ class RandomBarEvent extends EventImplementation {
         switch(this.state) {
             case 'starting':
                 this.barGraphics.alpha = clamp(this.elapsedTime / this.startTime, 0, 1);
-                if (this.elapsedTime >= this.startTime && !this._isTouchingBall()) {
+                if (this.elapsedTime >= this.startTime && !this.barShape.collidingShapes.has(this.currentScene.ball)) {
                     this._initShapeGroup();
                     this.state = 'started';
                     this.elapsedTime = 0;
@@ -84,7 +84,6 @@ class RandomBarEvent extends EventImplementation {
             width, this.height,
             rotation
         );
-        // this.barShape.sides.forEach(s => s.group.add('reflective'));
         this.currentScene.shapeSpace.add(this.barShape);
         this.barShape.sides.forEach(s => {
             s.onCollide = ({ collidedShape }) => {
@@ -98,7 +97,8 @@ class RandomBarEvent extends EventImplementation {
     }
 
     private _isTouchingBall(): boolean {
-        return this.lastCollidedShape != null && this.lastCollidedShape.tags.has('ball') || this.barShape.pointIsInside(this.currentScene.ball.x, this.currentScene.ball.y);
+        return this.lastCollidedShape != null && this.lastCollidedShape.tags.has('ball')
+               || this.barShape.pointIsInside(this.currentScene.ball.pivot.position.x, this.currentScene.ball.pivot.position.y);
     }
 
     private _createGraphics() {

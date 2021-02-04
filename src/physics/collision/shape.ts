@@ -15,6 +15,7 @@ interface IShape {
     pivot: Particle;
     tags?: Set<string>;
     shapeSpace: IShapeSpace;
+    collidingShapes: Set<IShape>;
     
     supportFunction(direction: Vec2): Vec2;
     update(dt: number): void;

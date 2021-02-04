@@ -1,5 +1,6 @@
-<diagram program="umletino" version="14.4.0-SNAPSHOT"><zoom_level>10</zoom_level><element><id>UMLClass</id><coordinates><x>328</x><y>210</y><w>240</w><h>160</h></coordinates><panel_attributes>Shape
+<diagram program="umletino" version="14.4.0-SNAPSHOT"><zoom_level>10</zoom_level><element><id>UMLClass</id><coordinates><x>328</x><y>150</y><w>240</w><h>190</h></coordinates><panel_attributes>Shape
 --
++ collidingShapes: Set&lt;Shape&gt;
 + tags: Set&lt;String&gt;
 + shapeSpace: ShapeSpace
 + pivot: Particle
@@ -8,28 +9,28 @@
 + supportFunction (direction: Vec2): Vec2
 + onCollide (CollisionEvent): Void
 + onAddToSpace (): Void
-+ onRemoveFromSpace (): Void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>598</x><y>210</y><w>200</w><h>30</h></coordinates><panel_attributes>GJK (Shape, Shape): [Float, Vec2]</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>438</x><y>30</y><w>180</w><h>90</h></coordinates><panel_attributes>ShapeSpace
++ onRemoveFromSpace (): Void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>598</x><y>150</y><w>200</w><h>30</h></coordinates><panel_attributes>GJK (Shape, Shape): [Float, Vec2]</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>438</x><y>0</y><w>180</w><h>90</h></coordinates><panel_attributes>ShapeSpace
 --
 - shapes: Shape[]
 --
 + update(): Void
 + add(shape: IShape): Void
-+ remove(shape: IShape): Void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>48</x><y>210</y><w>170</w><h>60</h></coordinates><panel_attributes>CollisionEvent
++ remove(shape: IShape): Void</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>48</x><y>180</y><w>170</w><h>60</h></coordinates><panel_attributes>CollisionEvent
 --
-+ collidedShape: IShape</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>208</x><y>230</y><w>140</w><h>30</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>10;10;120;10</additional_attributes></element><element><id>Relation</id><coordinates><x>418</x><y>110</y><w>100</w><h>120</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>10;100;80;10</additional_attributes></element><element><id>Relation</id><coordinates><x>558</x><y>110</y><w>100</w><h>120</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>80;100;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>48</x><y>280</y><w>150</w><h>80</h></coordinates><panel_attributes>Particle
++ collidedShape: IShape</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>208</x><y>200</y><w>140</w><h>30</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>10;10;120;10</additional_attributes></element><element><id>Relation</id><coordinates><x>418</x><y>80</y><w>100</w><h>90</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>10;70;80;10</additional_attributes></element><element><id>Relation</id><coordinates><x>558</x><y>80</y><w>100</w><h>90</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>80;70;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>48</x><y>250</y><w>150</w><h>80</h></coordinates><panel_attributes>Particle
 --
 + position: Vec2
 + velocity: Vec2
-+ acceleration: Vec2</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>190</x><y>310</y><w>160</w><h>30</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>10;10;140;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>360</x><y>480</y><w>170</w><h>80</h></coordinates><panel_attributes>Line
++ acceleration: Vec2</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>190</x><y>280</y><w>160</w><h>30</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>10;10;140;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>360</x><y>450</y><w>170</w><h>80</h></coordinates><panel_attributes>Line
 --
 + start: Vec2 = center.position
 + end: Vec2
 --
-+ getNormal()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>600</x><y>480</y><w>110</w><h>90</h></coordinates><panel_attributes>Rectangle
++ getNormal()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>600</x><y>450</y><w>110</w><h>90</h></coordinates><panel_attributes>Rectangle
 --
 + width: Double
 + height: Double
 + rotation: Double
-- sides: Line[4]</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>200</x><y>480</y><w>100</w><h>50</h></coordinates><panel_attributes>Circle
+- sides: Line[4]</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>200</x><y>450</y><w>100</w><h>50</h></coordinates><panel_attributes>Circle
 --
-+ radius: number</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>270</x><y>360</y><w>100</w><h>140</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>80;10;10;120</additional_attributes></element><element><id>Relation</id><coordinates><x>540</x><y>360</y><w>110</w><h>140</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>10;10;90;120</additional_attributes></element><element><id>Relation</id><coordinates><x>440</x><y>360</y><w>30</w><h>140</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>10;10;10;120</additional_attributes></element><element><id>Relation</id><coordinates><x>520</x><y>510</y><w>100</w><h>30</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>10;10;80;10</additional_attributes></element></diagram>
++ radius: number</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>270</x><y>330</y><w>100</w><h>140</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>80;10;10;120</additional_attributes></element><element><id>Relation</id><coordinates><x>540</x><y>330</y><w>110</w><h>140</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>10;10;90;120</additional_attributes></element><element><id>Relation</id><coordinates><x>440</x><y>330</y><w>30</w><h>140</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>10;10;10;120</additional_attributes></element><element><id>Relation</id><coordinates><x>520</x><y>480</y><w>100</w><h>30</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>10;10;80;10</additional_attributes></element></diagram>

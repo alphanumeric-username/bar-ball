@@ -708,7 +708,7 @@ var Line = /** @class */ (function (_super) {
         var normalizedDirection = _super.prototype.supportFunction.call(this, direction);
         var lineVector = vec2_1["default"].sub(this.endPos, this.pivot.position);
         var dirDotLine = vec2_1["default"].dot(normalizedDirection, lineVector);
-        var localVector = vec2_1["default"].scale(util_1.clamp(dirDotLine, 0, vec2_1["default"].norm(lineVector)), normalizedDirection);
+        var localVector = vec2_1["default"].scale(util_1.clamp(dirDotLine, 0, vec2_1["default"].norm(lineVector)), vec2_1["default"].normalize(lineVector));
         return vec2_1["default"].add(localVector, this.pivot.position);
     };
     return Line;
@@ -745,8 +745,11 @@ var line_1 = require("./line");
 var shape_implementation_1 = require("./shape-implementation");
 var RectangleSide = /** @class */ (function (_super) {
     __extends(RectangleSide, _super);
-    function RectangleSide() {
-        return _super !== null && _super.apply(this, arguments) || this;
+    function RectangleSide(x_start, y_start, x_end, y_end, parent) {
+        var _this = _super.call(this, x_start, y_start, x_end, y_end) || this;
+        _this.parentRectangle = parent;
+        _this.collidingShapes = parent.collidingShapes;
+        return _this;
     }
     return RectangleSide;
 }(line_1["default"]));
@@ -764,10 +767,10 @@ var Rectangle = /** @class */ (function (_super) {
         var p3 = vec2_1["default"].add(_this.pivot.position, _this.heightVec);
         var p4 = vec2_1["default"].add(p2, _this.heightVec);
         _this.sides = [
-            new RectangleSide(p1.x, p1.y, p3.x, p3.y),
-            new RectangleSide(p2.x, p2.y, p1.x, p1.y),
-            new RectangleSide(p4.x, p4.y, p2.x, p2.y),
-            new RectangleSide(p3.x, p3.y, p4.x, p4.y),
+            new RectangleSide(p1.x, p1.y, p3.x, p3.y, _this),
+            new RectangleSide(p2.x, p2.y, p1.x, p1.y, _this),
+            new RectangleSide(p4.x, p4.y, p2.x, p2.y, _this),
+            new RectangleSide(p3.x, p3.y, p4.x, p4.y, _this),
         ];
         _this.points = [p1, p2, p4, p3];
         return _this;
@@ -829,6 +832,7 @@ var ShapeImplementation = /** @class */ (function () {
             acceleration: new vec2_1["default"](0, 0)
         };
         this.tags = new Set();
+        this.collidingShapes = new Set();
     }
     ShapeImplementation.prototype.supportFunction = function (direction) {
         return vec2_1["default"].normalize(direction);
@@ -840,6 +844,7 @@ var ShapeImplementation = /** @class */ (function () {
         this.pivot.velocity = vec2_1["default"].add(this.pivot.velocity, dVelocity);
     };
     ShapeImplementation.prototype.onCollide = function (e) {
+        this.collidingShapes.add(e.collidedShape);
     };
     ShapeImplementation.prototype.onAddToSpace = function () {
     };
@@ -877,15 +882,17 @@ var ShapeSpace = /** @class */ (function () {
         }
         this.shapes.pop();
     };
-    ShapeSpace.prototype.update = function (dt) {
+    ShapeSpace.prototype.update = function (dt, lastDt) {
         if (dt === void 0) { dt = 1; }
+        if (lastDt === void 0) { lastDt = 1; }
         for (var i = 0; i < this.shapes.length; i++) {
             for (var j = i + 1; j < this.shapes.length; j++) {
                 var _a = gjk_1["default"](this.shapes[i], this.shapes[j]), distance = _a[0], direction = _a[1];
-                // console.log(this.shapes[i], this.shapes[j], distance, direction);
                 if (distance == 0) {
-                    this.shapes[i].onCollide({ collidedShape: this.shapes[j] });
-                    this.shapes[j].onCollide({ collidedShape: this.shapes[i] });
+                    if (!this.shapes[i].collidingShapes.has(this.shapes[j])) {
+                        this.shapes[i].onCollide({ collidedShape: this.shapes[j] });
+                        this.shapes[j].onCollide({ collidedShape: this.shapes[i] });
+                    }
                     continue;
                 }
                 var velocity = vec2_1["default"].sub(this.shapes[i].pivot.velocity, this.shapes[j].pivot.velocity);
@@ -893,14 +900,16 @@ var ShapeSpace = /** @class */ (function () {
                 if (velocityDotDirection > distance) {
                     dt = Math.min(dt, distance / velocityDotDirection);
                 }
+                this.shapes[i].collidingShapes["delete"](this.shapes[j]);
+                this.shapes[j].collidingShapes["delete"](this.shapes[i]);
             }
         }
         this.shapes.forEach(function (shape) {
             shape.update(dt);
         });
-        // if (dt < 1) {
-        //     this.update(1 - dt);
-        // }
+        if (dt > 0 && dt < lastDt) {
+            this.update(1 - dt, 1 - dt);
+        }
     };
     return ShapeSpace;
 }());
@@ -1161,30 +1170,27 @@ var GameScene = /** @class */ (function (_super) {
         this.topBound.tags.add('reflective');
         this.rightBound.tags.add('reflective');
         this.bottomBound.tags.add('lose');
-        // this.shapeSpace.add(this.leftBound);
-        // this.shapeSpace.add(this.topBound);
-        // this.shapeSpace.add(this.rightBound);
-        // this.shapeSpace.add(this.bottomBound);
+        this.shapeSpace.add(this.leftBound);
+        this.shapeSpace.add(this.topBound);
+        this.shapeSpace.add(this.rightBound);
+        this.shapeSpace.add(this.bottomBound);
     };
     GameScene.prototype._createBar = function () {
         var _this = this;
-        this.bar = new bar_1["default"]();
-        this.bar.y = app_1.screenResolution.height - this.bar.height - 10;
-        this.bar.hitbox.pivot.position = new vec2_1["default"](0, app_1.screenResolution.height - this.bar.height - 10);
+        this.bar = new bar_1["default"](app_1.screenResolution.height - 32 - 10);
+        this.bar.pivot.position = new vec2_1["default"](0, app_1.screenResolution.height - this.bar.height - 10);
         this.bar.onCollideBall = function () {
             _this.scoreDisplay.add();
             _this.eventManager.onScoreChange({ score: _this.scoreDisplay.getScore() });
             _this.centerX(_this.scoreDisplay);
         };
-        this.shapeSpace.add(this.bar.hitbox);
-        this.stage.addChild(this.bar);
+        this.shapeSpace.add(this.bar);
+        this.stage.addChild(this.bar.stage);
     };
     GameScene.prototype._createBall = function () {
         var _this = this;
         this.ball = new ball_1["default"](16);
-        this.ball.x = (app_1.screenResolution.width - this.ball.x) / 2;
-        this.ball.y = (app_1.screenResolution.height - this.ball.y) / 2;
-        this.ball.hitbox.pivot.position = new vec2_1["default"](this.ball.x, this.ball.y);
+        this.ball.pivot.position = new vec2_1["default"]((app_1.screenResolution.width - this.ball.pivot.position.x) / 2, (app_1.screenResolution.height - this.ball.pivot.position.y) / 2);
         this.ball.onLose = function () {
             _this.eventManager.gameOver();
             _this.cleanup();
@@ -1192,8 +1198,8 @@ var GameScene = /** @class */ (function (_super) {
                 _this.sceneManager.changeScene(game_over_scene_1["default"], { score: _this.scoreDisplay.getScore(), previousScene: GameScene });
             });
         };
-        this.shapeSpace.add(this.ball.hitbox);
-        this.stage.addChild(this.ball);
+        this.shapeSpace.add(this.ball);
+        this.stage.addChild(this.ball.stage);
     };
     GameScene.prototype._createScoreDisplay = function () {
         this.scoreDisplay = new score_display_1["default"]();
@@ -1251,8 +1257,6 @@ var GameScene = /** @class */ (function (_super) {
                 requestAnimationFrame(function () { return _this.update(); });
                 break;
             case 'running':
-                this.bar.update();
-                this.ball.update();
                 this.shapeSpace.update();
                 this.eventManager.update(this.dt);
                 requestAnimationFrame(function () { return _this.update(); });
@@ -1329,73 +1333,64 @@ var util_1 = require("../../math/util");
 var Ball = /** @class */ (function (_super) {
     __extends(Ball, _super);
     function Ball(radius) {
-        var _this = _super.call(this) || this;
+        var _this = _super.call(this, 0, 0, radius) || this;
         _this.color = constants_1.colors.primary;
         _this.justReflected = false;
-        _this.hitbox = new collision_1.Circle(_this.x, _this.y, radius);
-        _this.hitbox.tags.add('ball');
-        _this.hitbox.onCollide = function (e) {
-            _this._onCollide(e);
-        };
-        _this.hitbox.pivot.velocity = new vec2_1["default"](-6 * Math.random() + 3, 0);
-        _this.hitbox.pivot.acceleration = new vec2_1["default"](0, 0.25);
+        _this.tags.add('ball');
+        _this.pivot.velocity = new vec2_1["default"](-6 * Math.random() + 3, 0);
+        _this.pivot.acceleration = new vec2_1["default"](0, 0.25);
+        _this.stage = new pixi_js_1.Container();
         _this._createGraphics();
         return _this;
     }
     Ball.prototype._createGraphics = function () {
         var circle = new pixi_js_1.Graphics();
         circle.beginFill(this.color);
-        circle.drawCircle(0, 0, this.hitbox.radius);
+        circle.drawCircle(0, 0, this.radius);
         circle.endFill();
-        this.addChild(circle);
+        this.stage.addChild(circle);
     };
     Ball.prototype._clearGraphics = function () {
-        this.removeChildren();
+        this.stage.removeChildren();
     };
     Ball.prototype.recreate = function (radius, color) {
         var _this = this;
-        if (radius === void 0) { radius = this.hitbox.radius; }
+        if (radius === void 0) { radius = this.radius; }
         if (color === void 0) { color = this.color; }
-        this.hitbox.radius = radius;
+        this.radius = radius;
         this.color = color;
-        var children = this.children.slice(1);
+        var children = this.stage.children.slice(1);
         this._clearGraphics();
         this._createGraphics();
-        children.forEach(function (c) { return _this.addChild(c); });
+        children.forEach(function (c) { return _this.stage.addChild(c); });
     };
-    Ball.prototype.update = function () {
+    Ball.prototype.update = function (dt) {
         var _a;
-        if (this.colliding) {
-            this.colliding = false;
-        }
-        else {
-            this.currentCollidingLine = null;
-        }
         if (this.justReflected) {
             this.justReflected = false;
         }
-        _a = this.hitbox.pivot.position.toTuple(), this.x = _a[0], this.y = _a[1];
+        else {
+            _super.prototype.update.call(this, dt);
+        }
+        _a = this.pivot.position.toTuple(), this.stage.x = _a[0], this.stage.y = _a[1];
     };
     Ball.prototype.reflect = function (normal, bounciness) {
         if (bounciness === void 0) { bounciness = 1; }
         this.justReflected = true;
-        var newVel = vec2_1["default"].scale(bounciness, vec2_1["default"].sub(this.hitbox.pivot.velocity, vec2_1["default"].scale(2 * vec2_1["default"].dot(this.hitbox.pivot.velocity, normal), normal)));
-        this.hitbox.pivot.velocity = newVel;
+        var newVel = vec2_1["default"].scale(bounciness, vec2_1["default"].sub(this.pivot.velocity, vec2_1["default"].scale(2 * vec2_1["default"].dot(this.pivot.velocity, normal), normal)));
+        this.pivot.velocity = newVel;
     };
     Ball.prototype.setVelocityLength = function (length) {
-        this.hitbox.pivot.velocity = vec2_1["default"].scale(length, vec2_1["default"].normalize(this.hitbox.pivot.velocity));
+        this.pivot.velocity = vec2_1["default"].scale(length, vec2_1["default"].normalize(this.pivot.velocity));
     };
     Ball.prototype.getVelocityLength = function () {
-        return vec2_1["default"].norm(this.hitbox.pivot.velocity);
+        return vec2_1["default"].norm(this.pivot.velocity);
     };
-    Ball.prototype._onCollide = function (_a) {
+    Ball.prototype.onCollide = function (_a) {
         var collidedShape = _a.collidedShape;
-        this.colliding = true;
+        _super.prototype.onCollide.call(this, { collidedShape: collidedShape });
         var tags = collidedShape.tags;
-        if (this.currentCollidingLine == collidedShape) {
-            return;
-        }
-        else if (tags.has('lose')) {
+        if (tags.has('lose')) {
             audio_1.playNote('basic-wave', 440 * Math.pow(2, -21 / 12), 0.1, { type: 'sawtooth' });
             this.onLose();
         }
@@ -1409,19 +1404,18 @@ var Ball = /** @class */ (function (_super) {
             else {
                 audio_1.playNote('basic-wave', 440 * Math.pow(2, util_1.randomElement([-9, -5]) / 12), 0.1, { type: 'sawtooth' });
             }
-            this.currentCollidingLine = collidedShape;
         }
     };
     Ball.prototype._collidedWithBar = function (bar) {
         var maxDeviation = 0.5;
-        var currentVelocityLength = vec2_1["default"].norm(this.hitbox.pivot.velocity);
-        var currentPosition = new vec2_1["default"](this.x, this.y);
+        var currentVelocityLength = vec2_1["default"].norm(this.pivot.velocity);
+        var currentPosition = this.pivot.position;
         var barOrigin = bar.getMiddlePoint();
         var barCurrentPosition = vec2_1["default"].sub(currentPosition, barOrigin);
         var barTangent = vec2_1["default"].normalize(vec2_1["default"].sub(bar.endPos, barOrigin));
         var deviation = maxDeviation * vec2_1["default"].dot(vec2_1["default"].normalize(barCurrentPosition), barTangent);
         var newVelocity = vec2_1["default"].add(bar.getNormal(), vec2_1["default"].scale(deviation, barTangent));
-        this.hitbox.pivot.velocity = newVelocity;
+        this.pivot.velocity = newVelocity;
         this.setVelocityLength(Math.max(currentVelocityLength, 15));
     };
     Ball.prototype.getState = function (filter) {
@@ -1441,55 +1435,54 @@ var Ball = /** @class */ (function (_super) {
             var f = filter_1[_i];
             switch (f) {
                 case 'acceleration.dir':
-                    state.acceleration.dir = vec2_1["default"].normalize(this.hitbox.pivot.acceleration);
+                    state.acceleration.dir = vec2_1["default"].normalize(this.pivot.acceleration);
                     break;
                 case 'acceleration.length':
-                    state.acceleration.length = vec2_1["default"].norm(this.hitbox.pivot.acceleration);
+                    state.acceleration.length = vec2_1["default"].norm(this.pivot.acceleration);
                     break;
                 case 'velocity.dir':
-                    state.velocity.dir = vec2_1["default"].normalize(this.hitbox.pivot.velocity);
+                    state.velocity.dir = vec2_1["default"].normalize(this.pivot.velocity);
                     break;
                 case 'velocity.length':
-                    state.velocity.length = vec2_1["default"].norm(this.hitbox.pivot.velocity);
+                    state.velocity.length = vec2_1["default"].norm(this.pivot.velocity);
                     break;
                 case 'position':
-                    state.position = new vec2_1["default"](this.x, this.y);
+                    state.position = new vec2_1["default"](this.pivot.position.x, this.pivot.position.y);
             }
         }
         return state;
     };
     Ball.prototype.setState = function (state) {
-        var _a;
         if (state.acceleration) {
-            var newAccelerationDir = vec2_1["default"].normalize(this.hitbox.pivot.acceleration);
-            var newAccelerationLength = vec2_1["default"].norm(this.hitbox.pivot.acceleration);
+            var newAccelerationDir = vec2_1["default"].normalize(this.pivot.acceleration);
+            var newAccelerationLength = vec2_1["default"].norm(this.pivot.acceleration);
             if (state.acceleration.dir != null && state.acceleration.dir != undefined) {
                 newAccelerationDir = state.acceleration.dir;
             }
             if (state.acceleration.length != null && state.acceleration.length != undefined) {
                 newAccelerationLength = state.acceleration.length;
             }
-            this.hitbox.pivot.acceleration = vec2_1["default"].scale(newAccelerationLength, newAccelerationDir);
+            this.pivot.acceleration = vec2_1["default"].scale(newAccelerationLength, newAccelerationDir);
         }
         if (state.velocity) {
-            var newVelocityDir = vec2_1["default"].normalize(this.hitbox.pivot.velocity);
-            var newVelocityLength = vec2_1["default"].norm(this.hitbox.pivot.velocity);
+            var newVelocityDir = vec2_1["default"].normalize(this.pivot.velocity);
+            var newVelocityLength = vec2_1["default"].norm(this.pivot.velocity);
             if (state.velocity.dir != null && state.velocity.dir != undefined) {
                 newVelocityDir = state.velocity.dir;
             }
             if (state.velocity.length != null && state.velocity.length != undefined) {
                 newVelocityLength = state.velocity.length;
             }
-            this.hitbox.pivot.velocity = vec2_1["default"].scale(newVelocityLength, newVelocityDir);
+            this.pivot.velocity = vec2_1["default"].scale(newVelocityLength, newVelocityDir);
         }
         if (state.position != null && state.position != undefined) {
-            _a = state.position.toTuple(), this.x = _a[0], this.y = _a[1];
+            this.pivot.position = state.position;
         }
     };
     Ball.prototype.onLose = function () {
     };
     return Ball;
-}(pixi_js_1.Container));
+}(collision_1.Circle));
 exports["default"] = Ball;
 
 },{"../../constants":4,"../../math/util":8,"../../math/vec2":9,"../../physics/collision":11,"../../service/audio":41,"pixi.js":92}],22:[function(require,module,exports){
@@ -1516,40 +1509,43 @@ var collision_1 = require("../../physics/collision");
 var util_1 = require("../../math/util");
 var Bar = /** @class */ (function (_super) {
     __extends(Bar, _super);
-    function Bar() {
-        var _this = _super.call(this) || this;
-        _this._createGraphics();
-        _this.hitbox = new collision_1.Line(_this.x + 128, _this.y, _this.x, _this.y);
-        _this.hitbox.tags.add('bar');
-        _this.hitbox.tags.add('reflective');
-        _this.hitbox.onCollide = function (_a) {
+    function Bar(y) {
+        var _this = _super.call(this, 128, y, 0, y) || this;
+        _this.onCollide = function (_a) {
             var collidedShape = _a.collidedShape;
+            _super.prototype.onCollide.call(_this, { collidedShape: collidedShape });
             if (collidedShape.tags.has('ball')) {
                 _this.onCollideBall();
             }
         };
-        _this.hitbox.update = function (dt) {
-            var _a = [0, app_1.screenResolution.width - _this.width, mouse_1["default"].getX() - _this.width / 2], minX = _a[0], maxX = _a[1], x = _a[2];
-            var newX = util_1.clamp(x, minX, maxX);
-            _this.hitbox.move(newX + _this.width, _this.hitbox.pivot.position.y, newX, _this.hitbox.pivot.position.y);
-        };
+        _this.width = 128;
+        _this.height = 16;
+        _this.stage = new pixi_js_1.Container();
+        _this._createGraphics();
+        _this.tags.add('bar');
+        _this.tags.add('reflective');
         return _this;
     }
     Bar.prototype._createGraphics = function () {
         var rect = new pixi_js_1.Graphics();
         rect.beginFill(constants_1.colors.primary);
-        rect.drawRect(0, 0, 128, 32);
+        rect.drawRect(0, 0, this.width, this.height);
         rect.endFill();
-        this.addChild(rect);
+        this.stage.addChild(rect);
     };
-    Bar.prototype.update = function () {
+    Bar.prototype.update = function (dt) {
         var _a;
-        _a = this.hitbox.endPos.toTuple(), this.x = _a[0], this.y = _a[1];
+        _super.prototype.update.call(this, dt);
+        var _b = [0, app_1.screenResolution.width - this.width, mouse_1["default"].getX() - this.width / 2], minX = _b[0], maxX = _b[1], x = _b[2];
+        var newX = util_1.clamp(x, minX, maxX);
+        this.move(newX + this.width, this.pivot.position.y, newX, this.pivot.position.y);
+        _a = this.endPos.toTuple(), this.stage.x = _a[0], this.stage.y = _a[1];
+        this.stage.width = this.width;
     };
     Bar.prototype.onCollideBall = function () {
     };
     return Bar;
-}(pixi_js_1.Container));
+}(collision_1.Line));
 exports["default"] = Bar;
 
 },{"../../app":1,"../../constants":4,"../../math/util":8,"../../physics/collision":11,"../../service/mouse":45,"pixi.js":92}],23:[function(require,module,exports){
@@ -1662,7 +1658,7 @@ var BallDiminishEvent = /** @class */ (function (_super) {
     BallDiminishEvent.prototype.start = function (scene, duration) {
         console.log('BALL_DIMINISH: start');
         _super.prototype.start.call(this, scene, duration);
-        this.lastRadius = this.currentScene.ball.hitbox.radius;
+        this.lastRadius = this.currentScene.ball.radius;
         this.state = 'starting';
         this.targetRadius = this.diminishFactor * this.lastRadius;
     };
@@ -1807,8 +1803,8 @@ var BarLiftEvent = /** @class */ (function (_super) {
     }
     BarLiftEvent.prototype.start = function (scene, duration) {
         _super.prototype.start.call(this, scene, duration);
-        this.lastY = this.currentScene.bar.y;
-        this.targetY = this.currentScene.bar.y - this.liftAmount;
+        this.lastY = this.currentScene.bar.pivot.position.y;
+        this.targetY = this.currentScene.bar.pivot.position.y - this.liftAmount;
         this.state = 'delay';
     };
     BarLiftEvent.prototype.update = function (dt) {
@@ -1823,7 +1819,7 @@ var BarLiftEvent = /** @class */ (function (_super) {
                 break;
             case 'starting':
                 t = util_1.clamp(this.elapsedTime / this.transitionTime, 0, 1);
-                this.currentScene.bar.hitbox.pivot.position = new vec2_1["default"](this.currentScene.bar.hitbox.pivot.position.x, (1 - t) * this.lastY + t * this.targetY);
+                this.currentScene.bar.pivot.position = new vec2_1["default"](this.currentScene.bar.pivot.position.x, (1 - t) * this.lastY + t * this.targetY);
                 if (this.elapsedTime >= this.transitionTime) {
                     this.state = 'started';
                     this.elapsedTime = 0;
@@ -1837,7 +1833,7 @@ var BarLiftEvent = /** @class */ (function (_super) {
                 break;
             case 'stopping':
                 t = util_1.clamp(this.elapsedTime / this.transitionTime, 0, 1);
-                this.currentScene.bar.hitbox.pivot.position = new vec2_1["default"](this.currentScene.bar.hitbox.pivot.position.x, (1 - t) * this.targetY + t * this.lastY);
+                this.currentScene.bar.pivot.position = new vec2_1["default"](this.currentScene.bar.pivot.position.x, (1 - t) * this.targetY + t * this.lastY);
                 if (this.elapsedTime >= this.transitionTime) {
                     this.stop();
                     this.state = 'stopped';
@@ -2023,11 +2019,11 @@ var NoGravityEvent = /** @class */ (function (_super) {
                 length: 5
             }
         });
-        this.currentScene.ball.recreate(this.currentScene.ball.hitbox.radius, constants_1.colors.primary_cold);
+        this.currentScene.ball.recreate(this.currentScene.ball.radius, constants_1.colors.primary_cold);
     };
     NoGravityEvent.prototype.stop = function () {
         this.currentScene.ball.setState(this._lastBallState);
-        this.currentScene.ball.recreate(this.currentScene.ball.hitbox.radius, constants_1.colors.primary);
+        this.currentScene.ball.recreate(this.currentScene.ball.radius, constants_1.colors.primary);
         console.log('NO_GRAVITY: stop');
         _super.prototype.stop.call(this);
     };
@@ -2199,7 +2195,7 @@ var RandomBarEvent = /** @class */ (function (_super) {
         switch (this.state) {
             case 'starting':
                 this.barGraphics.alpha = util_1.clamp(this.elapsedTime / this.startTime, 0, 1);
-                if (this.elapsedTime >= this.startTime && !this._isTouchingBall()) {
+                if (this.elapsedTime >= this.startTime && !this.barShape.collidingShapes.has(this.currentScene.ball)) {
                     this._initShapeGroup();
                     this.state = 'started';
                     this.elapsedTime = 0;
@@ -2234,7 +2230,6 @@ var RandomBarEvent = /** @class */ (function (_super) {
         var width = Math.random() * (this.maxWidth - this.minWidth) + this.minWidth;
         var rotation = Math.random() * Math.PI / 2 - Math.PI / 4;
         this.barShape = new collision_1.Rectangle(x, y, width, this.height, rotation);
-        // this.barShape.sides.forEach(s => s.group.add('reflective'));
         this.currentScene.shapeSpace.add(this.barShape);
         this.barShape.sides.forEach(function (s) {
             s.onCollide = function (_a) {
@@ -2247,7 +2242,8 @@ var RandomBarEvent = /** @class */ (function (_super) {
         this.barShape.sides.forEach(function (s) { return s.tags.add('reflective'); });
     };
     RandomBarEvent.prototype._isTouchingBall = function () {
-        return this.lastCollidedShape != null && this.lastCollidedShape.tags.has('ball') || this.barShape.pointIsInside(this.currentScene.ball.x, this.currentScene.ball.y);
+        return this.lastCollidedShape != null && this.lastCollidedShape.tags.has('ball')
+            || this.barShape.pointIsInside(this.currentScene.ball.pivot.position.x, this.currentScene.ball.pivot.position.y);
     };
     RandomBarEvent.prototype._createGraphics = function () {
         var _a;
@@ -2288,6 +2284,7 @@ var vec2_1 = require("../../../../math/vec2");
 var geometry_1 = require("../../../../ui/geometry");
 var constants_1 = require("../../../../constants");
 var event_1 = require("../../../../config/event");
+var collision_1 = require("../../../../physics/collision");
 var RandomThrowEvent = /** @class */ (function (_super) {
     __extends(RandomThrowEvent, _super);
     function RandomThrowEvent() {
@@ -2316,7 +2313,9 @@ var RandomThrowEvent = /** @class */ (function (_super) {
         switch (this._state) {
             case 'starting':
                 if (this.elapsedTime >= this.startTime) {
-                    if (this.currentScene.ball.currentCollidingLine != null) {
+                    var collidingLine_1 = false;
+                    this.currentScene.ball.collidingShapes.forEach(function (s) { return collidingLine_1 = collidingLine_1 || s instanceof collision_1.Line; });
+                    if (collidingLine_1) {
                         this.startTime += 0.5;
                         return;
                     }
@@ -2334,7 +2333,7 @@ var RandomThrowEvent = /** @class */ (function (_super) {
                         }
                     });
                     this._state = 'rotating';
-                    this.currentScene.ball.addChild(this.arrow);
+                    this.currentScene.ball.stage.addChild(this.arrow);
                     this.elapsedTime = 0;
                 }
                 break;
@@ -2373,13 +2372,13 @@ var RandomThrowEvent = /** @class */ (function (_super) {
     };
     RandomThrowEvent.prototype._updateGraphics = function () {
         this.arrow.rotation = this._currentAngle;
-        this.arrow.position.set((this.currentScene.ball.hitbox.radius + 4) * Math.cos(this._currentAngle), (this.currentScene.ball.hitbox.radius + 4) * Math.sin(this._currentAngle));
+        this.arrow.position.set((this.currentScene.ball.radius + 4) * Math.cos(this._currentAngle), (this.currentScene.ball.radius + 4) * Math.sin(this._currentAngle));
     };
     return RandomThrowEvent;
 }(event_implementation_1["default"]));
 exports["default"] = RandomThrowEvent;
 
-},{"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":8,"../../../../math/vec2":9,"../../../../ui/geometry":47,"./event-implementation":29}],34:[function(require,module,exports){
+},{"../../../../config/event":2,"../../../../constants":4,"../../../../math/util":8,"../../../../math/vec2":9,"../../../../physics/collision":11,"../../../../ui/geometry":47,"./event-implementation":29}],34:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2429,7 +2428,7 @@ var WindEvent = /** @class */ (function (_super) {
         ]);
         this._createGraphics(direction);
         this.windForce = 0.25;
-        this.currentScene.ball.hitbox.pivot.acceleration = vec2_1["default"].scale(this.windForce, vec2_1["default"].add(this.lastBallState.acceleration.dir, this.windDirection));
+        this.currentScene.ball.pivot.acceleration = vec2_1["default"].scale(this.windForce, vec2_1["default"].add(this.lastBallState.acceleration.dir, this.windDirection));
         // this.bouncyBar.bounciness = 1.1;
     };
     WindEvent.prototype.update = function (dt) {

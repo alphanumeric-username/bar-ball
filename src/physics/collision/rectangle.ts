@@ -6,6 +6,12 @@ import ShapeImplementation from "./shape-implementation";
 
 class RectangleSide extends Line {
     parentRectangle: Rectangle
+
+    constructor(x_start: number, y_start: number, x_end: number, y_end: number, parent: Rectangle) {
+        super(x_start, y_start, x_end, y_end);
+        this.parentRectangle = parent;
+        this.collidingShapes = parent.collidingShapes;
+    }
 }
 
 class Rectangle extends ShapeImplementation {
@@ -33,10 +39,10 @@ class Rectangle extends ShapeImplementation {
         const p4 = Vec2.add(p2, this.heightVec);
 
         this.sides = [
-            new RectangleSide(p1.x, p1.y, p3.x, p3.y),
-            new RectangleSide(p2.x, p2.y, p1.x, p1.y),
-            new RectangleSide(p4.x, p4.y, p2.x, p2.y),
-            new RectangleSide(p3.x, p3.y, p4.x, p4.y),
+            new RectangleSide(p1.x, p1.y, p3.x, p3.y, this),
+            new RectangleSide(p2.x, p2.y, p1.x, p1.y, this),
+            new RectangleSide(p4.x, p4.y, p2.x, p2.y, this),
+            new RectangleSide(p3.x, p3.y, p4.x, p4.y, this),
         ];
 
         this.points = [p1, p2, p4, p3];

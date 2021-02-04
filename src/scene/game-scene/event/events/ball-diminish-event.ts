@@ -20,7 +20,7 @@ class BallDiminishEvent extends EventImplementation {
     start(scene: Scene, duration: number) {
         console.log('BALL_DIMINISH: start');
         super.start(scene, duration);
-        this.lastRadius = this.currentScene.ball.hitbox.radius;
+        this.lastRadius = this.currentScene.ball.radius;
         this.state = 'starting';
         this.targetRadius = this.diminishFactor*this.lastRadius;
     }

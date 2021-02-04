@@ -23,8 +23,8 @@ class BarLiftEvent extends EventImplementation {
     
     start(scene: Scene, duration: number) {
         super.start(scene, duration);
-        this.lastY = this.currentScene.bar.y;
-        this.targetY = this.currentScene.bar.y - this.liftAmount;
+        this.lastY = this.currentScene.bar.pivot.position.y;
+        this.targetY = this.currentScene.bar.pivot.position.y - this.liftAmount;
         this.state = 'delay';
     }
 
@@ -41,7 +41,7 @@ class BarLiftEvent extends EventImplementation {
                 break;
             case 'starting':
                 t = clamp(this.elapsedTime / this.transitionTime, 0, 1);
-                this.currentScene.bar.hitbox.pivot.position = new Vec2(this.currentScene.bar.hitbox.pivot.position.x, (1 - t)*this.lastY + t*this.targetY);
+                this.currentScene.bar.pivot.position = new Vec2(this.currentScene.bar.pivot.position.x, (1 - t)*this.lastY + t*this.targetY);
                 if (this.elapsedTime >= this.transitionTime) {
                     this.state = 'started';
                     this.elapsedTime = 0;
@@ -55,7 +55,7 @@ class BarLiftEvent extends EventImplementation {
                 break;
             case 'stopping':
                 t = clamp(this.elapsedTime / this.transitionTime, 0, 1);
-                this.currentScene.bar.hitbox.pivot.position = new Vec2(this.currentScene.bar.hitbox.pivot.position.x, (1 - t)*this.targetY + t*this.lastY);
+                this.currentScene.bar.pivot.position = new Vec2(this.currentScene.bar.pivot.position.x, (1 - t)*this.targetY + t*this.lastY);
                 if (this.elapsedTime >= this.transitionTime) {
                     this.stop();
                     this.state = 'stopped';

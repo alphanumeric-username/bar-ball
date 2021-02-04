@@ -47,7 +47,7 @@ class WindEvent extends EventImplementation {
         ]);
         this._createGraphics(direction);
         this.windForce = 0.25;
-        this.currentScene.ball.hitbox.pivot.acceleration = Vec2.scale(this.windForce, Vec2.add(
+        this.currentScene.ball.pivot.acceleration = Vec2.scale(this.windForce, Vec2.add(
             this.lastBallState.acceleration.dir,
             this.windDirection
         ));

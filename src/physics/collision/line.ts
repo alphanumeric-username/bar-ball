@@ -57,7 +57,7 @@ class Line extends ShapeImplementation {
 
         const dirDotLine = Vec2.dot(normalizedDirection, lineVector);
 
-        const localVector = Vec2.scale(clamp(dirDotLine, 0, Vec2.norm(lineVector)), normalizedDirection);
+        const localVector = Vec2.scale(clamp(dirDotLine, 0, Vec2.norm(lineVector)), Vec2.normalize(lineVector));
 
         return Vec2.add(localVector, this.pivot.position);
     }

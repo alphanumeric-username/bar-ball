@@ -41,12 +41,12 @@ class NoGravityEvent extends EventImplementation {
                 length: 5
             }
         });
-        this.currentScene.ball.recreate(this.currentScene.ball.hitbox.radius, colors.primary_cold);
+        this.currentScene.ball.recreate(this.currentScene.ball.radius, colors.primary_cold);
     }
     
     stop() {
         this.currentScene.ball.setState(this._lastBallState);
-        this.currentScene.ball.recreate(this.currentScene.ball.hitbox.radius, colors.primary);
+        this.currentScene.ball.recreate(this.currentScene.ball.radius, colors.primary);
         console.log('NO_GRAVITY: stop');
         super.stop();
     }

@@ -8,6 +8,7 @@ import { Container } from "pixi.js";
 import { Triangle } from "../../../../ui/geometry";
 import { colors } from "../../../../constants";
 import { getEventConfig } from "../../../../config/event";
+import { Line } from "../../../../physics/collision";
 
 
 class RandomThrowEvent extends EventImplementation {
@@ -44,7 +45,9 @@ class RandomThrowEvent extends EventImplementation {
         switch(this._state) {
             case 'starting':
                 if (this.elapsedTime >= this.startTime) {
-                    if (this.currentScene.ball.currentCollidingLine != null) {
+                    let collidingLine = false;
+                    this.currentScene.ball.collidingShapes.forEach(s => collidingLine = collidingLine || s instanceof Line);
+                    if (collidingLine) {
                         this.startTime += 0.5;
                         return;
                     }
@@ -62,7 +65,7 @@ class RandomThrowEvent extends EventImplementation {
                         }
                     });
                     this._state = 'rotating';
-                    this.currentScene.ball.addChild(this.arrow);
+                    this.currentScene.ball.stage.addChild(this.arrow);
                     this.elapsedTime = 0;
                 }
                 break;
@@ -111,8 +114,8 @@ class RandomThrowEvent extends EventImplementation {
     private _updateGraphics() {
         this.arrow.rotation = this._currentAngle;
         this.arrow.position.set(
-            (this.currentScene.ball.hitbox.radius + 4)*Math.cos(this._currentAngle),
-            (this.currentScene.ball.hitbox.radius + 4)*Math.sin(this._currentAngle),
+            (this.currentScene.ball.radius + 4)*Math.cos(this._currentAngle),
+            (this.currentScene.ball.radius + 4)*Math.sin(this._currentAngle),
         );
     }
 }
