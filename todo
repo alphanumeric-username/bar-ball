@@ -2,12 +2,15 @@
 - [x] Make a pretty table for leaderboard;
 - [x] Button hovering / clicking indicator;
 - [x] Add screenwide pause indicator;
-- [x] Fix bugs;
 - [x] Redesign collision system;
 - [ ] Tile Logo;
 - [ ] Improve sfx;
 - [x] Put events parameters in event.json;
 - [ ] Adjust difficult curve;
 - [ ] Create Github Page;
+- [x] Change repo visibility to public;
 - [ ] Clean/Refactor code;
-- [ ] Change repo visibility to public;
+- [ ] Update docs;
+
+Forever doing
+- Fix bugs;

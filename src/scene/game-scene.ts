@@ -50,10 +50,10 @@ class GameScene extends Scene {
         }
         window.addEventListener('keyup', this.pauseKeyboardCallback);
 
-        this._createBounds();
         this._createScoreDisplay();
         this._createBar();
         this._createBall();
+        this._createBounds();
         this._createPauseButton();
         this._createResumeCountdown();
         this._createPauseMask();
@@ -67,10 +67,10 @@ class GameScene extends Scene {
     }
     
     private _createBounds() {
-        this.leftBound = new Line(0, screenResolution.height, 0, 0);
+        this.leftBound = new Line(0, screenResolution.height*(1.5), 0, 0);
         this.topBound = new Line(0, 0, screenResolution.width, 0);
-        this.rightBound = new Line(screenResolution.width, 0, screenResolution.width, screenResolution.height);
-        this.bottomBound = new Line(screenResolution.width, screenResolution.height, 0, screenResolution.height);
+        this.rightBound = new Line(screenResolution.width, 0, screenResolution.width, screenResolution.height*(1.5));
+        this.bottomBound = new Line(screenResolution.width, screenResolution.height*(1.5), 0, screenResolution.height*(1.5));
         this.leftBound.tags.add('reflective');
         this.topBound.tags.add('reflective');
         this.rightBound.tags.add('reflective');

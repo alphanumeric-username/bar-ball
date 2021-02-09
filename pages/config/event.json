@@ -1,7 +1,7 @@
 {
     "ball-diminish": {
         "likeliness": 0.015,
-        "_likeliness": 0,
+        "_likeliness": 0.4,
         "diminish-factor": 0.5,
         "transition-time": 0.5
     },
@@ -31,7 +31,7 @@
     },
     "rain": {
         "likeliness": 0.0005,
-        "_likeliness": 0.4,
+        "_likeliness": 0,
         "drop-generation-period": 0.2
     },
     "random-bar": {
@@ -51,6 +51,6 @@
     },
     "wind": {
         "likeliness": 0.003,
-        "_likeliness": 0
+        "_likeliness": 0.4
     }
 }

@@ -1,16 +1,18 @@
 import Mat2 from "../../math/mat2";
 import { clamp } from "../../math/util";
 import Vec2 from "../../math/vec2";
+import { IShape } from "../collision/shape";
 import Line from "./line";
 import ShapeImplementation from "./shape-implementation";
 
 class RectangleSide extends Line {
-    parentRectangle: Rectangle
+    parentRectangle: Rectangle;
+    parentCollidingShapes: Set<IShape>;
 
     constructor(x_start: number, y_start: number, x_end: number, y_end: number, parent: Rectangle) {
         super(x_start, y_start, x_end, y_end);
         this.parentRectangle = parent;
-        this.collidingShapes = parent.collidingShapes;
+        // this.collidingShapes = parent.collidingShapes;
     }
 }
 
@@ -50,7 +52,7 @@ class Rectangle extends ShapeImplementation {
 
     update(dt: number) {
         super.update(dt);
-        this.move(this.pivot.position.x, this.pivot.position.y);
+        this._updatePosition();
     }
 
     move(x: number, y: number) {
@@ -63,6 +65,17 @@ class Rectangle extends ShapeImplementation {
             this.points[i] = Vec2.add(p, dr);
         }
         this.pivot.position = Vec2.add(this.pivot.position, dr);
+    }
+    
+    private _updatePosition() {
+        const dr = Vec2.sub(this.pivot.position, this.sides[0].pivot.position);
+        this.sides.forEach(s => {
+            s.move(...Vec2.add(s.pivot.position, dr).toTuple(), ...Vec2.add(s.endPos, dr).toTuple());
+        });
+        for (let i = 0; i < this.points.length; i++) {
+            const p = this.points[i];
+            this.points[i] = Vec2.add(p, dr);
+        }
     }
 
     onAddToSpace() {

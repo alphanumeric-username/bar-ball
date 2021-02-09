@@ -20,11 +20,13 @@ abstract class ShapeImplementation implements IShape {
     supportFunction(direction: Vec2): Vec2 {
         return Vec2.normalize(direction);
     }
-    update(dt: number): void {
+    update(dt: number, accelerate: boolean = true): void {
         const dPosition = Vec2.scale(dt, this.pivot.velocity);
         this.pivot.position = Vec2.add(this.pivot.position, dPosition);
-        const dVelocity = Vec2.scale(dt, this.pivot.acceleration);
-        this.pivot.velocity = Vec2.add(this.pivot.velocity, dVelocity);
+        if (accelerate) {
+            const dVelocity = Vec2.scale(dt, this.pivot.acceleration);
+            this.pivot.velocity = Vec2.add(this.pivot.velocity, dVelocity);
+        }
     }
 
     onCollide(e: CollisionEvent): void {

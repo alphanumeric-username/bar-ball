@@ -515,10 +515,6 @@ function quadFuncMinimun(a, b, c, intervalStart, intervalEnd) {
         return util_1.fpCmp(startVal, minimum) ? intervalStart : intervalEnd;
     }
 }
-// function pointLineIntersectionTest(q: Vec2, p1: Vec2, p2: Vec2): boolean {
-//     const [tx, ty] = [(q.x - p1.x)/(p2.x - p1.x), (q.y - p1.y)/(p2.y - p1.y)];
-//     return fpCmp(tx, ty) && tx >= 0 && tx <= 1;
-// }
 function pointTriangleIntersectionTest(q, p1, p2, p3) {
     var basis = [vec2_1["default"].sub(p2, p1), vec2_1["default"].sub(p3, p1)];
     var basisChangeMatrix = mat2_1["default"].scale(1 / (basis[0].x * basis[1].y - basis[1].x * basis[0].y), new mat2_1["default"](basis[1].y, -basis[1].x, -basis[0].y, basis[0].x));
@@ -586,43 +582,7 @@ function findNearestPointSetOfUpTo4PointsConvexHull(convexHull) {
         return minimum_2;
     }
 }
-// function minimumUpTo4PointsConvexHullContainingPoint(convexHull: ObjectSet<Vec2>, point: Vec2): ObjectSet<Vec2> {
-//     const points: Vec2[] = [];
-//     convexHull.forEach(p => points.push(p));
-//     if (convexHull.size() <= 2) {
-//         return convexHull;
-//     } else if (convexHull.size() == 3) {
-//         var nextSet = convexHull;
-//         if (pointLineIntersectionTest(point, points[0], points[1])) {
-//             nextSet = new ObjectSet<Vec2>([points[0], points[1]]);
-//         } else if (pointLineIntersectionTest(point, points[1], points[2])) {
-//             nextSet = new ObjectSet<Vec2>([points[1], points[2]]);
-//         } else if (pointLineIntersectionTest(point, points[2], points[0])) {
-//             nextSet = new ObjectSet<Vec2>([points[2], points[0]]);
-//         }
-//         if (nextSet == convexHull) {
-//             return convexHull;
-//         }
-//         return minimumUpTo4PointsConvexHullContainingPoint(nextSet, point);
-//     } else if (convexHull.size() == 4) {
-//         var nextSet: ObjectSet<Vec2> = convexHull;
-//         if (pointTriangleIntersectionTest(point, points[0], points[1], points[2])) {
-//             nextSet = new ObjectSet<Vec2>([points[0], points[1], points[2]]);
-//         } else if (pointTriangleIntersectionTest(point, points[0], points[1], points[3])) {
-//             nextSet = new ObjectSet<Vec2>([points[0], points[1], points[3]]);
-//         } else if (pointTriangleIntersectionTest(point, points[0], points[2], points[3])) {
-//             nextSet = new ObjectSet<Vec2>([points[0], points[2], points[3]]);
-//         } else if (pointTriangleIntersectionTest(point, points[1], points[2], points[3])) {
-//             nextSet = new ObjectSet<Vec2>([points[1], points[2], points[3]]);
-//         }
-//         if (nextSet == convexHull) {
-//             return convexHull;
-//         }
-//         return minimumUpTo4PointsConvexHullContainingPoint(nextSet, point);
-//     }
-// }
 var MAX_ITERATIONS = 100;
-//TODO: return nearest points
 function gjk(shape1, shape2) {
     var _a;
     var supportFunction = minkowiskDifferenceSupportFunction(shape1, shape2);
@@ -748,8 +708,8 @@ var RectangleSide = /** @class */ (function (_super) {
     function RectangleSide(x_start, y_start, x_end, y_end, parent) {
         var _this = _super.call(this, x_start, y_start, x_end, y_end) || this;
         _this.parentRectangle = parent;
-        _this.collidingShapes = parent.collidingShapes;
         return _this;
+        // this.collidingShapes = parent.collidingShapes;
     }
     return RectangleSide;
 }(line_1["default"]));
@@ -777,7 +737,7 @@ var Rectangle = /** @class */ (function (_super) {
     }
     Rectangle.prototype.update = function (dt) {
         _super.prototype.update.call(this, dt);
-        this.move(this.pivot.position.x, this.pivot.position.y);
+        this._updatePosition();
     };
     Rectangle.prototype.move = function (x, y) {
         var dr = vec2_1["default"].sub(new vec2_1["default"](x, y), this.pivot.position);
@@ -789,6 +749,16 @@ var Rectangle = /** @class */ (function (_super) {
             this.points[i] = vec2_1["default"].add(p, dr);
         }
         this.pivot.position = vec2_1["default"].add(this.pivot.position, dr);
+    };
+    Rectangle.prototype._updatePosition = function () {
+        var dr = vec2_1["default"].sub(this.pivot.position, this.sides[0].pivot.position);
+        this.sides.forEach(function (s) {
+            s.move.apply(s, __spreadArrays(vec2_1["default"].add(s.pivot.position, dr).toTuple(), vec2_1["default"].add(s.endPos, dr).toTuple()));
+        });
+        for (var i = 0; i < this.points.length; i++) {
+            var p = this.points[i];
+            this.points[i] = vec2_1["default"].add(p, dr);
+        }
     };
     Rectangle.prototype.onAddToSpace = function () {
         var _this = this;
@@ -837,11 +807,14 @@ var ShapeImplementation = /** @class */ (function () {
     ShapeImplementation.prototype.supportFunction = function (direction) {
         return vec2_1["default"].normalize(direction);
     };
-    ShapeImplementation.prototype.update = function (dt) {
+    ShapeImplementation.prototype.update = function (dt, accelerate) {
+        if (accelerate === void 0) { accelerate = true; }
         var dPosition = vec2_1["default"].scale(dt, this.pivot.velocity);
         this.pivot.position = vec2_1["default"].add(this.pivot.position, dPosition);
-        var dVelocity = vec2_1["default"].scale(dt, this.pivot.acceleration);
-        this.pivot.velocity = vec2_1["default"].add(this.pivot.velocity, dVelocity);
+        if (accelerate) {
+            var dVelocity = vec2_1["default"].scale(dt, this.pivot.acceleration);
+            this.pivot.velocity = vec2_1["default"].add(this.pivot.velocity, dVelocity);
+        }
     };
     ShapeImplementation.prototype.onCollide = function (e) {
         this.collidingShapes.add(e.collidedShape);
@@ -859,6 +832,7 @@ exports["default"] = ShapeImplementation;
 exports.__esModule = true;
 var gjk_1 = require("./gjk");
 var vec2_1 = require("../../math/vec2");
+var util_1 = require("../../math/util");
 var ShapeSpace = /** @class */ (function () {
     function ShapeSpace() {
         this.shapes = [];
@@ -869,6 +843,10 @@ var ShapeSpace = /** @class */ (function () {
         s.onAddToSpace();
     };
     ShapeSpace.prototype.remove = function (s) {
+        s.collidingShapes.forEach(function (shape) {
+            shape.collidingShapes["delete"](s);
+        });
+        s.collidingShapes.clear();
         var idx = this.shapes.indexOf(s);
         if (idx > 0) {
             this._removeFromArray(idx);
@@ -882,40 +860,52 @@ var ShapeSpace = /** @class */ (function () {
         }
         this.shapes.pop();
     };
-    ShapeSpace.prototype.update = function (dt, lastDt) {
+    ShapeSpace.prototype.update = function (dt, updateAgain) {
         if (dt === void 0) { dt = 1; }
-        if (lastDt === void 0) { lastDt = 1; }
+        if (updateAgain === void 0) { updateAgain = true; }
+        var lastDt = dt;
         for (var i = 0; i < this.shapes.length; i++) {
             for (var j = i + 1; j < this.shapes.length; j++) {
                 var _a = gjk_1["default"](this.shapes[i], this.shapes[j]), distance = _a[0], direction = _a[1];
-                if (distance == 0) {
-                    if (!this.shapes[i].collidingShapes.has(this.shapes[j])) {
-                        this.shapes[i].onCollide({ collidedShape: this.shapes[j] });
-                        this.shapes[j].onCollide({ collidedShape: this.shapes[i] });
-                    }
+                var velocity = vec2_1["default"].scale(lastDt, vec2_1["default"].sub(this.shapes[i].pivot.velocity, this.shapes[j].pivot.velocity));
+                var velocityDotDirection = vec2_1["default"].dot(velocity, direction);
+                if (util_1.fpCmp(distance, 0) || velocityDotDirection >= distance) {
+                    this._collideShapes(this.shapes[i], this.shapes[j]);
                     continue;
                 }
-                var velocity = vec2_1["default"].sub(this.shapes[i].pivot.velocity, this.shapes[j].pivot.velocity);
-                var velocityDotDirection = vec2_1["default"].dot(velocity, direction);
-                if (velocityDotDirection > distance) {
-                    dt = Math.min(dt, distance / velocityDotDirection);
-                }
+                // else if (velocityDotDirection >= distance) {
+                //     if (updateAgain) {
+                //         dt = Math.min(dt, distance / velocityDotDirection);
+                //     } else {
+                //         this._collideShapes(this.shapes[i], this.shapes[j]);
+                //         continue;
+                //     }
+                //     // if (this.shapes[i].tags.has("ball") && this.shapes[j].tags.has("lose"))
+                //     //     console.log(dt, distance, velocityDotDirection)
+                // }
                 this.shapes[i].collidingShapes["delete"](this.shapes[j]);
                 this.shapes[j].collidingShapes["delete"](this.shapes[i]);
             }
         }
         this.shapes.forEach(function (shape) {
-            shape.update(dt);
+            // shape.update(dt, !updateAgain && dt < 1);
+            shape.update(dt, true);
         });
-        if (dt > 0 && dt < lastDt) {
-            this.update(1 - dt, 1 - dt);
+        // if (dt < lastDt && updateAgain) {
+        //     this.update(lastDt - dt, false);
+        // }
+    };
+    ShapeSpace.prototype._collideShapes = function (shape1, shape2) {
+        if (!shape1.collidingShapes.has(shape2)) {
+            shape1.onCollide({ collidedShape: shape2 });
+            shape2.onCollide({ collidedShape: shape1 });
         }
     };
     return ShapeSpace;
 }());
 exports["default"] = ShapeSpace;
 
-},{"../../math/vec2":9,"./gjk":13}],18:[function(require,module,exports){
+},{"../../math/util":8,"../../math/vec2":9,"./gjk":13}],18:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1148,10 +1138,10 @@ var GameScene = /** @class */ (function (_super) {
             }
         };
         window.addEventListener('keyup', this.pauseKeyboardCallback);
-        this._createBounds();
         this._createScoreDisplay();
         this._createBar();
         this._createBall();
+        this._createBounds();
         this._createPauseButton();
         this._createResumeCountdown();
         this._createPauseMask();
@@ -1162,10 +1152,10 @@ var GameScene = /** @class */ (function (_super) {
         this.update();
     };
     GameScene.prototype._createBounds = function () {
-        this.leftBound = new collision_1.Line(0, app_1.screenResolution.height, 0, 0);
+        this.leftBound = new collision_1.Line(0, app_1.screenResolution.height * (1.5), 0, 0);
         this.topBound = new collision_1.Line(0, 0, app_1.screenResolution.width, 0);
-        this.rightBound = new collision_1.Line(app_1.screenResolution.width, 0, app_1.screenResolution.width, app_1.screenResolution.height);
-        this.bottomBound = new collision_1.Line(app_1.screenResolution.width, app_1.screenResolution.height, 0, app_1.screenResolution.height);
+        this.rightBound = new collision_1.Line(app_1.screenResolution.width, 0, app_1.screenResolution.width, app_1.screenResolution.height * (1.5));
+        this.bottomBound = new collision_1.Line(app_1.screenResolution.width, app_1.screenResolution.height * (1.5), 0, app_1.screenResolution.height * (1.5));
         this.leftBound.tags.add('reflective');
         this.topBound.tags.add('reflective');
         this.rightBound.tags.add('reflective');
@@ -1390,18 +1380,21 @@ var Ball = /** @class */ (function (_super) {
         var collidedShape = _a.collidedShape;
         _super.prototype.onCollide.call(this, { collidedShape: collidedShape });
         var tags = collidedShape.tags;
+        // console.log(this.collidingShapes);
         if (tags.has('lose')) {
             audio_1.playNote('basic-wave', 440 * Math.pow(2, -21 / 12), 0.1, { type: 'sawtooth' });
             this.onLose();
         }
         else if (collidedShape instanceof collision_1.Line && tags.has('reflective')) {
-            var normal = collidedShape.getNormal();
-            this.reflect(normal);
             if (tags.has('bar')) {
                 this._collidedWithBar(collidedShape);
                 audio_1.playNote('basic-wave', 440 * Math.pow(2, util_1.randomElement([-2, 3]) / 12), 0.1, { type: 'sawtooth' });
             }
             else {
+                var normal = collidedShape.getNormal();
+                if (vec2_1["default"].dot(this.pivot.velocity, normal) < 0) {
+                    this.reflect(normal);
+                }
                 audio_1.playNote('basic-wave', 440 * Math.pow(2, util_1.randomElement([-9, -5]) / 12), 0.1, { type: 'sawtooth' });
             }
         }
@@ -1416,6 +1409,7 @@ var Ball = /** @class */ (function (_super) {
         var deviation = maxDeviation * vec2_1["default"].dot(vec2_1["default"].normalize(barCurrentPosition), barTangent);
         var newVelocity = vec2_1["default"].add(bar.getNormal(), vec2_1["default"].scale(deviation, barTangent));
         this.pivot.velocity = newVelocity;
+        this.justReflected = true;
         this.setVelocityLength(Math.max(currentVelocityLength, 15));
     };
     Ball.prototype.getState = function (filter) {
@@ -1519,7 +1513,7 @@ var Bar = /** @class */ (function (_super) {
             }
         };
         _this.width = 128;
-        _this.height = 16;
+        _this.height = 32;
         _this.stage = new pixi_js_1.Container();
         _this._createGraphics();
         _this.tags.add('bar');
@@ -2073,7 +2067,7 @@ var RainDrop = /** @class */ (function (_super) {
     RainDrop.prototype.createGraphics = function () {
         var drop = new pixi_js_1.Graphics();
         drop.beginFill(constants_1.colors.primary_cold);
-        drop.drawRect(0, 0, this.dropWidth, this.dropHeight);
+        drop.drawRect(this.hitbox.pivot.position.x, this.hitbox.pivot.position.y, this.dropWidth, this.dropHeight);
         drop.endFill();
         this.addChild(drop);
     };
@@ -2098,8 +2092,19 @@ var RainEvent = /** @class */ (function (_super) {
         this.raindrops = [];
     };
     RainEvent.prototype.update = function (dt) {
+        var _this = this;
         _super.prototype.update.call(this, dt);
-        this.raindrops.forEach(function (r) { return r.update(); });
+        var nextRaindrops = [];
+        this.raindrops.forEach(function (r) {
+            if (r.y < app_1.screenResolution.height) {
+                r.update();
+                nextRaindrops.push(r);
+            }
+            else {
+                _this.removeRainDrop(r);
+            }
+        });
+        this.raindrops = nextRaindrops;
         switch (this.state) {
             case 'raining':
                 this.dropGenerationTimeCounter += dt;
@@ -2124,21 +2129,25 @@ var RainEvent = /** @class */ (function (_super) {
         }
     };
     RainEvent.prototype.stop = function () {
+        var _this = this;
         console.log('RAIN: stop');
         _super.prototype.stop.call(this);
         this.raindrops.forEach(function (r) {
-            r.parent.removeChild(r);
-            r.hitbox.shapeSpace.remove(r.hitbox);
+            _this.removeRainDrop(r);
         });
     };
     RainEvent.prototype.generateDrop = function () {
         var x = Math.random() * app_1.screenResolution.width - 8;
         var y = -64;
         var raindrop = new RainDrop(this.gravity);
-        raindrop.position.set(x, y);
+        raindrop.hitbox.move(x, y);
         this.currentScene.stage.addChild(raindrop);
         this.currentScene.shapeSpace.add(raindrop.hitbox);
         this.raindrops.push(raindrop);
+    };
+    RainEvent.prototype.removeRainDrop = function (r) {
+        r.parent.removeChild(r);
+        r.hitbox.shapeSpace.remove(r.hitbox);
     };
     return RainEvent;
 }(event_implementation_1["default"]));
@@ -2240,10 +2249,6 @@ var RandomBarEvent = /** @class */ (function (_super) {
     };
     RandomBarEvent.prototype._initShapeGroup = function () {
         this.barShape.sides.forEach(function (s) { return s.tags.add('reflective'); });
-    };
-    RandomBarEvent.prototype._isTouchingBall = function () {
-        return this.lastCollidedShape != null && this.lastCollidedShape.tags.has('ball')
-            || this.barShape.pointIsInside(this.currentScene.ball.pivot.position.x, this.currentScene.ball.pivot.position.y);
     };
     RandomBarEvent.prototype._createGraphics = function () {
         var _a;

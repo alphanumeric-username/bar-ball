@@ -18,7 +18,7 @@ interface IShape {
     collidingShapes: Set<IShape>;
     
     supportFunction(direction: Vec2): Vec2;
-    update(dt: number): void;
+    update(dt: number, accelerate: boolean): void;
     onCollide(e: CollisionEvent): void;
     onAddToSpace(): void;
     onRemoveFromSpace(): void;

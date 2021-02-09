@@ -98,19 +98,20 @@ class Ball extends Circle {
     onCollide({ collidedShape }: CollisionEvent) {
         super.onCollide({ collidedShape });
         const tags = collidedShape.tags;
-
+        // console.log(this.collidingShapes);
         if (tags.has('lose')) {
             playNote('basic-wave', 440*Math.pow(2, -21/12), 0.1, { type: 'sawtooth' });
             this.onLose();
         }
         else if (collidedShape instanceof Line && tags.has('reflective')) {
-            const normal = collidedShape.getNormal();
-            this.reflect(normal);
-
             if (tags.has('bar')) {
                 this._collidedWithBar(collidedShape);
                 playNote('basic-wave', 440*Math.pow(2, randomElement([-2, 3])/12), 0.1, { type: 'sawtooth' });
             } else {
+                const normal = collidedShape.getNormal();
+                if (Vec2.dot(this.pivot.velocity, normal) < 0) {
+                    this.reflect(normal);
+                }
                 playNote('basic-wave', 440*Math.pow(2, randomElement([-9, -5])/12), 0.1, { type: 'sawtooth' });
             }
         }
@@ -131,7 +132,8 @@ class Ball extends Circle {
         );
 
         this.pivot.velocity = newVelocity;
-
+        
+        this.justReflected = true;
         this.setVelocityLength(Math.max(currentVelocityLength, 15));
     }
 

@@ -24,13 +24,12 @@ class RainDrop extends Container {
 
     update() {
         [this.x, this.y] = this.hitbox.pivot.position.toTuple();
-        
     }
     
     createGraphics() {
         const drop = new Graphics();
         drop.beginFill(colors.primary_cold)
-        drop.drawRect(0, 0, this.dropWidth, this.dropHeight);
+        drop.drawRect(this.hitbox.pivot.position.x, this.hitbox.pivot.position.y, this.dropWidth, this.dropHeight);
         drop.endFill();
 
         this.addChild(drop);
@@ -60,7 +59,17 @@ class RainEvent extends EventImplementation {
     
     update(dt: number) {
         super.update(dt);
-        this.raindrops.forEach(r => r.update());
+        
+        const nextRaindrops: RainDrop[] = [];
+        this.raindrops.forEach(r => {
+            if (r.y < screenResolution.height) {
+                r.update()
+                nextRaindrops.push(r);
+            } else {
+                this.removeRainDrop(r);
+            }
+        });
+        this.raindrops = nextRaindrops;
 
         switch (this.state) {
             case 'raining':
@@ -90,8 +99,7 @@ class RainEvent extends EventImplementation {
         console.log('RAIN: stop');
         super.stop();
         this.raindrops.forEach(r => {
-            r.parent.removeChild(r);
-            r.hitbox.shapeSpace.remove(r.hitbox);
+            this.removeRainDrop(r);
         });
     }
 
@@ -100,11 +108,16 @@ class RainEvent extends EventImplementation {
         const y = -64;
 
         const raindrop = new RainDrop(this.gravity);
-        raindrop.position.set(x, y);
+        raindrop.hitbox.move(x, y);
 
         this.currentScene.stage.addChild(raindrop);
         this.currentScene.shapeSpace.add(raindrop.hitbox);
         this.raindrops.push(raindrop);
+    }
+
+    removeRainDrop(r: RainDrop) {
+        r.parent.removeChild(r);
+        r.hitbox.shapeSpace.remove(r.hitbox);
     }
 }
 

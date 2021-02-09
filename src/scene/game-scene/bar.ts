@@ -15,7 +15,7 @@ class Bar extends Line {
     constructor(y: number) {
         super(128, y, 0, y);
         this.width = 128;
-        this.height = 16;
+        this.height = 32;
 
         this.stage = new Container();
         this._createGraphics();

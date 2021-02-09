@@ -1,11 +1,11 @@
 import EventImplementation from './event-implementation';
 import GameScene from '../../../game-scene';
 import { Scene } from '../../../scene';
-import { Rectangle, IShape, Line } from '../../../../physics/collision';
+import { Rectangle, IShape } from '../../../../physics/collision';
 import Vec2 from '../../../../math/vec2';
 import { clamp, randomInt } from '../../../../math/util';
 import { screenResolution } from '../../../../app';
-import { Container, Graphics } from 'pixi.js';
+import { Graphics } from 'pixi.js';
 import { colors } from '../../../../constants';
 import { getEventConfig } from '../../../../config/event';
 
@@ -94,11 +94,6 @@ class RandomBarEvent extends EventImplementation {
     
     private _initShapeGroup() {
         this.barShape.sides.forEach(s => s.tags.add('reflective'));
-    }
-
-    private _isTouchingBall(): boolean {
-        return this.lastCollidedShape != null && this.lastCollidedShape.tags.has('ball')
-               || this.barShape.pointIsInside(this.currentScene.ball.pivot.position.x, this.currentScene.ball.pivot.position.y);
     }
 
     private _createGraphics() {
