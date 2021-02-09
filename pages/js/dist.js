@@ -20,7 +20,7 @@ var app = new pixi_js_1.Application({
     antialias: true,
     forceCanvas: !isWebGLSupported()
 });
-document.body.appendChild(app.view);
+document.getElementById('game-container').appendChild(app.view);
 exports["default"] = app;
 
 },{"./constants":4,"pixi.js":92}],2:[function(require,module,exports){

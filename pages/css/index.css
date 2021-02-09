@@ -1,4 +1,54 @@
-body {
+:root {
+    --primary: #454542;
+    --secondary: #fffef7;
+    --secondary-dark: #e8e7dc;
+}
+
+.container {
     display: flex;
     justify-content: center;
 }
+
+.changelog {
+    padding-bottom: 5em;
+}
+
+.title {
+    font-family: "Roboto-Regular";
+    text-align: center;
+    margin-top: 2em;
+    margin-bottom: 2em;
+    font-size: 2em;
+    color: var(--primary);
+}
+
+.text {
+    font-family: "Roboto-Regular";
+    font-size: 1.2em;
+    color: var(--primary);
+}
+
+.list {
+    margin-left: 30vw;
+    margin-right: 30vw;
+    display: block;
+}
+
+footer {
+    text-align: center;
+    padding-left: 20vw;
+    padding-right: 20vw;
+}
+
+footer hr {
+    border-width: 0px;
+    border-top-width: 1px;
+    border-color: var(--primary);
+}
+
+/* canvas {
+    border-style: solid;
+    border-color: var(--primary);
+    border-radius: 0.8em;
+    border-width: 1.5em;
+} */
