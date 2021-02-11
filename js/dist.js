@@ -70,7 +70,7 @@ var getEventConfig = function () { return eventsConfig; };
 exports.getEventConfig = getEventConfig;
 var loadEventConfig = function () { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
     switch (_a.label) {
-        case 0: return [4 /*yield*/, fetch('/bar-ball/config/event.json').then(function (res) { return res.json(); })];
+        case 0: return [4 /*yield*/, fetch('/config/event.json').then(function (res) { return res.json(); })];
         case 1: return [2 /*return*/, eventsConfig = _a.sent()];
     }
 }); }); };
@@ -229,6 +229,11 @@ Promise.all([
         app: app_1["default"]
     });
 })["catch"](function (err) { return console.error('Could not init:\n', err); });
+window.addEventListener('keydown', function (e) {
+    if (e.key == ' ' && e.target == document.body) {
+        e.preventDefault();
+    }
+});
 
 },{"./app":1,"./config/event":2,"./config/leaderboard":3,"./game/game":5}],7:[function(require,module,exports){
 "use strict";
