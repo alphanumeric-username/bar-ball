@@ -1,5 +1,0 @@
-- [x] diminished ball too fast pass screen barrier;
-- [x] rotating arrow disappears when ball diminish is starting/stopping;
-- [x] ball can be stuck in random bar (especially if small) and rain drops;
-- [x] fonts load after first render;
-- [x] ball velocity hitbox reflect to out of screen;
