@@ -13,7 +13,7 @@ type ColorTable = {
 var colorTable: ColorTable;
 
 async function load() {
-    const config: ColorTableRaw = await fetch('/config/colors.json').then(res => res.json());
+    const config: ColorTableRaw = await fetch('./config/colors.json').then(res => res.json());
     colorTable.primary = Number.parseInt(config.primary);
     colorTable.secondary = Number.parseInt(config.secondary);
     colorTable.secondary_dark = Number.parseInt(config.secondary_dark);
