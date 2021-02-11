@@ -7,7 +7,7 @@
 - [ ] Improve sfx;
 - [x] Put events parameters in event.json;
 - [ ] Adjust difficult curve;
-- [ ] Create Github Page;
+- [x] Create Github Page;
 - [x] Change repo visibility to public;
 - [ ] Clean/Refactor code;
 - [ ] Update docs;

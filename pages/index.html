@@ -7,18 +7,81 @@
     <link rel="preload" href="./font/Roboto-Thin.ttf" as="font" crossorigin="anonymous">
     <link rel="stylesheet" href="./css/index.css">
     <link rel="stylesheet" href="./font/roboto.css">
-    <meta name="description" content="A minimalistic arcade game in which you can not let the ball fall to ground">
-    <meta name="keywords" content="game, minimalistic, bar, ball, alphanumeric-username, ">
+    <meta name="description" content="A casual, minimalistic arcade game where you can not let the ball fall to ground">
+    <meta name="keywords" content="game, minimalistic, arcade, bar, ball, alphanumeric-username">
     <title>Bar Ball</title>
 </head>
 <body>
-    <!-- <h1 class="title">Bar ball</h1> -->
-    <div class="container" id="game-container"></div>
-    <div class="changelog">
-        <h2 class="title">Changelog</h2>
-        <p class="text list">
-            - 02/10/2021: Released
-        </p>
+    <div class="container" id="game-container">
+        <canvas id="placeholder-canvas" width="800" height="600">
+        </canvas>
+    </div>
+    <div id="controls" class="section">
+        <h2 class="title">Controls</h2>
+        <div id="controls-images">
+            <div>
+                <div class="controls-tutorial">
+                    <div id="controls-mouse" class="container vertical">
+                        <div class="container horizontal">
+                            <div class="mouse left button"></div>
+                            <div class="mouse right button"></div>
+                        </div>
+                        <div class="mouse body"></div>
+                    </div>
+                </div>
+                <p class="text">
+                    <b>Mouse cursor</b><br>
+                    move bar
+                </p>
+            </div>
+            <div>
+                <div class="controls-tutorial">
+                    <div id="controls-spacebar" class="container vertical">
+                        <div class="container horizontal" style="margin-right: 2em;">
+                            <div class="keyboard key"></div>
+                            <div class="keyboard key"></div>
+                            <div class="keyboard key"></div>
+                            <div class="keyboard key"></div>
+                        </div>
+                        <div class="container horizontal">
+                            <div class="keyboard key"></div>
+                            <div class="keyboard key"></div>
+                            <div class="keyboard key"></div>
+                            <div class="keyboard key"></div>
+                        </div>
+                        <div class="container horizontal">
+                            <div class="keyboard key"></div>
+                            <div class="keyboard key spacebar"></div>
+                            <div class="keyboard key"></div>
+                        </div>
+                    </div>
+                </div>
+                <p class="text">
+                    <b>Space bar</b><br>
+                    pause / resume game
+                </p>
+                <p class="text">
+                </p>
+            </div>
+        </div>
+    </div>
+    <hr class="section-divider">
+    <div id="updates" class="section">
+        <h2 class="title">Updates</h2>
+        <ul>
+            <li class="text list-item">
+                <i>02/XX/2021</i>: Released
+            </li>
+        </ul>
+    </div>
+    <hr class="section-divider">
+    <div id="credits" class="section">
+        <h2 class="title">Credits</h2>
+        <ul>
+            <li class="text list-item">
+                <b><i>Programming, graphics and sounds</i></b> <br> alphanumeric-username
+            </li>
+        </ul>
     </div>
     <footer>
         <hr></hr>

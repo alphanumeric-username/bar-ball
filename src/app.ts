@@ -24,7 +24,9 @@ const app = new Application({
     forceCanvas: !isWebGLSupported()
 });
 
-document.getElementById('game-container').appendChild(app.view);
+const gameContainer = document.getElementById('game-container');
+gameContainer.innerHTML = '';
+gameContainer.appendChild(app.view);
 
 export default app;
 export { screenResolution };
