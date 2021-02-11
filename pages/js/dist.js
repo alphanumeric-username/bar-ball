@@ -229,6 +229,11 @@ Promise.all([
         app: app_1["default"]
     });
 })["catch"](function (err) { return console.error('Could not init:\n', err); });
+window.addEventListener('keydown', function (e) {
+    if (e.key == ' ' && e.target == document.body) {
+        e.preventDefault();
+    }
+});
 
 },{"./app":1,"./config/event":2,"./config/leaderboard":3,"./game/game":5}],7:[function(require,module,exports){
 "use strict";

@@ -12,3 +12,9 @@ Promise.all([
         app: app
     });
 }).catch(err => console.error('Could not init:\n', err));
+
+window.addEventListener('keydown', (e) => {
+    if (e.key == ' ' && e.target == document.body) {
+        e.preventDefault();
+    }
+});
